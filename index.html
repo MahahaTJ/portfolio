@@ -200,23 +200,57 @@
     }
 
     /* ===== Slide 0: Hero ===== */
-    .hero-bg {
-      position: absolute; inset: 0; z-index: 0;
-      background: url('assets/hero-cover.jpg') center/cover no-repeat;
-      opacity: 0.15; filter: blur(2px) saturate(0.6);
+    .hero-banner {
+      position: absolute; inset: 0; z-index: 0; overflow: hidden;
     }
+    .hero-banner-item {
+      position: absolute; inset: 0; opacity: 0;
+      transition: opacity 1.2s var(--ease);
+    }
+    .hero-banner-item.active { opacity: 1; }
+    .hero-banner-item video {
+      width: 100%; height: 100%; object-fit: cover;
+      opacity: 0.6; filter: saturate(0.8);
+    }
+    /* 底部渐变遮罩 */
     .hero::before {
       content: ''; position: absolute; inset: 0; z-index: 1;
       background:
-        linear-gradient(180deg, var(--bg) 0%, transparent 25%),
-        linear-gradient(0deg, var(--bg) 0%, transparent 25%),
-        radial-gradient(ellipse at center, transparent 30%, var(--bg) 80%);
+        linear-gradient(180deg, var(--bg) 0%, transparent 20%),
+        linear-gradient(0deg, var(--bg) 0%, transparent 30%),
+        radial-gradient(ellipse at center, transparent 20%, rgba(16,16,16,0.7) 80%);
+      pointer-events: none;
     }
     .hero-content {
       position: relative; z-index: 3; text-align: center;
       padding: 2rem 1.5rem; max-width: 720px;
       animation: slideUp 0.8s var(--ease) both;
     }
+    /* 轮播指示器 */
+    .hero-carousel {
+      position: absolute; bottom: 5rem; left: 50%;
+      transform: translateX(-50%); z-index: 5;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .hero-carousel-dot {
+      width: 24px; height: 2px; background: var(--rule);
+      cursor: pointer; transition: background var(--dur) var(--ease), width var(--dur) var(--ease);
+    }
+    .hero-carousel-dot.active {
+      width: 36px; background: var(--accent);
+    }
+    .hero-carousel-dot:hover { background: var(--muted2); }
+    .hero-carousel-dots { display: flex; align-items: center; gap: 0.6rem; }
+    .hero-carousel-arrow {
+      width: 28px; height: 28px; border: 1px solid var(--rule);
+      background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+    }
+    .hero-carousel-arrow:hover {
+      border-color: var(--accent); background: rgba(255,250,0,0.1);
+    }
+    .hero-carousel-arrow svg { color: var(--muted2); transition: color var(--dur) var(--ease); }
+    .hero-carousel-arrow:hover svg { color: var(--accent); }
     .hero-tag {
       display: block; color: var(--accent);
       font-family: var(--font-display);
@@ -404,8 +438,12 @@
     @media (max-width: 768px) {
       .top-nav { padding: 0 1.2rem; }
       .nav-links { display: none; }
-      .nav-resume-btn { display: none; }
-      .hamburger { display: flex; }
+      .hamburger { display: flex; order: 1; }
+      .nav-resume-btn {
+        margin-left: 0.6rem;
+        font-size: 0.7rem; padding: 0.25rem 0.7rem;
+        order: 2;
+      }
       .page-indicator { right: 1.5rem; }
       .page-number { font-size: 2.5rem; }
       .about-grid { grid-template-columns: 1fr; }
@@ -432,7 +470,21 @@
 
     <!-- ===== 首页 ===== -->
     <section class="slide hero" id="slide-0" data-title="首页" data-label="首页">
-      <div class="hero-bg"></div>
+      <!-- 轮播Banner -->
+      <div class="hero-banner" id="heroBanner">
+        <div class="hero-banner-item active">
+          <video src="assets/hero-video-1.mp4" autoplay muted loop playsinline></video>
+        </div>
+        <div class="hero-banner-item">
+          <video src="assets/hero-video-2.mp4" muted loop playsinline></video>
+        </div>
+        <!-- 预留第三段：取消下方注释即可启用
+        <div class="hero-banner-item">
+          <video src="assets/hero-video-3.mp4" muted loop playsinline></video>
+        </div>
+        -->
+      </div>
+      <!-- 信息文字 -->
       <div class="hero-content">
         <div class="hero-tag">游戏交互策划作品集</div>
         <p class="subtitle">
@@ -449,6 +501,16 @@
             <div class="stat-label">项目经历</div>
           </div>
         </div>
+      </div>
+      <!-- 轮播控件 -->
+      <div class="hero-carousel" id="heroCarousel">
+        <button class="hero-carousel-arrow" id="heroPrev" aria-label="上一个">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="hero-carousel-dots" id="heroDots"></div>
+        <button class="hero-carousel-arrow" id="heroNext" aria-label="下一个">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+        </button>
       </div>
       <footer class="site-footer">
         <div class="footer-brand">Portfolio</div>
@@ -483,12 +545,12 @@
                 <div class="t-company">游戏资源策划 — UI界面设计、前端基础代码实现、Genesis-3D引擎GUI资源输出</div>
               </div>
               <div class="timeline-item">
-                <div class="t-date">2022.04 - 2023.02</div>
+                <div class="t-date">2022 - 2023</div>
                 <div class="t-role">忘川风华录 · 策略RPG · 网易雷火</div>
                 <div class="t-company">游戏交互策划（实习）— 活动玩法交互设计，主导更金换物、喵居捏猫、雅社赛季、履职书、剧情Loading等8+功能模块</div>
               </div>
               <div class="timeline-item">
-                <div class="t-date">2022.01 - 2022.03</div>
+                <div class="t-date">2022</div>
                 <div class="t-role">Maxbet · 农场休闲 · FunPlus</div>
                 <div class="t-company">游戏UI（实习）— UI设计规范学习、界面设计与GUI资源输出</div>
               </div>
@@ -527,34 +589,66 @@
           </p>
         </div>
         <div class="projects-grid">
-          <a href="projects/map-system/index.html" class="project-card">
+
+          <!-- 幻兽帕鲁 -->
+          <a href="projects/palworld/index.html" class="project-card" data-project="palworld">
             <div class="card-thumb">
-              <img src="assets/thumb-map.jpg" alt="大地图系统" loading="lazy"
-                   onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,var(--bg3),var(--bg2))'">
+              <img src="assets/thumb-palworld.jpg" alt="幻兽帕鲁" loading="lazy"
+                   onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#1a1a0d,#101010)'">
             </div>
             <div class="card-body">
-              <div class="card-meta">幻兽帕鲁 · Garena</div>
-              <div class="card-title">大地图系统交互设计</div>
-              <div class="card-desc">从v1.0到v1.3全版本主导，覆盖竞品调研、架构设计、方案选型、组件化框架、迭代优化。耦合采集/帕鲁/追踪/任务等全局系统。</div>
+              <div class="card-meta">Garena · 2025-2026</div>
+              <div class="card-title">幻兽帕鲁手游</div>
+              <div class="card-desc">大地图系统全版本主导（v1.0-v1.3），涵盖建造系统、玩法外围框架、活动中心、角色升级等核心模块。组件化架构搭建与AI辅助设计工具开发。</div>
               <div class="card-tags">
-                <span class="card-tag">信息架构</span>
-                <span class="card-tag">组件化</span>
-                <span class="card-tag">方案选型</span>
-                <span class="card-tag">P0-P5优先级</span>
+                <span class="card-tag">大地图系统</span>
+                <span class="card-tag">建造系统</span>
+                <span class="card-tag">组件化架构</span>
+                <span class="card-tag">AI辅助设计</span>
               </div>
               <div class="card-arrow">查看详情 →</div>
             </div>
           </a>
-          <div class="coming-soon">
-            <div class="cs-label">即将上线</div>
-            <div class="cs-title">商业化系统设计</div>
-            <div class="cs-desc">付费系统、商城架构、活动商业化交互设计</div>
-          </div>
-          <div class="coming-soon">
-            <div class="cs-label">即将上线</div>
-            <div class="cs-title">玩法系统设计</div>
-            <div class="cs-desc">常驻玩法、大世界玩法、赛季玩法交互设计</div>
-          </div>
+
+          <!-- FreeCity -->
+          <a href="projects/freecity/index.html" class="project-card" data-project="freecity">
+            <div class="card-thumb">
+              <img src="assets/thumb-freecity.jpg" alt="FreeCity" loading="lazy"
+                   onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#0d1a1a,#101010)'">
+            </div>
+            <div class="card-body">
+              <div class="card-meta">Garena · 2023-2025</div>
+              <div class="card-title">FreeCity</div>
+              <div class="card-desc">开放世界动作手游UI架构向设计，主导玩法外围框架、赛季活动、日周常活动、活动中心等模块交互设计，建立可复用的UI组件体系。</div>
+              <div class="card-tags">
+                <span class="card-tag">UI架构设计</span>
+                <span class="card-tag">玩法外围框架</span>
+                <span class="card-tag">赛季活动</span>
+                <span class="card-tag">组件化体系</span>
+              </div>
+              <div class="card-arrow">查看详情 →</div>
+            </div>
+          </a>
+
+          <!-- 忘川风华录 -->
+          <a href="projects/wangchuan/index.html" class="project-card" data-project="wangchuan">
+            <div class="card-thumb">
+              <img src="assets/thumb-wangchuan.jpg" alt="忘川风华录" loading="lazy"
+                   onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#1a0d1a,#101010)'">
+            </div>
+            <div class="card-body">
+              <div class="card-meta">网易雷火 · 2022</div>
+              <div class="card-title">忘川风华录</div>
+              <div class="card-desc">策略RPG手游交互策划实习，主导更金换物、喵居捏猫、雅社赛季、履职书、剧情Loading等8+功能模块的玩法交互设计。</div>
+              <div class="card-tags">
+                <span class="card-tag">活动玩法</span>
+                <span class="card-tag">交互设计</span>
+                <span class="card-tag">8+模块</span>
+              </div>
+              <div class="card-arrow">查看详情 →</div>
+            </div>
+          </a>
+
         </div>
       </div>
     </section>
@@ -779,8 +873,65 @@
       if (e.target === menuOverlay) closeMenu();
     });
 
+    /* ===== Hero轮播 ===== */
+    var bannerItems = document.querySelectorAll('.hero-banner-item');
+    var bannerTotal = bannerItems.length;
+    var bannerCurrent = 0;
+    var bannerTimer = null;
+    var bannerDots = [];
+
+    // 自动生成dots
+    var dotsContainer = document.getElementById('heroDots');
+    for (var i = 0; i < bannerTotal; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'hero-carousel-dot' + (i === 0 ? ' active' : '');
+      dot.dataset.index = i;
+      dotsContainer.appendChild(dot);
+      bannerDots.push(dot);
+      (function(idx) {
+        dot.addEventListener('click', function() {
+          switchBanner(idx); startBannerAutoplay();
+        });
+      })(i);
+    }
+
+    function switchBanner(index) {
+      if (index < 0) index = bannerTotal - 1;
+      if (index >= bannerTotal) index = 0;
+      bannerItems[bannerCurrent].classList.remove('active');
+      var oldVideo = bannerItems[bannerCurrent].querySelector('video');
+      if (oldVideo) oldVideo.pause();
+      bannerCurrent = index;
+      bannerItems[bannerCurrent].classList.add('active');
+      var newVideo = bannerItems[bannerCurrent].querySelector('video');
+      if (newVideo) { newVideo.currentTime = 0; newVideo.play().catch(function(){}); }
+      for (var d = 0; d < bannerDots.length; d++) {
+        bannerDots[d].classList.toggle('active', d === bannerCurrent);
+      }
+    }
+
+    // 自动轮播 12秒
+    function startBannerAutoplay() {
+      clearInterval(bannerTimer);
+      bannerTimer = setInterval(function() { switchBanner(bannerCurrent + 1); }, 12000);
+    }
+
+    document.getElementById('heroPrev').addEventListener('click', function() {
+      switchBanner(bannerCurrent - 1); startBannerAutoplay();
+    });
+    document.getElementById('heroNext').addEventListener('click', function() {
+      switchBanner(bannerCurrent + 1); startBannerAutoplay();
+    });
+    startBannerAutoplay();
+
     /* ===== 初始化 ===== */
     updateUI();
+
+    /* ===== 从项目子页返回时自动定位到项目作品 ===== */
+    if (location.hash === '#projects') {
+      goTo(2);
+      history.replaceState(null, '', location.pathname + location.search);
+    }
   })();
   </script>
 </body>

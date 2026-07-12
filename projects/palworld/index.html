@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>幻兽帕鲁 | Garena · 项目作品集</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #101010; --bg2: #191919; --bg3: #282828; --bg4: #383838;
+      --rule: #424242; --rule2: #626262;
+      --ink: #fafafa; --ink2: #e0e0e0; --muted: #a6a6a6; --muted2: #797979;
+      --accent: #fffa00; --accent-dim: #b8b300;
+      --font-brand: 'Teko', 'Oswald', sans-serif;
+      --font-display: 'Oswald', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --font-body: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+      --font-mono: 'Space Grotesk', 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --dur: 0.3s;
+      --nav-w: 280px;
+      --nav-collapsed-w: 64px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: var(--font-body); color: var(--muted);
+      background: var(--bg); line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden; width: 100%; height: 100%;
+    }
+    a { color: inherit; text-decoration: none; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes floatY { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-12px); } }
+    @keyframes pulse { 0%,100%{ opacity: 0.25; } 50%{ opacity: 0.5; } }
+    @keyframes scanLine { 0%{ top: -2px; } 100%{ top: 100%; } }
+    @keyframes particleFade { 0%,100%{ opacity:0; transform:translateY(0); } 50%{ opacity:0.6; transform:translateY(-20px); } }
+    @keyframes contentFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* === 顶部导航 === */
+    .top-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(16, 16, 16, 0.92);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--rule);
+      height: 56px; padding: 0 2rem;
+      display: flex; align-items: center;
+    }
+    .nav-back {
+      color: var(--muted2); font-size: 0.75rem; font-weight: 600;
+      letter-spacing: 0.08em; display: flex; align-items: center; gap: 0.5rem;
+      transition: color var(--dur) var(--ease); flex-shrink: 0;
+    }
+    .nav-back:hover { color: var(--accent); }
+    .nav-project { margin-left: auto; display: flex; align-items: center; gap: 1.5rem; }
+    .nav-project-name {
+      font-family: var(--font-display); font-size: 0.82rem; font-weight: 700;
+      color: var(--ink); letter-spacing: 0.06em;
+    }
+    .nav-project-meta {
+      font-family: var(--font-mono); font-size: 0.62rem; color: var(--accent);
+      font-weight: 600; letter-spacing: 0.1em;
+    }
+
+    /* === 主布局 === */
+    .main-layout { display: flex; width: 100%; height: 100vh; padding-top: 56px; }
+
+    /* --- 左侧图标导航栏 --- */
+    .side-nav {
+      width: var(--nav-w); height: 100%;
+      background: var(--bg2); border-right: 1px solid var(--rule);
+      display: flex; flex-direction: column; position: relative;
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden; flex-shrink: 0; z-index: 50;
+    }
+    .side-nav.collapsed { width: var(--nav-collapsed-w); }
+
+    .nav-logo-area {
+      padding: 1.2rem 0.8rem; border-bottom: 1px solid var(--rule);
+      display: flex; align-items: center; gap: 0.6rem;
+      white-space: nowrap; cursor: pointer;
+      transition: background var(--dur) var(--ease);
+    }
+    .nav-logo-area:hover { background: var(--bg3); }
+    .nav-logo-icon {
+      width: 36px; height: 36px; border-radius: 2px;
+      background: var(--bg3); border: 1px solid var(--rule);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .nav-logo-icon svg { color: var(--accent); }
+    .nav-logo-text {
+      flex: 1; min-width: 0;
+      font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+      color: var(--ink); letter-spacing: 0.04em;
+      transition: opacity var(--dur) var(--ease);
+    }
+    .nav-logo-sub {
+      font-family: var(--font-mono); font-size: 0.5rem; color: var(--muted2);
+      letter-spacing: 0.08em; transition: opacity var(--dur) var(--ease);
+    }
+    .nav-logo-info { transition: opacity var(--dur) var(--ease); }
+    .side-nav.collapsed .nav-logo-info { opacity: 0; pointer-events: none; }
+    .nav-collapse-arrow {
+      flex-shrink: 0; width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center; color: var(--muted2);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), color var(--dur) var(--ease);
+    }
+    .nav-logo-area:hover .nav-collapse-arrow { color: var(--accent); }
+    .side-nav.collapsed .nav-collapse-arrow { transform: rotate(180deg); }
+
+    .nav-list {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      padding: 0.6rem 0; display: flex; flex-direction: column; gap: 0.1rem;
+    }
+    .nav-item {
+      display: flex; align-items: center; padding: 0.5rem 0; cursor: pointer;
+      transition: background var(--dur) var(--ease); position: relative; flex-shrink: 0;
+    }
+    .nav-item:hover { background: var(--bg3); }
+    .nav-item.active { background: var(--bg); }
+    .nav-item.active::before {
+      content: ''; position: absolute; left: 0; top: 4px; bottom: 4px;
+      width: 2px; background: var(--accent);
+    }
+    .nav-item-icon {
+      width: var(--nav-collapsed-w); min-width: var(--nav-collapsed-w); height: 44px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .nav-item-icon-inner {
+      width: 36px; height: 36px; border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+    }
+    .nav-item.active .nav-item-icon-inner {
+      background: rgba(255,250,0,0.08); border: 1px solid rgba(255,250,0,0.2);
+    }
+    .nav-item-icon-inner svg { color: var(--muted2); transition: color var(--dur) var(--ease); }
+    .nav-item:hover .nav-item-icon-inner svg { color: var(--ink); }
+    .nav-item.active .nav-item-icon-inner svg { color: var(--accent); }
+    .nav-item-text {
+      flex: 1; min-width: 0; padding-right: 1rem; white-space: nowrap;
+      opacity: 1; transition: opacity var(--dur) var(--ease);
+    }
+    .side-nav.collapsed .nav-item-text { opacity: 0; pointer-events: none; }
+    .nav-item-name { font-size: 0.82rem; font-weight: 600; color: var(--ink); }
+    .nav-item.active .nav-item-name { color: var(--accent); }
+    .nav-item-ver {
+      font-family: var(--font-mono); font-size: 0.55rem; color: var(--muted2);
+      letter-spacing: 0.06em; margin-top: 0.1rem;
+    }
+
+    /* --- 右侧展示区 --- */
+    .display-area {
+      flex: 1; position: relative; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .scan-line {
+      position: absolute; left: 0; right: 0; height: 1px; z-index: 3;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.15; animation: scanLine 6s linear infinite; pointer-events: none;
+    }
+    .hud-ring {
+      position: absolute; border: 1px solid var(--rule); border-radius: 50%;
+      opacity: 0.15; pointer-events: none;
+    }
+    .hud-ring-1 { width: 500px; height: 500px; animation: pulse 4s ease-in-out infinite; }
+    .hud-ring-2 { width: 600px; height: 600px; animation: pulse 4s ease-in-out infinite 1s; }
+    .hud-ring-3 { width: 700px; height: 700px; animation: pulse 4s ease-in-out infinite 2s; }
+    .statue-container {
+      position: relative; z-index: 2; width: 420px; height: 420px;
+      display: flex; align-items: center; justify-content: center;
+      animation: floatY 6s ease-in-out infinite;
+    }
+    .statue-img {
+      width: 280px; height: auto; opacity: 0.85;
+      filter: contrast(1.1) brightness(1.05); animation: fadeIn 1.5s var(--ease) both;
+    }
+    .particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    .particle-dot {
+      position: absolute; width: 2px; height: 2px; background: var(--accent);
+      border-radius: 50%; opacity: 0; animation: particleFade 4s ease-in-out infinite;
+    }
+
+    /* 右侧信息覆盖 - 带翻页过渡 */
+    .display-info { position: absolute; z-index: 5; }
+    .display-title-area { top: 2rem; left: 2.5rem; }
+    .display-title-label {
+      font-family: var(--font-mono); font-size: 0.58rem; color: var(--accent);
+      font-weight: 700; letter-spacing: 0.15em; margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .display-title-label::before {
+      content: ''; display: block; width: 20px; height: 1px; background: var(--accent);
+    }
+    .display-title {
+      font-family: var(--font-display); font-size: 2.2rem; font-weight: 700;
+      color: var(--ink); letter-spacing: 0.02em; line-height: 1.15;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .display-title.fade { opacity: 0; transform: translateY(8px); }
+    .display-subtitle {
+      font-size: 0.9rem; color: var(--muted2); margin-top: 0.5rem; max-width: 400px;
+      line-height: 1.6;
+    }
+    .display-subtitle.fade { opacity: 0; transform: translateY(8px); }
+    .display-counter { top: 2rem; right: 2.5rem; text-align: right; }
+    .display-counter-num {
+      font-family: var(--font-mono); font-size: 2.5rem; font-weight: 700;
+      color: var(--accent); line-height: 1; opacity: 0.3;
+    }
+    .display-counter-label {
+      font-size: 0.6rem; color: var(--muted2); letter-spacing: 0.12em; margin-top: 0.2rem;
+    }
+
+    /* 底部页签切换器 */
+    .display-switcher {
+      position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); z-index: 5;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .switcher-arrow {
+      width: 28px; height: 28px; border: 1px solid var(--rule);
+      background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+    }
+    .switcher-arrow:hover { border-color: var(--accent); background: rgba(255,250,0,0.08); }
+    .switcher-arrow svg { color: var(--muted2); transition: color var(--dur) var(--ease); }
+    .switcher-arrow:hover svg { color: var(--accent); }
+    .switcher-dots { display: flex; gap: 0.5rem; }
+    .switcher-dot {
+      width: 20px; height: 2px; background: var(--rule);
+      cursor: pointer; transition: background var(--dur) var(--ease), width var(--dur) var(--ease);
+    }
+    .switcher-dot.active { width: 32px; background: var(--accent); }
+
+    /* 右下角标签 */
+    .display-tag {
+      position: absolute; bottom: 2.5rem; right: 2.5rem; z-index: 5;
+      display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; max-width: 300px;
+    }
+    .display-tag-item {
+      font-size: 0.58rem; padding: 0.15rem 0.5rem; border-radius: 1px;
+      border: 1px solid var(--rule); color: var(--muted2); font-weight: 500;
+    }
+
+    /* 空白页提示 */
+    .empty-hint {
+      position: absolute; z-index: 5; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .empty-hint-text {
+      font-family: var(--font-display); font-size: 1.1rem; color: var(--muted2);
+      letter-spacing: 0.06em;
+    }
+    .empty-hint-sub {
+      font-size: 0.72rem; color: var(--rule2); margin-top: 0.4rem;
+    }
+
+    /* === 移动端 === */
+    .mobile-toggle {
+      display: none; position: fixed; top: 64px; left: 1rem; z-index: 150;
+      background: var(--bg3); border: 1px solid var(--rule);
+      color: var(--muted2); padding: 0.4rem 0.8rem; border-radius: 2px;
+      font-size: 0.72rem; font-weight: 600; cursor: pointer;
+    }
+    .mobile-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+    @media (max-width: 768px) {
+      .side-nav {
+        position: fixed; top: 56px; left: 0; bottom: 0;
+        z-index: 140; width: var(--nav-w) !important;
+        transform: translateX(-100%);
+        transition: transform 0.4s var(--ease);
+      }
+      .side-nav.open { transform: translateX(0); }
+      .mobile-toggle { display: block; }
+      .statue-container { width: 280px; height: 280px; }
+      .statue-img { width: 180px; }
+      .hud-ring-1 { width: 320px; height: 320px; }
+      .hud-ring-2 { width: 400px; height: 400px; }
+      .hud-ring-3 { display: none; }
+      .display-title { font-size: 1.3rem; }
+      .display-title-area { top: 1.5rem; left: 1.5rem; }
+      .display-counter { top: 1.5rem; right: 1.5rem; }
+      .display-counter-num { font-size: 1.8rem; }
+      .display-tag { bottom: 5rem; right: 1.5rem; }
+      .display-switcher { bottom: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a href="../../index.html#projects" class="nav-back">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      返回首页
+    </a>
+    <div class="nav-project">
+      <div class="nav-project-meta">PALWORLD // PROJECT</div>
+      <div class="nav-project-name">幻兽帕鲁</div>
+    </div>
+  </nav>
+
+  <button class="mobile-toggle" id="mobileToggle">系统列表</button>
+
+  <div class="main-layout">
+    <aside class="side-nav" id="sideNav">
+      <div class="nav-logo-area" id="navLogoArea">
+        <div class="nav-logo-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="nav-logo-info">
+          <div class="nav-logo-text">幻兽帕鲁</div>
+          <div class="nav-logo-sub">GARENA · 2025-2026</div>
+        </div>
+        <div class="nav-collapse-arrow">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </div>
+      </div>
+      <div class="nav-list" id="navList">
+        <div class="nav-item active" data-index="0">
+          <div class="nav-item-icon"><div class="nav-item-icon-inner">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/><path d="M3 20l3-2M21 20l-3-2M12 22v-3"/></svg>
+          </div></div>
+          <div class="nav-item-text">
+            <div class="nav-item-name">大地图系统</div>
+            <div class="nav-item-ver">v1.0-v1.3</div>
+          </div>
+        </div>
+        <div class="nav-item" data-index="1">
+          <div class="nav-item-icon"><div class="nav-item-icon-inner">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </div></div>
+          <div class="nav-item-text">
+            <div class="nav-item-name">建造系统</div>
+            <div class="nav-item-ver">维护中</div>
+          </div>
+        </div>
+        <div class="nav-item" data-index="2">
+          <div class="nav-item-icon"><div class="nav-item-icon-inner">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+          </div></div>
+          <div class="nav-item-text">
+            <div class="nav-item-name">玩法外围框架</div>
+            <div class="nav-item-ver">维护中</div>
+          </div>
+        </div>
+        <div class="nav-item" data-index="3">
+          <div class="nav-item-icon"><div class="nav-item-icon-inner">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+          </div></div>
+          <div class="nav-item-text">
+            <div class="nav-item-name">活动中心</div>
+            <div class="nav-item-ver">维护中</div>
+          </div>
+        </div>
+        <div class="nav-item" data-index="4">
+          <div class="nav-item-icon"><div class="nav-item-icon-inner">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14h4v6H4zM10 10h4v10h-4zM16 6h4v14h-4z"/></svg>
+          </div></div>
+          <div class="nav-item-text">
+            <div class="nav-item-name">角色升级系统</div>
+            <div class="nav-item-ver">维护中</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="display-area" id="displayArea">
+      <div class="scan-line"></div>
+      <div class="hud-ring hud-ring-1"></div>
+      <div class="hud-ring hud-ring-2"></div>
+      <div class="hud-ring hud-ring-3"></div>
+      <div class="particles" id="particles"></div>
+
+      <!-- 信息覆盖层 -->
+      <div class="display-info display-title-area">
+        <div class="display-title-label" id="titleLabel">MAP // SYSTEM</div>
+        <div class="display-title" id="displayTitle">地图版本优化历程</div>
+        <div class="display-subtitle" id="displaySubtitle">大地图系统</div>
+      </div>
+      <div class="display-info display-counter">
+        <div class="display-counter-num" id="counterNum">01</div>
+        <div class="display-counter-label" id="counterLabel">地图版本优化历程</div>
+      </div>
+
+      <!-- 空白页提示（默认隐藏） -->
+      <div class="empty-hint" id="emptyHint" style="display:none;">
+        <div class="empty-hint-text">内容维护中</div>
+        <div class="empty-hint-sub">敬请期待</div>
+      </div>
+
+      <!-- 底部页签翻页 -->
+      <div class="display-switcher">
+        <button class="switcher-arrow" id="pagePrev"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+        <div class="switcher-dots" id="pageDots"></div>
+        <button class="switcher-arrow" id="pageNext"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg></button>
+      </div>
+
+      <div class="display-tag" id="displayTag">
+        <span class="display-tag-item">版本迭代</span>
+        <span class="display-tag-item">需求分析</span>
+        <span class="display-tag-item">体验优化</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    /* ===== 系统数据（每个系统包含多个页面） ===== */
+    var systems = [
+      {
+        name: '大地图系统',
+        label: 'MAP // SYSTEM',
+        pages: [
+          { subtitle: '地图版本优化历程', tags: ['版本迭代', '需求分析', '体验优化'] },
+          { subtitle: '标识系统设计与迭代', tags: ['标识体系', '视觉规范', '分类系统'] },
+          { subtitle: 'UI框架构建与维护', tags: ['组件化', '架构设计', '接口规范'] },
+          { subtitle: '地图交互语言与信息设计', tags: ['交互语言', '信息层级', '操作模式'] },
+          { subtitle: 'UI组件设计与维护', tags: ['组件设计', '小地图', '导航面板'] }
+        ]
+      },
+      { name: '建造系统', label: 'BUILD // SYSTEM', pages: [] },
+      { name: '玩法外围框架', label: 'GAMEPLAY // SYSTEM', pages: [] },
+      { name: '活动中心', label: 'ACTIVITY // SYSTEM', pages: [] },
+      { name: '角色升级系统', label: 'LEVEL // SYSTEM', pages: [] }
+    ];
+
+    var total = systems.length;
+    var curSys = 0;   // 当前系统索引
+    var curPage = 0;   // 当前页签索引
+
+    /* ===== DOM ===== */
+    var navItems = document.querySelectorAll('.nav-item');
+    var displayTitle = document.getElementById('displayTitle');
+    var displaySubtitle = document.getElementById('displaySubtitle');
+    var titleLabel = document.getElementById('titleLabel');
+    var counterNum = document.getElementById('counterNum');
+    var counterLabel = document.getElementById('counterLabel');
+    var displayTag = document.getElementById('displayTag');
+    var emptyHint = document.getElementById('emptyHint');
+    var pageDots = document.getElementById('pageDots');
+    var sideNav = document.getElementById('sideNav');
+    var mobileToggle = document.getElementById('mobileToggle');
+
+    /* ===== 收起/展开 ===== */
+    document.getElementById('navLogoArea').addEventListener('click', function() {
+      sideNav.classList.toggle('collapsed');
+    });
+
+    /* ===== 生成粒子 ===== */
+    var particlesEl = document.getElementById('particles');
+    for (var p = 0; p < 60; p++) {
+      var pd = document.createElement('div');
+      pd.className = 'particle-dot';
+      pd.style.left = Math.random() * 100 + '%';
+      pd.style.top = Math.random() * 100 + '%';
+      pd.style.animationDelay = (Math.random() * 4) + 's';
+      pd.style.animationDuration = (3 + Math.random() * 3) + 's';
+      pd.style.width = (1 + Math.random() * 2) + 'px';
+      pd.style.height = pd.style.width;
+      particlesEl.appendChild(pd);
+    }
+
+    /* ===== 生成页签dots ===== */
+    function buildDots(pageCount) {
+      pageDots.innerHTML = '';
+      for (var i = 0; i < pageCount; i++) {
+        var dot = document.createElement('div');
+        dot.className = 'switcher-dot' + (i === 0 ? ' active' : '');
+        dot.dataset.index = i;
+        pageDots.appendChild(dot);
+        (function(idx) {
+          dot.addEventListener('click', function() { flipPage(idx); });
+        })(i);
+      }
+    }
+    var dots = [];
+
+    /* ===== 切换系统 ===== */
+    function switchSystem(index) {
+      if (index < 0) index = total - 1;
+      if (index >= total) index = 0;
+      navItems[curSys].classList.remove('active');
+      curSys = index;
+      navItems[curSys].classList.add('active');
+
+      var sys = systems[curSys];
+      titleLabel.textContent = sys.label;
+      displaySubtitle.textContent = sys.name;
+
+      var pageCount = Math.max(sys.pages.length, 1);
+      buildDots(pageCount);
+      dots = document.querySelectorAll('.switcher-dot');
+      curPage = 0;
+
+      if (sys.pages.length > 0) {
+        emptyHint.style.display = 'none';
+        flipPage(0, true);
+      } else {
+        emptyHint.style.display = '';
+        displayTitle.textContent = '';
+        displayTitle.classList.remove('fade');
+        counterNum.textContent = '--';
+        counterLabel.textContent = '维护中';
+        displayTag.innerHTML = '<span class="display-tag-item">维护中</span>';
+      }
+
+      if (window.innerWidth <= 768) sideNav.classList.remove('open');
+    }
+
+    /* ===== 翻页（页签内） ===== */
+    function flipPage(index, instant) {
+      var sys = systems[curSys];
+      var pageCount = Math.max(sys.pages.length, 1);
+      if (index < 0) index = pageCount - 1;
+      if (index >= pageCount) index = 0;
+      curPage = index;
+      var page = sys.pages[curPage];
+
+      if (instant) {
+        displayTitle.textContent = page.subtitle;
+        displayTitle.classList.remove('fade');
+      } else {
+        displayTitle.classList.add('fade');
+        setTimeout(function() {
+          displayTitle.textContent = page.subtitle;
+          displayTitle.classList.remove('fade');
+        }, 300);
+      }
+
+      counterNum.textContent = String(curPage + 1).padStart(2, '0');
+      counterLabel.textContent = page.subtitle;
+
+      displayTag.innerHTML = '';
+      page.tags.forEach(function(t) {
+        var span = document.createElement('span');
+        span.className = 'display-tag-item'; span.textContent = t;
+        displayTag.appendChild(span);
+      });
+
+      for (var d = 0; d < dots.length; d++) {
+        dots[d].classList.toggle('active', d === curPage);
+      }
+    }
+
+    /* ===== 事件绑定 ===== */
+    navItems.forEach(function(item) {
+      item.addEventListener('click', function() { switchSystem(parseInt(this.dataset.index)); });
+    });
+    document.getElementById('pagePrev').addEventListener('click', function() { flipPage(curPage - 1); });
+    document.getElementById('pageNext').addEventListener('click', function() { flipPage(curPage + 1); });
+    mobileToggle.addEventListener('click', function() { sideNav.classList.toggle('open'); });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); flipPage(curPage - 1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); flipPage(curPage + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); switchSystem(curSys - 1); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); switchSystem(curSys + 1); }
+    });
+
+    /* ===== 初始化 ===== */
+    switchSystem(0);
+  })();
+  </script>
+</body>
+</html>
