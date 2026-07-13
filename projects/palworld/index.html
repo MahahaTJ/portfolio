@@ -180,10 +180,10 @@
       width: 280px; height: auto; opacity: 0.85;
       filter: contrast(1.1) brightness(1.05); animation: fadeIn 1.5s var(--ease) both;
     }
-    .particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    .particles { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
     .particle-dot {
       position: absolute; width: 2px; height: 2px; background: var(--accent);
-      border-radius: 50%; opacity: 0; animation: particleFade 4s ease-in-out infinite;
+      border-radius: 50%; opacity: 0; will-change: transform;
     }
 
     /* 右侧信息覆盖 - 带翻页过渡 */
@@ -269,6 +269,103 @@
       font-size: 0.72rem; font-weight: 600; cursor: pointer;
     }
     .mobile-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* === 版本时间轴 === */
+    .version-timeline {
+      position: absolute; inset: 0; z-index: 1;
+      display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 5rem 3rem 4rem;
+    }
+    .version-timeline.active { display: flex; }
+
+    .vt-container {
+      display: flex; align-items: stretch;
+      gap: 1.2rem;
+      max-width: 1100px; width: 100%;
+    }
+
+    .vt-col {
+      flex: 1; min-width: 0;
+      position: relative;
+      background: url('../assets/map-card-bg.png') center/contain no-repeat;
+      background-size: 100% 100%;
+      animation: contentFadeIn 0.5s var(--ease) both;
+      display: flex; flex-direction: column;
+      padding-top: 0;
+      padding-bottom: 0;
+      border: 1px solid rgba(156,163,63,0.35);
+    }
+    .vt-col:nth-child(1) { animation-delay: 0.05s; }
+    .vt-col:nth-child(2) { animation-delay: 0.15s; }
+    .vt-col:nth-child(3) { animation-delay: 0.25s; }
+    .vt-col:nth-child(4) { animation-delay: 0.35s; }
+
+    .vt-container {
+      display: flex; align-items: stretch;
+      gap: 1.6rem;
+      max-width: 1100px; width: 100%;
+    }
+
+    /* 图标：右上角低透明度，在文字下层 */
+    .vt-col-icon {
+      position: absolute; top: 12%; right: 10%;
+      width: 35%; opacity: 0.12;
+      pointer-events: none; z-index: 0;
+    }
+    .vt-col-icon img { width: 100%; height: auto; object-fit: contain; }
+
+    /* 内容区：在图标上层 */
+    .vt-col-content {
+      position: relative; z-index: 1;
+      padding: 15% 12% 12%;
+      display: flex; flex-direction: column;
+      height: 100%;
+    }
+
+    .vt-label {
+      font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700;
+      color: var(--bg); letter-spacing: 0.1em;
+      background: var(--accent); padding: 0.25rem 0.8rem;
+      display: inline-block;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+      align-self: flex-start;
+    }
+    .vt-title {
+      font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+      color: var(--accent); letter-spacing: 0.02em;
+      margin-bottom: 1.6rem;
+    }
+    .vt-items {
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .vt-item {
+      font-size: 0.8rem; color: var(--ink);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .vt-item-highlight .vt-highlight-text {
+      color: var(--accent); font-weight: 600;
+    }
+    .vt-badge-outline {
+      display: inline-block;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 0.55rem; padding: 0.1rem 0.4rem;
+      border-radius: 2px;
+      font-weight: 500;
+      background: rgba(255,250,0,0.05);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      .version-timeline { padding: 5rem 1.5rem 6rem; }
+      .vt-container { flex-direction: column; align-items: center; gap: 1rem; }
+      .vt-col { width: 100%; max-width: 300px; }
+      .vt-col-icon { width: 30%; top: 8%; right: 8%; }
+      .vt-col-content { padding: 10% 10% 8%; }
+    }
 
     @media (max-width: 768px) {
       .side-nav {
@@ -407,8 +504,66 @@
         <span class="display-tag-item">需求分析</span>
         <span class="display-tag-item">体验优化</span>
       </div>
-    </div>
-  </div>
+
+      <!-- 版本时间轴（仅"地图版本优化历程"页签显示） -->
+      <div class="version-timeline" id="versionTimeline">
+        <div class="vt-container">
+          <!-- V1.0 -->
+          <div class="vt-col">
+            <div class="vt-col-icon"><img src="../../assets/map-card-icon01.png" alt=""></div>
+            <div class="vt-col-content">
+              <div class="vt-label">v1.0</div>
+              <div class="vt-title">基础架构</div>
+              <div class="vt-items">
+                <div class="vt-item">竞品调研</div>
+                <div class="vt-item">系统层级构建</div>
+                <div class="vt-item">交互框架设计</div>
+                <div class="vt-item">信息板规范设计</div>
+              </div>
+            </div>
+          </div>
+          <!-- V1.1 -->
+          <div class="vt-col">
+            <div class="vt-col-icon"><img src="../../assets/map-card-icon02.png" alt=""></div>
+            <div class="vt-col-content">
+              <div class="vt-label">v1.1</div>
+              <div class="vt-title">方案选型</div>
+              <div class="vt-items">
+                <div class="vt-item">方案量化对比</div>
+                <div class="vt-item">交互框架迭代</div>
+                <div class="vt-item">UI组件模块化</div>
+                <div class="vt-item">标识系统设计</div>
+              </div>
+            </div>
+          </div>
+          <!-- V1.2 -->
+          <div class="vt-col">
+            <div class="vt-col-icon"><img src="../../assets/map-card-icon03.png" alt=""></div>
+            <div class="vt-col-content">
+              <div class="vt-label">v1.2</div>
+              <div class="vt-title">功能深入</div>
+              <div class="vt-items">
+                <div class="vt-item">区域探索系统</div>
+                <div class="vt-item">多场景切换</div>
+              </div>
+            </div>
+          </div>
+          <!-- V1.3 -->
+          <div class="vt-col">
+            <div class="vt-col-icon"><img src="../../assets/map-card-icon04.png" alt=""></div>
+            <div class="vt-col-content">
+              <div class="vt-label">v1.3</div>
+              <div class="vt-title">体验打磨</div>
+              <div class="vt-items">
+                <div class="vt-item">标识系统重构</div>
+                <div class="vt-item">动效规范设计</div>
+                <div class="vt-item">FGD验证</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- display-area -->
 
   <script>
   (function() {
@@ -420,7 +575,7 @@
         name: '大地图系统',
         label: 'MAP // SYSTEM',
         pages: [
-          { subtitle: '地图版本优化历程', tags: ['版本迭代', '需求分析', '体验优化'] },
+          { subtitle: '地图版本优化历程', tags: ['版本迭代', '需求分析', '体验优化'], hasTimeline: true },
           { subtitle: '标识系统设计与迭代', tags: ['标识体系', '视觉规范', '分类系统'] },
           { subtitle: 'UI框架构建与维护', tags: ['组件化', '架构设计', '接口规范'] },
           { subtitle: '地图交互语言与信息设计', tags: ['交互语言', '信息层级', '操作模式'] },
@@ -455,19 +610,104 @@
       sideNav.classList.toggle('collapsed');
     });
 
-    /* ===== 生成粒子 ===== */
+    /* ===== 粒子系统（自动飘动 + 鼠标交互） ===== */
     var particlesEl = document.getElementById('particles');
-    for (var p = 0; p < 60; p++) {
+    var particleData = [];
+    var particleEls = [];
+    var MOUSE_RADIUS = 120;
+    var MOUSE_FORCE = 50;
+    var mouseX = -999, mouseY = -999;
+    var animRunning = false;
+
+    for (var p = 0; p < 80; p++) {
       var pd = document.createElement('div');
       pd.className = 'particle-dot';
-      pd.style.left = Math.random() * 100 + '%';
-      pd.style.top = Math.random() * 100 + '%';
-      pd.style.animationDelay = (Math.random() * 4) + 's';
-      pd.style.animationDuration = (3 + Math.random() * 3) + 's';
-      pd.style.width = (1 + Math.random() * 2) + 'px';
-      pd.style.height = pd.style.width;
+      var ox = Math.random() * 100;
+      var oy = Math.random() * 100;
+      var size = 1 + Math.random() * 2;
+      var speed = 0.02 + Math.random() * 0.04; // 向上飘动速度（%/帧）
+      var phase = Math.random() * Math.PI * 2;   // 呼吸相位
+      pd.style.width = size + 'px';
+      pd.style.height = size + 'px';
       particlesEl.appendChild(pd);
+      particleData.push({
+        ox: ox, oy: oy, x: ox, y: oy, size: size,
+        baseOpacity: 0.15 + Math.random() * 0.4,
+        speed: speed, phase: phase, time: 0
+      });
+      particleEls.push(pd);
     }
+
+    // 延迟淡入
+    for (var fi = 0; fi < particleEls.length; fi++) {
+      (function(el, delay) {
+        setTimeout(function() { el.style.opacity = '0.3'; }, delay);
+      })(particleEls[fi], fi * 25 + Math.random() * 500);
+    }
+
+    // 鼠标追踪
+    var displayArea = document.getElementById('displayArea');
+    displayArea.addEventListener('mousemove', function(e) {
+      var rect = displayArea.getBoundingClientRect();
+      mouseX = (e.clientX - rect.left) / rect.width * 100;
+      mouseY = (e.clientY - rect.top) / rect.height * 100;
+    });
+    displayArea.addEventListener('mouseleave', function() {
+      mouseX = -999; mouseY = -999;
+    });
+
+    // 动画循环
+    function animateParticles() {
+      var rect = displayArea.getBoundingClientRect();
+      var w = rect.width, h = rect.height;
+      var mouseActive = mouseX > -900;
+
+      for (var i = 0; i < particleData.length; i++) {
+        var d = particleData[i];
+        d.time += 0.016;
+
+        // 自动向上飘动 + 水平轻微摆动
+        d.y -= d.speed;
+        if (d.y < -2) {
+          d.y = 102;
+          d.ox = Math.random() * 100;
+          d.x = d.ox;
+        }
+        var sway = Math.sin(d.time * 0.8 + d.phase) * 0.15;
+        var baseX = d.ox + sway;
+        var baseY = d.y;
+
+        // 鼠标推离
+        var offX = 0, offY = 0, opacity = d.baseOpacity;
+        if (mouseActive) {
+          var dx = baseX - mouseX;
+          var dy = baseY - mouseY;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          var radius = MOUSE_RADIUS / w * 100;
+          if (dist < radius) {
+            var force = (1 - dist / radius) * MOUSE_FORCE / w * 100;
+            var angle = Math.atan2(dy, dx);
+            offX = Math.cos(angle) * force;
+            offY = Math.sin(angle) * force;
+            opacity = Math.min(1, d.baseOpacity + 0.5);
+          }
+        }
+
+        var finalX = baseX + offX;
+        var finalY = baseY + offY;
+        // 转为像素偏移（基于原始百分比位置）
+        var px = d.x - d.ox + (finalX - d.x);
+        var py = d.y - d.oy + (finalY - d.y);
+        // 简化：直接用百分比位置计算像素
+        var posX = finalX / 100 * w;
+        var posY = finalY / 100 * h;
+        particleEls[i].style.transform = 'translate(' + posX + 'px,' + posY + 'px)';
+        particleEls[i].style.opacity = String(opacity);
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    // 启动动画（首帧延迟确保DOM就绪）
+    setTimeout(function() { requestAnimationFrame(animateParticles); }, 100);
 
     /* ===== 生成页签dots ===== */
     function buildDots(pageCount) {
@@ -511,6 +751,8 @@
         counterNum.textContent = '--';
         counterLabel.textContent = '维护中';
         displayTag.innerHTML = '<span class="display-tag-item">维护中</span>';
+        var vt = document.getElementById('versionTimeline');
+        vt.classList.remove('active');
       }
 
       if (window.innerWidth <= 768) sideNav.classList.remove('open');
@@ -548,6 +790,14 @@
 
       for (var d = 0; d < dots.length; d++) {
         dots[d].classList.toggle('active', d === curPage);
+      }
+
+      // 时间轴显隐
+      var vt = document.getElementById('versionTimeline');
+      if (sys.pages[curPage] && sys.pages[curPage].hasTimeline) {
+        vt.classList.add('active');
+      } else {
+        vt.classList.remove('active');
       }
     }
 
