@@ -359,12 +359,645 @@
       white-space: nowrap;
     }
 
+    /* === 竞品分析面板 === */
+    .competitive-panel {
+      position: absolute; inset: 0; z-index: 2;
+      display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 4.5rem 2rem 5rem;
+    }
+    .competitive-panel.active { display: flex; }
+
+    .cp-inner {
+      width: 100%; max-width: 1000px;
+      display: flex; flex-direction: column;
+      height: 100%;
+      position: relative;
+    }
+
+    .cp-page {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      animation: contentFadeIn 0.4s var(--ease) both;
+    }
+    .cp-page.active { display: flex; }
+
+    .cp-header {
+      text-align: center; margin-bottom: 1.2rem; flex-shrink: 0;
+    }
+    .cp-section-label {
+      font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700;
+      color: var(--accent); letter-spacing: 0.15em;
+      margin-bottom: 0.6rem;
+    }
+    .cp-section-title {
+      font-family: var(--font-display); font-size: 1.4rem; font-weight: 700;
+      color: var(--ink); letter-spacing: 0.03em;
+      margin-bottom: 0.5rem;
+    }
+    .cp-section-desc {
+      font-size: 0.78rem; color: var(--muted2);
+      max-width: 600px; margin: 0 auto;
+    }
+
+    /* 选品矩阵 */
+    .cp-matrix {
+      flex: 1; position: relative;
+      width: 100%; max-width: 700px;
+      margin: 0 auto;
+      aspect-ratio: 16/10;
+    }
+    .cp-matrix-row { display: flex; height: 50%; }
+    .cp-quad {
+      flex: 1; border: 1px solid rgba(156,163,63,0.25);
+      position: relative;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding-top: 1rem;
+    }
+    .cp-quad-top-left { border-top: none; border-left: none; }
+    .cp-quad-top-right { border-top: none; border-right: none; }
+    .cp-quad-bot-left { border-bottom: none; border-left: none; }
+    .cp-quad-bot-right { border-bottom: none; border-right: none; }
+    .cp-quad-label {
+      font-size: 0.82rem; color: var(--muted);
+      font-weight: 500;
+    }
+    .cp-quad-hl {
+      position: absolute; top: 2rem; right: 1rem;
+      font-family: var(--font-mono); font-size: 0.7rem;
+      color: var(--accent); font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+
+    .cp-game-points { position: absolute; inset: 0; }
+    .cp-game-point {
+      position: absolute;
+      cursor: pointer;
+      animation: cpFadeIn 0.5s var(--ease) both;
+      animation-delay: var(--delay);
+      z-index: 2;
+    }
+    .cp-game-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+      color: #fff;
+      border: 2px solid rgba(255,250,0,0.5);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      transition: all 0.25s var(--ease);
+      user-select: none;
+    }
+    .cp-game-point:hover .cp-game-avatar {
+      transform: scale(1.15);
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(255,250,0,0.3);
+    }
+    .cp-avatar-yanyun { background: linear-gradient(135deg, #2d1f3d, #4a2c5e); }
+    .cp-avatar-genshin { background: linear-gradient(135deg, #1a3a5c, #2d5a8a); }
+    .cp-avatar-nikki { background: linear-gradient(135deg, #4a2c5e, #7b4a9e); }
+    .cp-avatar-emo { background: linear-gradient(135deg, #1f3d2d, #2c5e4a); }
+    .cp-avatar-locke { background: linear-gradient(135deg, #3d2d1f, #5e4a2c); }
+    .cp-avatar-once { background: linear-gradient(135deg, #3d1f1f, #5e2c2c); }
+
+    /* Tooltip - 全局浮动 */
+    .cp-game-tooltip {
+      position: fixed;
+      width: 260px;
+      background: var(--bg2);
+      border: 1px solid rgba(156,163,63,0.35);
+      border-radius: 4px;
+      padding: 0.9rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s var(--ease), visibility 0.2s;
+      z-index: 9999;
+      pointer-events: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      transform: translateY(4px);
+    }
+    .cp-game-tooltip.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .cp-game-tooltip::after {
+      content: '';
+      position: absolute;
+      border: 6px solid transparent;
+    }
+    .cp-game-tooltip.pos-top::after {
+      left: 50%;
+      transform: translateX(-50%);
+      top: 100%;
+      border-top-color: rgba(156,163,63,0.35);
+    }
+    .cp-game-tooltip.pos-bottom::after {
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 100%;
+      border-bottom-color: rgba(156,163,63,0.35);
+    }
+    .cp-game-tooltip.pos-right::after {
+      top: 50%;
+      transform: translateY(-50%);
+      right: 100%;
+      border-right-color: rgba(156,163,63,0.35);
+    }
+    .cp-game-tooltip.pos-left::after {
+      top: 50%;
+      transform: translateY(-50%);
+      left: 100%;
+      border-left-color: rgba(156,163,63,0.35);
+    }
+    .cp-tt-header {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 1px solid rgba(156,163,63,0.15);
+      margin-bottom: 0.7rem;
+    }
+    .cp-tt-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+      color: #fff;
+      border: 1.5px solid rgba(255,250,0,0.4);
+      flex-shrink: 0;
+    }
+    .cp-tt-name {
+      font-size: 0.85rem; font-weight: 600; color: var(--ink);
+    }
+    .cp-tt-tag {
+      font-size: 0.62rem; color: var(--accent);
+      font-family: var(--font-mono); font-weight: 600;
+      margin-top: 0.15rem;
+    }
+    .cp-tt-section { margin-bottom: 0.6rem; }
+    .cp-tt-section:last-child { margin-bottom: 0; }
+    .cp-tt-section-title {
+      font-size: 0.65rem; font-family: var(--font-mono);
+      color: var(--accent-dim); font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.4rem;
+    }
+    .cp-tt-list {
+      list-style: none; padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .cp-tt-list li {
+      font-size: 0.72rem; color: var(--ink2);
+      padding-left: 0.8rem;
+      position: relative;
+      line-height: 1.5;
+    }
+    .cp-tt-list li::before {
+      content: '';
+      position: absolute; left: 0; top: 0.45rem;
+      width: 3px; height: 3px;
+      background: var(--accent-dim);
+      border-radius: 50%;
+    }
+
+    .cp-pos-yanyun { top: 22%; left: 20%; }
+    .cp-pos-genshin { top: 14%; right: 24%; }
+    .cp-pos-nikki { top: 22%; right: 12%; }
+    .cp-pos-emo { top: 55%; left: 28%; }
+    .cp-pos-locke { top: 65%; left: 42%; }
+    .cp-pos-once { bottom: 12%; right: 18%; }
+
+    @keyframes cpFadeIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* 调研反思 */
+    .cp-reflect {
+      flex: 1;
+      display: flex; align-items: stretch; justify-content: center;
+      gap: 1.5rem;
+      width: 100%; max-width: 900px;
+      margin: 0 auto;
+    }
+    .cp-reflect-col {
+      flex: 1;
+      background: url('../assets/map-card-bg.png') center/contain no-repeat;
+      background-size: 100% 100%;
+      padding: 1.5rem 1.3rem;
+      display: flex; flex-direction: column;
+    }
+    .cp-reflect-label {
+      font-family: var(--font-mono); font-size: 0.6rem;
+      font-weight: 700; letter-spacing: 0.15em;
+      padding: 0.25rem 0.7rem;
+      display: inline-block; align-self: flex-start;
+      margin-bottom: 1.2rem;
+    }
+    .cp-reflect-bad {
+      background: rgba(255,250,0,0.08);
+      color: var(--accent-dim);
+      border: 1px solid var(--accent-dim);
+    }
+    .cp-reflect-good {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .cp-reflect-list {
+      display: flex; flex-direction: column; gap: 1rem;
+      flex: 1;
+    }
+    .cp-reflect-item {
+      display: flex; gap: 0.8rem;
+    }
+    .cp-reflect-num {
+      font-family: var(--font-mono); font-size: 0.7rem;
+      color: var(--accent); font-weight: 700;
+      flex-shrink: 0; width: 22px;
+      padding-top: 1px;
+    }
+    .cp-reflect-title {
+      font-size: 0.82rem; font-weight: 600; color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+    .cp-reflect-desc {
+      font-size: 0.72rem; color: var(--muted2);
+      line-height: 1.6;
+    }
+    .cp-reflect-arrow {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      color: var(--accent);
+      opacity: 0.5;
+      flex-shrink: 0;
+      width: 30px;
+    }
+
+    /* 三维评估表 */
+    .cp-eval-table {
+      width: 100%;
+      display: flex; flex-direction: column;
+      flex: 1;
+    }
+    .cp-eval-row {
+      display: flex; align-items: center;
+      border-bottom: 1px solid rgba(156,163,63,0.15);
+    }
+    .cp-eval-head {
+      border-bottom: 1px solid rgba(156,163,63,0.4);
+      padding-bottom: 0.8rem; margin-bottom: 0.3rem;
+    }
+    .cp-eval-cell {
+      flex: 1; padding: 0.9rem 0.8rem;
+      display: flex; flex-direction: column; gap: 0.35rem;
+    }
+    .cp-eval-head .cp-eval-cell {
+      font-family: var(--font-mono); font-size: 0.65rem;
+      color: var(--accent); font-weight: 700;
+      letter-spacing: 0.08em;
+      flex-direction: row; align-items: center; justify-content: center;
+    }
+    .cp-eval-product {
+      flex: 0.8;
+    }
+    .cp-eval-name {
+      font-size: 0.82rem; font-weight: 600; color: var(--ink);
+    }
+    .cp-eval-tag {
+      font-size: 0.62rem; color: var(--muted2);
+    }
+    .cp-rating {
+      width: 100%; height: 3px;
+      background: rgba(156,163,63,0.15);
+      border-radius: 2px; overflow: hidden;
+    }
+    .cp-rating i {
+      display: block; height: 100%;
+      background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+      border-radius: 2px;
+    }
+    .cp-rating-text {
+      font-size: 0.68rem; color: var(--muted2);
+    }
+
+    /* 分维度条形对比图 */
+    .cp-bars-wrap {
+      flex: 1;
+      display: flex;
+      gap: 0.8rem;
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+      align-items: stretch;
+    }
+    .cp-dim-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 0.9rem 0.8rem;
+      transition: all 0.3s var(--ease);
+    }
+    .cp-dim-col:hover {
+      border-color: rgba(156,163,63,0.3);
+      background: rgba(255,250,0,0.02);
+    }
+    .cp-dim-header {
+      text-align: center;
+      margin-bottom: 0.7rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--rule);
+    }
+    .cp-dim-icon {
+      width: 22px; height: 22px;
+      margin: 0 auto 0.35rem;
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cp-dim-icon svg { width: 100%; height: 100%; }
+    .cp-dim-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.2rem;
+    }
+    .cp-dim-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      margin-bottom: 0.2rem;
+    }
+    .cp-dim-title-row .cp-dim-title {
+      margin-bottom: 0;
+    }
+    .cp-dim-info {
+      position: relative;
+      width: 14px; height: 14px;
+      color: var(--muted2);
+      cursor: help;
+      transition: color 0.2s var(--ease);
+    }
+    .cp-dim-info:hover {
+      color: var(--accent);
+    }
+    .cp-dim-info svg { width: 100%; height: 100%; }
+    .cp-dim-info-tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      width: 180px;
+      background: var(--bg2);
+      border: 1px solid rgba(156,163,63,0.35);
+      border-radius: 4px;
+      padding: 0.7rem 0.8rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s var(--ease);
+      z-index: 50;
+      pointer-events: none;
+      text-align: left;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .cp-dim-info:hover .cp-dim-info-tip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+    .cp-dim-info-tip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: rgba(156,163,63,0.35);
+    }
+    .cp-dim-info-title {
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+    .cp-dim-info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 0.5rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .cp-dim-info-list li {
+      font-size: 0.65rem;
+      color: var(--ink2);
+      padding-left: 0.7rem;
+      position: relative;
+      line-height: 1.4;
+    }
+    .cp-dim-info-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.45em;
+      width: 4px;
+      height: 4px;
+      background: var(--accent-dim);
+      border-radius: 50%;
+    }
+    .cp-dim-info-note {
+      font-size: 0.6rem;
+      color: var(--muted2);
+      font-family: var(--font-mono);
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(156,163,63,0.15);
+    }
+    .cp-dim-sub {
+      font-size: 0.58rem;
+      color: var(--muted2);
+      font-family: var(--font-mono);
+      letter-spacing: 0.03em;
+    }
+    .cp-bar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+      justify-content: flex-start;
+    }
+    .cp-bar-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      cursor: pointer;
+      padding: 0.3rem 0.4rem;
+      margin: 0 -0.4rem;
+      border-radius: 3px;
+      transition: all 0.25s var(--ease);
+    }
+    .cp-bar-item:hover {
+      background: rgba(255,255,255,0.03);
+    }
+    .cp-bar-item.highlight {
+      background: rgba(255,250,0,0.06);
+    }
+    .cp-bar-item.dimmed {
+      opacity: 0.25;
+    }
+    .cp-bar-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .cp-bar-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .cp-bar-name {
+      font-size: 0.65rem;
+      color: var(--ink2);
+      font-weight: 500;
+      flex: 1;
+    }
+    .cp-bar-item.highlight .cp-bar-name {
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .cp-bar-track {
+      height: 4px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+    .cp-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      width: 0;
+      transition: width 1s var(--ease);
+    }
+    .cp-bar-score {
+      font-size: 0.58rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent);
+      text-align: right;
+      line-height: 1;
+    }
+
+    /* 选型推演 */
+    .cp-decision {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      gap: 1rem;
+      width: 100%; max-width: 900px;
+      margin: 0 auto;
+    }
+    .cp-decision-item {
+      flex: 1;
+      background: url('../assets/map-card-bg.png') center/contain no-repeat;
+      background-size: 100% 100%;
+      padding: 2rem 1.5rem;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+    .cp-decision-tag {
+      font-family: var(--font-mono); font-size: 0.6rem;
+      font-weight: 700; letter-spacing: 0.1em;
+      padding: 0.2rem 0.6rem;
+      display: inline-block; align-self: flex-start;
+      margin-bottom: 1rem;
+    }
+    .cp-decision-no .cp-decision-tag {
+      background: rgba(255,250,0,0.1);
+      color: var(--accent-dim);
+      border: 1px solid var(--accent-dim);
+    }
+    .cp-decision-yes .cp-decision-tag {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .cp-decision-title {
+      font-family: var(--font-display); font-size: 1rem;
+      font-weight: 700; color: var(--ink);
+      margin-bottom: 1rem;
+    }
+    .cp-decision-reason p {
+      font-size: 0.76rem; color: var(--muted2);
+      line-height: 1.7; margin-bottom: 0.6rem;
+    }
+    .cp-decision-reason p:last-child { margin-bottom: 0; }
+    .cp-decision-arrow {
+      color: var(--accent-dim); opacity: 0.6;
+      flex-shrink: 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* 关键借鉴 */
+    .cp-reference-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      width: 100%;
+      align-content: center;
+    }
+    .cp-ref-card {
+      background: url('../assets/map-card-bg.png') center/contain no-repeat;
+      background-size: 100% 100%;
+      padding: 1.8rem 1.3rem;
+      display: flex; flex-direction: column;
+    }
+    .cp-ref-source { margin-bottom: 1.2rem; }
+    .cp-ref-badge {
+      font-family: var(--font-mono); font-size: 0.6rem;
+      font-weight: 700; letter-spacing: 0.1em;
+      color: var(--accent);
+      display: inline-block;
+      margin-bottom: 0.5rem;
+    }
+    .cp-ref-source h4 {
+      font-family: var(--font-display); font-size: 1rem;
+      font-weight: 700; color: var(--ink);
+    }
+    .cp-ref-list {
+      list-style: none; padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: 0.7rem;
+    }
+    .cp-ref-list li {
+      font-size: 0.76rem; color: var(--ink2);
+      padding-left: 1rem;
+      position: relative;
+      line-height: 1.6;
+    }
+    .cp-ref-list li::before {
+      content: '';
+      position: absolute; left: 0; top: 0.55rem;
+      width: 4px; height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
     @media (max-width: 768px) {
       .version-timeline { padding: 5rem 1.5rem 6rem; }
       .vt-container { flex-direction: column; align-items: center; gap: 1rem; }
       .vt-col { width: 100%; max-width: 300px; }
       .vt-col-icon { width: 30%; top: 8%; right: 8%; }
       .vt-col-content { padding: 10% 10% 8%; }
+      .competitive-panel { padding: 4.5rem 1rem 5rem; }
+      .cp-reference-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .cp-reflect { flex-direction: column; gap: 1rem; }
+      .cp-reflect-arrow { transform: rotate(90deg); height: 20px; }
+      .cp-decision { flex-direction: column; gap: 0.8rem; }
+      .cp-decision-arrow { transform: rotate(90deg); }
+      .cp-eval-head .cp-eval-cell { font-size: 0.55rem; }
+      .cp-eval-cell { padding: 0.6rem 0.4rem; }
+      .cp-game-icon img { width: 40px; height: 40px; }
+    }
     }
 
     @media (max-width: 768px) {
@@ -563,6 +1196,285 @@
           </div>
         </div>
       </div>
+
+      <!-- 竞品分析面板（仅"竞品分析与方案选型"页签显示） -->
+      <div class="competitive-panel" id="competitivePanel">
+        <!-- 全局浮动tooltip（层级最高） -->
+        <div class="cp-game-tooltip" id="cpTooltip">
+          <div class="cp-tt-header">
+            <div class="cp-tt-avatar" id="cpTooltipAvatar"></div>
+            <div class="cp-tt-info">
+              <div class="cp-tt-name" id="cpTooltipName"></div>
+              <div class="cp-tt-tag" id="cpTooltipTag"></div>
+            </div>
+          </div>
+          <div class="cp-tt-body" id="cpTooltipBody"></div>
+        </div>
+        <div class="cp-inner">
+
+          <!-- 页1：选品逻辑 -->
+          <div class="cp-page active" data-cp-page="0">
+            <div class="cp-header">
+              <div class="cp-section-label">01 / SCOPE</div>
+              <h3 class="cp-section-title">调研范围与选品逻辑</h3>
+              <p class="cp-section-desc">6 款竞品，按核心玩法划分为四个象限，悬停图标查看详细调研内容</p>
+            </div>
+            <div class="cp-matrix">
+              <div class="cp-matrix-row cp-matrix-top">
+                <div class="cp-quad cp-quad-top-left">
+                  <div class="cp-quad-label">社交主城 / 副本</div>
+                </div>
+                <div class="cp-quad cp-quad-top-right">
+                  <div class="cp-quad-label">探索 / 剧情 / 任务</div>
+                  <div class="cp-quad-hl">定位</div>
+                </div>
+              </div>
+              <div class="cp-matrix-row cp-matrix-bottom">
+                <div class="cp-quad cp-quad-bot-left">
+                  <div class="cp-quad-label">捉宠收集</div>
+                </div>
+                <div class="cp-quad cp-quad-bot-right">
+                  <div class="cp-quad-label">生存建造、资源收集</div>
+                </div>
+              </div>
+              <!-- 游戏图标点位层 -->
+              <div class="cp-game-points">
+                <div class="cp-game-point cp-pos-yanyun" style="--delay:0.1s" data-game="yanyun">
+                  <div class="cp-game-avatar cp-avatar-yanyun">燕</div>
+                </div>
+                <div class="cp-game-point cp-pos-genshin" style="--delay:0.2s" data-game="genshin">
+                  <div class="cp-game-avatar cp-avatar-genshin">原</div>
+                </div>
+                <div class="cp-game-point cp-pos-nikki" style="--delay:0.25s" data-game="nikki">
+                  <div class="cp-game-avatar cp-avatar-nikki">暖</div>
+                </div>
+                <div class="cp-game-point cp-pos-emo" style="--delay:0.35s" data-game="emo">
+                  <div class="cp-game-avatar cp-avatar-emo">伊</div>
+                </div>
+                <div class="cp-game-point cp-pos-locke" style="--delay:0.45s" data-game="locke">
+                  <div class="cp-game-avatar cp-avatar-locke">洛</div>
+                </div>
+                <div class="cp-game-point cp-pos-once" style="--delay:0.55s" data-game="once">
+                  <div class="cp-game-avatar cp-avatar-once">七</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页2：三维评估 -->
+          <div class="cp-page" data-cp-page="1">
+            <div class="cp-header">
+              <div class="cp-section-label">02 / EVALUATION</div>
+              <h3 class="cp-section-title">三维度横向评估</h3>
+              <p class="cp-section-desc">信息架构 · 交互效率 · 探索驱动力——分维度条形对比，各产品能力差异一目了然</p>
+            </div>
+            <div class="cp-bars-wrap">
+              <!-- 维度1：信息架构 -->
+              <div class="cp-dim-col">
+                <div class="cp-dim-header">
+                  <div class="cp-dim-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                  </div>
+                  <div class="cp-dim-title-row">
+                    <div class="cp-dim-title">信息架构</div>
+                    <div class="cp-dim-info">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      <div class="cp-dim-info-tip">
+                        <div class="cp-dim-info-title">评估维度</div>
+                        <ul class="cp-dim-info-list">
+                          <li>地图功能模块数量</li>
+                          <li>信息层级深度</li>
+                          <li>分类筛选系统丰富度</li>
+                          <li>承载的信息量密度</li>
+                        </ul>
+                        <div class="cp-dim-info-note">得分越高 = 地图承载的信息越丰富</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cp-dim-sub">层级深度 · 信息密度</div>
+                </div>
+                <div class="cp-bar-list" data-dim="info">
+                  <div class="cp-bar-item" data-game="yanyun" data-score="90">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#8c64b4"></span><span class="cp-bar-name">燕云十六声</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:90%;background:linear-gradient(90deg,rgba(140,100,180,0.3),rgba(140,100,180,0.9))"></div></div>
+                    <div class="cp-bar-score">90</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="genshin" data-score="70">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#fffa00"></span><span class="cp-bar-name">原神</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:70%;background:linear-gradient(90deg,rgba(255,250,0,0.3),rgba(255,250,0,0.9))"></div></div>
+                    <div class="cp-bar-score">70</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="nikki" data-score="65">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#b464b4"></span><span class="cp-bar-name">无限暖暖</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:65%;background:linear-gradient(90deg,rgba(180,100,180,0.3),rgba(180,100,180,0.9))"></div></div>
+                    <div class="cp-bar-score">65</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="emo" data-score="55">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#5eaa78"></span><span class="cp-bar-name">伊莫</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:55%;background:linear-gradient(90deg,rgba(94,170,120,0.3),rgba(94,170,120,0.9))"></div></div>
+                    <div class="cp-bar-score">55</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="locke" data-score="50">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#9ca33f"></span><span class="cp-bar-name">洛克王国世界</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:50%;background:linear-gradient(90deg,rgba(156,163,63,0.3),rgba(156,163,63,0.9))"></div></div>
+                    <div class="cp-bar-score">50</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 维度2：交互效率 -->
+              <div class="cp-dim-col">
+                <div class="cp-dim-header">
+                  <div class="cp-dim-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  </div>
+                  <div class="cp-dim-title-row">
+                    <div class="cp-dim-title">交互效率</div>
+                    <div class="cp-dim-info">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      <div class="cp-dim-info-tip">
+                        <div class="cp-dim-info-title">评估维度</div>
+                        <ul class="cp-dim-info-list">
+                          <li>核心操作路径长度</li>
+                          <li>新手上手学习成本</li>
+                          <li>操作直觉性与符合度</li>
+                          <li>误触率与容错性</li>
+                        </ul>
+                        <div class="cp-dim-info-note">得分越高 = 用起来越顺手</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cp-dim-sub">操作路径 · 上手门槛</div>
+                </div>
+                <div class="cp-bar-list" data-dim="efficiency">
+                  <div class="cp-bar-item" data-game="nikki" data-score="95">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#b464b4"></span><span class="cp-bar-name">无限暖暖</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:95%;background:linear-gradient(90deg,rgba(180,100,180,0.3),rgba(180,100,180,0.9))"></div></div>
+                    <div class="cp-bar-score">95</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="genshin" data-score="90">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#fffa00"></span><span class="cp-bar-name">原神</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:90%;background:linear-gradient(90deg,rgba(255,250,0,0.3),rgba(255,250,0,0.9))"></div></div>
+                    <div class="cp-bar-score">90</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="emo" data-score="75">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#5eaa78"></span><span class="cp-bar-name">伊莫</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:75%;background:linear-gradient(90deg,rgba(94,170,120,0.3),rgba(94,170,120,0.9))"></div></div>
+                    <div class="cp-bar-score">75</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="locke" data-score="70">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#9ca33f"></span><span class="cp-bar-name">洛克王国世界</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:70%;background:linear-gradient(90deg,rgba(156,163,63,0.3),rgba(156,163,63,0.9))"></div></div>
+                    <div class="cp-bar-score">70</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="yanyun" data-score="60">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#8c64b4"></span><span class="cp-bar-name">燕云十六声</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:60%;background:linear-gradient(90deg,rgba(140,100,180,0.3),rgba(140,100,180,0.9))"></div></div>
+                    <div class="cp-bar-score">60</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 维度3：探索驱动力 -->
+              <div class="cp-dim-col">
+                <div class="cp-dim-header">
+                  <div class="cp-dim-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88"/></svg>
+                  </div>
+                  <div class="cp-dim-title-row">
+                    <div class="cp-dim-title">探索驱动力</div>
+                    <div class="cp-dim-info">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      <div class="cp-dim-info-tip">
+                        <div class="cp-dim-info-title">评估维度</div>
+                        <ul class="cp-dim-info-list">
+                          <li>收集品类型与数量</li>
+                          <li>探索反馈的即时性</li>
+                          <li>隐藏内容的吸引力</li>
+                          <li>核心玩法与地图的绑定度</li>
+                        </ul>
+                        <div class="cp-dim-info-note">得分越高 = 玩家越愿意探索</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cp-dim-sub">收集欲望 · 探索动机</div>
+                </div>
+                <div class="cp-bar-list" data-dim="exploration">
+                  <div class="cp-bar-item" data-game="genshin" data-score="95">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#fffa00"></span><span class="cp-bar-name">原神</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:95%;background:linear-gradient(90deg,rgba(255,250,0,0.3),rgba(255,250,0,0.9))"></div></div>
+                    <div class="cp-bar-score">95</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="emo" data-score="90">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#5eaa78"></span><span class="cp-bar-name">伊莫</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:90%;background:linear-gradient(90deg,rgba(94,170,120,0.3),rgba(94,170,120,0.9))"></div></div>
+                    <div class="cp-bar-score">90</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="yanyun" data-score="85">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#8c64b4"></span><span class="cp-bar-name">燕云十六声</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:85%;background:linear-gradient(90deg,rgba(140,100,180,0.3),rgba(140,100,180,0.9))"></div></div>
+                    <div class="cp-bar-score">85</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="locke" data-score="85">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#9ca33f"></span><span class="cp-bar-name">洛克王国世界</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:85%;background:linear-gradient(90deg,rgba(156,163,63,0.3),rgba(156,163,63,0.9))"></div></div>
+                    <div class="cp-bar-score">85</div>
+                  </div>
+                  <div class="cp-bar-item" data-game="nikki" data-score="80">
+                    <div class="cp-bar-label"><span class="cp-bar-dot" style="background:#b464b4"></span><span class="cp-bar-name">无限暖暖</span></div>
+                    <div class="cp-bar-track"><div class="cp-bar-fill" style="width:80%;background:linear-gradient(90deg,rgba(180,100,180,0.3),rgba(180,100,180,0.9))"></div></div>
+                    <div class="cp-bar-score">80</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页3：选型推演 -->
+          <div class="cp-page" data-cp-page="2">
+            <div class="cp-header">
+              <div class="cp-section-label">03 / DECISION</div>
+              <h3 class="cp-section-title">选型推演：我们走哪条路</h3>
+              <p class="cp-section-desc">三条路线的排除与选择，最终落在"轻量架构 + 深度探索 + 捉宠核心"的交集上</p>
+            </div>
+            <div class="cp-decision">
+              <div class="cp-decision-item cp-decision-no">
+                <div class="cp-decision-tag">排除</div>
+                <div class="cp-decision-title">纯 MMO 重架构路线</div>
+                <div class="cp-decision-reason">
+                  <p>燕云式的多层级筛选 + 任务/挑战/技能全功能入口，信息密度高但学习成本大。</p>
+                  <p>Palworld 玩家的核心目标是捉宠与建造，而非任务推进，过重的 MMO 架构会喧宾夺主。</p>
+                </div>
+              </div>
+              <div class="cp-decision-arrow">
+                <svg viewBox="0 0 40 40" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="12 8 20 20 12 32"></polyline><polyline points="22 8 30 20 22 32"></polyline></svg>
+              </div>
+              <div class="cp-decision-item cp-decision-no">
+                <div class="cp-decision-tag">排除</div>
+                <div class="cp-decision-title">生存建造工具化路线</div>
+                <div class="cp-decision-reason">
+                  <p>七日世界式的打点筛选 + 资源/基地标记，地图退化为纯工具面板。</p>
+                  <p>筛选器屏蔽所有信息只能打点的交互，牺牲了探索的沉浸感，与捉宠探索的核心体验相悖。</p>
+                </div>
+              </div>
+              <div class="cp-decision-arrow">
+                <svg viewBox="0 0 40 40" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="12 8 20 20 12 32"></polyline><polyline points="22 8 30 20 22 32"></polyline></svg>
+              </div>
+              <div class="cp-decision-item cp-decision-yes">
+                <div class="cp-decision-tag">选择</div>
+                <div class="cp-decision-title">轻架构 + 深探索 + 捉宠核心</div>
+                <div class="cp-decision-reason">
+                  <p>以原神/暖暖的极简交互为骨架，保证上手门槛低、操作直觉。</p>
+                  <p>融合伊莫/洛克的宠物收集驱动，把捉宠体验做成地图探索的核心反馈。</p>
+                  <p>从燕云选择性吸收任务与收集系统，作为中后期内容填充，而非核心骨架。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div><!-- display-area -->
 
   <script>
@@ -576,7 +1488,9 @@
         label: 'MAP // SYSTEM',
         pages: [
           { subtitle: '地图版本优化历程', tags: ['版本迭代', '需求分析', '体验优化'], hasTimeline: true },
-          { subtitle: '竞品分析与方案选型', tags: ['竞品分析', '方案对比', '选型决策'] },
+          { subtitle: '竞品分析与方案选型_01', tags: ['竞品分析', '选品逻辑', '四象限定位'], competitiveIdx: 0 },
+          { subtitle: '竞品分析与方案选型_02', tags: ['竞品分析', '三维评估', '横向对比'], competitiveIdx: 1 },
+          { subtitle: '竞品分析与方案选型_03', tags: ['竞品分析', '选型推演', '决策路径'], competitiveIdx: 2 },
           { subtitle: '标识体系与层级构建', tags: ['标识体系', '层级架构', '分类系统'] },
           { subtitle: '信息模块化设计', tags: ['信息模块', '交互语言', '信息层级'] },
           { subtitle: '系统耦合防范措施', tags: ['解耦设计', '组件规范', '边界定义'] }
@@ -799,21 +1713,228 @@
       } else {
         vt.classList.remove('active');
       }
+
+      // 竞品分析面板显隐 + 子页切换
+      var cp = document.getElementById('competitivePanel');
+      var pageData = sys.pages[curPage];
+      if (pageData && pageData.competitiveIdx !== undefined) {
+        cp.classList.add('active');
+        var idx = pageData.competitiveIdx;
+        cpPages.forEach(function(p, i) { p.classList.toggle('active', i === idx); });
+      } else {
+        cp.classList.remove('active');
+      }
+    }
+
+    var cpPages = document.querySelectorAll('.cp-page');
+
+    /* ===== 竞品tooltip 数据与交互 ===== */
+    var cpTooltipData = {
+      yanyun: {
+        name: '燕云十六声', tag: 'MMO · 任务收集',
+        avatarClass: 'cp-avatar-yanyun', avatarText: '燕',
+        sections: [
+          { title: '核心参考', items: ['多层级筛选器体系', '地区区块切换器', '探索度进度量化', '标记系统分类规范'] },
+          { title: '交互特点', items: ['拖拽过地图自动关闭筛选器', '空白区域双击关闭侧窗', '单人/多人双模式切换'] }
+        ]
+      },
+      genshin: {
+        name: '原神', tag: '开放世界 · 交互标杆',
+        avatarClass: 'cp-avatar-genshin', avatarText: '原',
+        sections: [
+          { title: '核心参考', items: ['极简信息架构，扁平层级', '直觉式交互，学习成本极低', '探索驱动力设计天花板', '传送锚点 + 七天神像体系'] },
+          { title: '交互特点', items: ['点击空白关闭面板', '缩放自动定位当前区域', '分层筛选简洁高效'] }
+        ]
+      },
+      nikki: {
+        name: '无限暖暖', tag: '开放世界 · 收集交互',
+        avatarClass: 'cp-avatar-nikki', avatarText: '暖',
+        sections: [
+          { title: '核心参考', items: ['拖拽即筛选的轻量交互', '进入地图自动触发定位', '收集度作为探索反馈', '未解锁区域迷雾区分'] },
+          { title: '交互特点', items: ['点击空白拖拽关闭侧窗', '对应一级区域板块后再次出现', '缩放后默认定位玩家所在区域'] }
+        ]
+      },
+      emo: {
+        name: '伊莫', tag: '捉宠 · 探索（未上线）',
+        avatarClass: 'cp-avatar-emo', avatarText: '伊',
+        sections: [
+          { title: '核心参考', items: ['宠物收集度作为核心反馈', '区域图鉴与地图联动', '捉宠流程与地图标记结合'] },
+          { title: '交互特点', items: ['聚焦捉宠的专项交互设计', '宠物分布可视化呈现', '稀有度标记层级清晰'] }
+        ]
+      },
+      locke: {
+        name: '洛克王国世界', tag: '捉宠 · 探索',
+        avatarClass: 'cp-avatar-locke', avatarText: '洛',
+        sections: [
+          { title: '核心参考', items: ['二级区域展开查看', '图鉴驱动的探索体系', '图标化筛选操作', '自动 / 手动布局切换'] },
+          { title: '交互特点', items: ['一级地图概览 + 二级详情', '筛选器一键展开收起', '宠物点位密集但不拥挤'] }
+        ]
+      },
+      once: {
+        name: '七日世界', tag: '生存建造 · 资源收集',
+        avatarClass: 'cp-avatar-once', avatarText: '七',
+        sections: [
+          { title: '核心参考', items: ['资源点标记与筛选体系', '基地建造位置标记', '危险区域等级划分'] },
+          { title: '交互特点', items: ['开启筛选器屏蔽所有信息', '关闭只能用按钮，空白无响应', '工具化倾向，沉浸感弱'] }
+        ]
+      }
+    };
+
+    var cpTooltipEl = document.getElementById('cpTooltip');
+    var cpTooltipAvatar = document.getElementById('cpTooltipAvatar');
+    var cpTooltipName = document.getElementById('cpTooltipName');
+    var cpTooltipTag = document.getElementById('cpTooltipTag');
+    var cpTooltipBody = document.getElementById('cpTooltipBody');
+
+    function showCpTooltip(gameKey, targetEl) {
+      var data = cpTooltipData[gameKey];
+      if (!data) return;
+
+      // 填充内容
+      cpTooltipAvatar.className = 'cp-tt-avatar ' + data.avatarClass;
+      cpTooltipAvatar.textContent = data.avatarText;
+      cpTooltipName.textContent = data.name;
+      cpTooltipTag.textContent = data.tag;
+
+      var bodyHtml = '';
+      data.sections.forEach(function(sec) {
+        bodyHtml += '<div class="cp-tt-section"><div class="cp-tt-section-title">' + sec.title + '</div><ul class="cp-tt-list">';
+        sec.items.forEach(function(item) {
+          bodyHtml += '<li>' + item + '</li>';
+        });
+        bodyHtml += '</ul></div>';
+      });
+      cpTooltipBody.innerHTML = bodyHtml;
+
+      // 先显示以获取尺寸
+      cpTooltipEl.classList.add('show');
+      cpTooltipEl.style.visibility = 'hidden';
+
+      // 计算位置
+      var rect = targetEl.getBoundingClientRect();
+      var tipW = cpTooltipEl.offsetWidth;
+      var tipH = cpTooltipEl.offsetHeight;
+      var gap = 12;
+
+      // 优先显示在右侧，空间不够则左侧，再不够则上下
+      var left, top;
+      var posClass = 'pos-right';
+
+      var rightSpace = window.innerWidth - rect.right - gap;
+      var leftSpace = rect.left - gap;
+      var topSpace = rect.top - gap;
+      var bottomSpace = window.innerHeight - rect.bottom - gap;
+
+      if (rightSpace >= tipW) {
+        // 右侧空间足够
+        left = rect.right + gap;
+        top = rect.top + rect.height / 2 - tipH / 2;
+        posClass = 'pos-right';
+      } else if (leftSpace >= tipW) {
+        // 左侧空间足够
+        left = rect.left - tipW - gap;
+        top = rect.top + rect.height / 2 - tipH / 2;
+        posClass = 'pos-left';
+      } else if (topSpace >= tipH) {
+        // 上方空间足够
+        left = rect.left + rect.width / 2 - tipW / 2;
+        top = rect.top - tipH - gap;
+        posClass = 'pos-top';
+      } else {
+        // 底部兜底
+        left = rect.left + rect.width / 2 - tipW / 2;
+        top = rect.bottom + gap;
+        posClass = 'pos-bottom';
+      }
+
+      // 边界修正
+      if (left < 10) left = 10;
+      if (left + tipW > window.innerWidth - 10) left = window.innerWidth - tipW - 10;
+      if (top < 10) top = 10;
+      if (top + tipH > window.innerHeight - 10) top = window.innerHeight - tipH - 10;
+
+      cpTooltipEl.style.left = left + 'px';
+      cpTooltipEl.style.top = top + 'px';
+      cpTooltipEl.className = 'cp-game-tooltip show ' + posClass;
+      cpTooltipEl.style.visibility = 'visible';
+    }
+
+    function hideCpTooltip() {
+      cpTooltipEl.classList.remove('show');
+    }
+
+    document.querySelectorAll('.cp-game-point').forEach(function(point) {
+      point.addEventListener('mouseenter', function() {
+        showCpTooltip(this.dataset.game, this);
+      });
+      point.addEventListener('mouseleave', function() {
+        hideCpTooltip();
+      });
+    });
+
+    /* ===== 条形图交互：hover联动高亮 ===== */
+    // 悬停某个游戏的条形时，三个维度中该游戏的条形同时高亮，其他变暗
+    document.querySelectorAll('.cp-bar-item').forEach(function(item) {
+      item.addEventListener('mouseenter', function() {
+        var game = this.dataset.game;
+        document.querySelectorAll('.cp-bar-item').forEach(function(el) {
+          if (el.dataset.game === game) {
+            el.classList.add('highlight');
+            el.classList.remove('dimmed');
+          } else {
+            el.classList.add('dimmed');
+            el.classList.remove('highlight');
+          }
+        });
+      });
+      item.addEventListener('mouseleave', function() {
+        document.querySelectorAll('.cp-bar-item').forEach(function(el) {
+          el.classList.remove('highlight', 'dimmed');
+        });
+      });
+    });
+
+    // 条形图入场动画
+    function animateBars() {
+      var fills = document.querySelectorAll('.cp-bar-fill');
+      fills.forEach(function(fill, idx) {
+        var targetWidth = fill.style.width;
+        fill.style.width = '0%';
+        setTimeout(function() {
+          fill.style.width = targetWidth;
+        }, 100 + idx * 60);
+      });
     }
 
     /* ===== 事件绑定 ===== */
     navItems.forEach(function(item) {
       item.addEventListener('click', function() { switchSystem(parseInt(this.dataset.index)); });
     });
-    document.getElementById('pagePrev').addEventListener('click', function() { flipPage(curPage - 1); });
-    document.getElementById('pageNext').addEventListener('click', function() { flipPage(curPage + 1); });
+    document.getElementById('pagePrev').addEventListener('click', function() {
+      flipPage(curPage - 1);
+      checkBarAnim();
+    });
+    document.getElementById('pageNext').addEventListener('click', function() {
+      flipPage(curPage + 1);
+      checkBarAnim();
+    });
     mobileToggle.addEventListener('click', function() { sideNav.classList.toggle('open'); });
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'ArrowLeft') { e.preventDefault(); flipPage(curPage - 1); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); flipPage(curPage + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); flipPage(curPage - 1); checkBarAnim(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); flipPage(curPage + 1); checkBarAnim(); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); switchSystem(curSys - 1); }
       else if (e.key === 'ArrowDown') { e.preventDefault(); switchSystem(curSys + 1); }
     });
+
+    // 检查是否需要播放条形图动画
+    var barAnimPlayed = false;
+    function checkBarAnim() {
+      // 竞品分析模块（第4个系统，index=3）的第2页（cp-page=1）
+      if (curSys === 3 && curPage === 1 && !barAnimPlayed) {
+        barAnimPlayed = true;
+        setTimeout(animateBars, 250);
+      }
+    }
 
     /* ===== 初始化 ===== */
     switchSystem(0);
