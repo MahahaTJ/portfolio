@@ -924,11 +924,33 @@
     });
     startBannerAutoplay();
 
+    /* ===== 离开页面时记录当前 slide ===== */
+    document.querySelectorAll('a[href]').forEach(function(a) {
+      a.addEventListener('click', function() {
+        sessionStorage.setItem('lastSlide', current);
+      });
+    });
+
     /* ===== 初始化 ===== */
     updateUI();
 
-    /* ===== 从项目子页返回时自动定位到项目作品 ===== */
-    if (location.hash === '#projects') {
+    // 页面恢复时强制解锁（防止 bfcache/visibilitychange 导致锁死）
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) { locked = false; wheelSum = 0; }
+    });
+    window.addEventListener('pageshow', function(e) {
+      if (e.persisted) { locked = false; wheelSum = 0; }
+    });
+
+    /* ===== 页面加载时恢复上次离开的 slide ===== */
+    var savedSlide = sessionStorage.getItem('lastSlide');
+    if (savedSlide !== null) {
+      var idx = parseInt(savedSlide, 10);
+      if (idx >= 0 && idx < total) {
+        goTo(idx, true);
+        sessionStorage.removeItem('lastSlide');
+      }
+    } else if (location.hash === '#projects') {
       goTo(2);
       history.replaceState(null, '', location.pathname + location.search);
     }
