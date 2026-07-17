@@ -379,6 +379,7 @@
       display: none;
       flex: 1;
       flex-direction: column;
+      justify-content: center;
       animation: contentFadeIn 0.4s var(--ease) both;
     }
     .cp-page.active { display: flex; }
@@ -403,7 +404,7 @@
 
     /* 选品矩阵 */
     .cp-matrix {
-      flex: 1; position: relative;
+      flex: 0 1 auto; position: relative;
       width: 100%; max-width: 700px;
       margin: 0 auto;
       aspect-ratio: 16/10;
@@ -680,16 +681,18 @@
 
     /* 分维度条形对比图 */
     .cp-bars-wrap {
-      flex: 1;
+      flex: 0 1 auto;
       display: flex;
       gap: 0.8rem;
       width: 100%;
       max-width: 850px;
       margin: 0 auto;
       align-items: stretch;
+      align-self: center;
     }
     .cp-dim-col {
-      flex: 1;
+      flex: 1 1 0;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       background: rgba(255,255,255,0.02);
@@ -825,7 +828,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      flex: 1;
+      flex: 0 0 auto;
       justify-content: flex-start;
     }
     .cp-bar-item {
@@ -891,7 +894,7 @@
 
     /* 选型推演 */
     .cp-decision {
-      flex: 1;
+      flex: 0 1 auto;
       display: flex; align-items: center; justify-content: center;
       gap: 1rem;
       width: 100%; max-width: 900px;
@@ -988,7 +991,29 @@
       .vt-col { width: 100%; max-width: 300px; }
       .vt-col-icon { width: 30%; top: 8%; right: 8%; }
       .vt-col-content { padding: 10% 10% 8%; }
-      .competitive-panel { padding: 4.5rem 1rem 5rem; }
+      .competitive-panel {
+        padding: 4.5rem 1rem 5rem;
+        justify-content: flex-start;
+        overflow-y: auto;
+      }
+      .cp-inner { height: auto; min-height: 100%; }
+      .cp-page { justify-content: flex-start; }
+      .cp-page .cp-header { margin-top: 1rem; }
+      .cp-bars-wrap {
+        flex-direction: column;
+        width: min(100%, 420px);
+        gap: 0.8rem;
+        padding-bottom: 1rem;
+      }
+      .cp-dim-col { flex: none; width: 100%; }
+      .display-area:has(.competitive-panel.active) .display-title-area,
+      .display-area:has(.competitive-panel.active) .display-counter,
+      .display-area:has(.competitive-panel.active) .display-tag {
+        display: none;
+      }
+      .display-area:has(.competitive-panel.active) .competitive-panel {
+        padding-top: 1.25rem;
+      }
       .cp-reference-grid { grid-template-columns: 1fr; gap: 1rem; }
       .cp-reflect { flex-direction: column; gap: 1rem; }
       .cp-reflect-arrow { transform: rotate(90deg); height: 20px; }
@@ -998,6 +1023,20 @@
       .cp-eval-cell { padding: 0.6rem 0.4rem; }
       .cp-game-icon img { width: 40px; height: 40px; }
     }
+    }
+
+    /* 低高度桌面端压缩纵向节奏，仍保持整组内容居中且不溢出 */
+    @media (min-width: 769px) and (max-height: 760px) {
+      .competitive-panel { padding-top: 4rem; padding-bottom: 4rem; }
+      .cp-page[data-cp-page="1"] .cp-header { margin-bottom: 0.7rem; }
+      .cp-dim-col { padding-top: 0.65rem; padding-bottom: 0.65rem; }
+      .cp-dim-header { margin-bottom: 0.4rem; padding-bottom: 0.45rem; }
+      .cp-bar-list { gap: 0.25rem; }
+      .cp-bar-item {
+        gap: 0.18rem;
+        padding-top: 0.18rem;
+        padding-bottom: 0.18rem;
+      }
     }
 
     @media (max-width: 768px) {
