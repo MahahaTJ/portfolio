@@ -19,7 +19,7 @@
       --font-mono: 'Space Grotesk', 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
       --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
       --dur: 0.3s;
-      --nav-w: 280px;
+      --nav-w: 230px;
       --nav-collapsed-w: 64px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -156,14 +156,23 @@
 
     /* --- 右侧展示区 --- */
     .display-area {
-      flex: 1; position: relative; overflow: hidden;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex: 1; position: relative; overflow-y: auto; overflow-x: hidden;
+      scroll-behavior: smooth;
     }
+    .display-area::before {
+      content: ''; position: fixed; top: 56px; left: var(--nav-w); right: 0; height: 40px;
+      background: linear-gradient(to bottom, var(--bg), transparent);
+      z-index: 10; pointer-events: none;
+      transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .side-nav.collapsed + .display-area::before { left: var(--nav-collapsed-w); }
     .scan-line {
-      position: absolute; left: 0; right: 0; height: 1px; z-index: 3;
+      position: fixed; left: var(--nav-w); right: 0; height: 1px; z-index: 3;
       background: linear-gradient(90deg, transparent, var(--accent), transparent);
       opacity: 0.15; animation: scanLine 6s linear infinite; pointer-events: none;
+      transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    .side-nav.collapsed ~ .display-area .scan-line { left: var(--nav-collapsed-w); }
     .hud-ring {
       position: absolute; border: 1px solid var(--rule); border-radius: 50%;
       opacity: 0.15; pointer-events: none;
@@ -180,20 +189,160 @@
       width: 280px; height: auto; opacity: 0.85;
       filter: contrast(1.1) brightness(1.05); animation: fadeIn 1.5s var(--ease) both;
     }
-    .particles { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+    .particles { position: fixed; inset: 0; z-index: 4; pointer-events: none; }
     .particle-dot {
       position: absolute; width: 2px; height: 2px; background: var(--accent);
       border-radius: 50%; opacity: 0; will-change: transform;
     }
 
-    /* 右侧信息覆盖 - 带翻页过渡 */
-    .display-info { position: absolute; z-index: 5; }
-    .display-title-area { top: 2rem; left: 2.5rem; }
-    .display-title-label {
-      font-family: var(--font-mono); font-size: 0.58rem; color: var(--accent);
-      font-weight: 700; letter-spacing: 0.15em; margin-bottom: 0.5rem;
+    /* 模块section */
+    .module-section {
+      min-height: calc(100vh - 56px);
+      padding: 3rem 3rem 2rem;
+      display: flex; flex-direction: column;
+      position: relative;
+      border-bottom: 1px solid var(--rule);
+    }
+    .module-section:last-child { border-bottom: none; }
+
+    /* 底部滚动提示 */
+    .scroll-hint {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(calc(-50% + 110px));
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      opacity: 0.4;
+      pointer-events: none;
+      transition: opacity 0.5s var(--ease);
+    }
+    .scroll-hint.hidden {
+      opacity: 0;
+    }
+    .scroll-hint-text {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+    .scroll-hint-arrow {
+      color: var(--accent);
+      animation: scrollBounce 2s ease-in-out infinite;
+    }
+    @keyframes scrollBounce {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(6px); opacity: 1; }
+    }
+    .module-header {
+      margin-bottom: 1.5rem;
+      flex-shrink: 0;
+    }
+    .module-label {
+      font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent);
+      font-weight: 700; letter-spacing: 0.15em; margin-bottom: 0.4rem;
       display: flex; align-items: center; gap: 0.6rem;
     }
+    .module-label::before {
+      content: ''; width: 24px; height: 1px; background: var(--accent); opacity: 0.6;
+    }
+    .module-title {
+      font-family: var(--font-display); font-size: 1.8rem; font-weight: 700;
+      color: var(--ink); letter-spacing: 0.02em; line-height: 1.2;
+    }
+    .module-sub {
+      font-size: 0.85rem; color: var(--muted); margin-top: 0.4rem;
+    }
+    .module-content {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 模块内翻页 - 多页模块导航 */
+    .module-nav {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      z-index: 10;
+    }
+    .module-nav-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--rule);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--dur) var(--ease);
+    }
+    .module-nav-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(255,250,0,0.06);
+    }
+    .module-nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .module-nav-dots {
+      display: flex; gap: 0.6rem;
+      align-items: center;
+    }
+    .module-nav-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: transparent;
+      border: 1px solid var(--rule);
+      cursor: pointer;
+      transition: all var(--dur) var(--ease);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted2);
+    }
+    .module-nav-dot:hover {
+      border-color: var(--muted);
+      color: var(--muted);
+    }
+    .module-nav-dot.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+      font-weight: 700;
+    }
+
+    /* 面板内容 - 调整为在slide内布局 */
+    .timeline-panel, .competitive-panel, .mark-panel, .info-module-panel, .coupling-panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .timeline-panel.active, .competitive-panel.active, .mark-panel.active,
+    .info-module-panel.active, .coupling-panel.active {
+      display: flex;
+    }
+
+    /* 右侧信息覆盖 - 移除旧的绝对定位 */
+    .display-info { position: absolute; z-index: 5; }
+    .display-title-area { display: none; }
+    .display-tag { display: none; }
+    .display-counter { display: none; }
     .display-title-label::before {
       content: ''; display: block; width: 20px; height: 1px; background: var(--accent);
     }
@@ -272,10 +421,11 @@
 
     /* === 版本时间轴 === */
     .version-timeline {
-      position: absolute; inset: 0; z-index: 1;
-      display: none;
+      width: 100%;
+      height: 100%;
+      display: flex;
       flex-direction: column; align-items: center; justify-content: center;
-      padding: 5rem 3rem 4rem;
+      padding: 1rem;
     }
     .version-timeline.active { display: flex; }
 
@@ -361,12 +511,1355 @@
 
     /* === 竞品分析面板 === */
     .competitive-panel {
-      position: absolute; inset: 0; z-index: 2;
-      display: none;
+      width: 100%;
+      height: 100%;
+      display: flex;
       flex-direction: column; align-items: center; justify-content: center;
-      padding: 4.5rem 2rem 5rem;
+      padding: 1rem 2rem;
     }
     .competitive-panel.active { display: flex; }
+
+    /* 标识体系面板 */
+    .mark-panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .mark-panel.active { display: flex; }
+    .mark-inner {
+      width: 100%; max-width: 850px;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      flex: 0 1 auto;
+    }
+    .mark-page {
+      display: none;
+      animation: contentFadeIn 0.4s var(--ease) both;
+    }
+    .mark-page.active { display: block; }
+
+    /* 信息模块化设计面板 */
+    .info-module-panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .info-module-panel.active { display: flex; }
+    .im-page {
+      display: none;
+      animation: contentFadeIn 0.4s var(--ease) both;
+      width: 100%;
+    }
+    .im-page.active { display: block; }
+
+    /* 页2：交互设计语言体系 */
+    .im-lang-wrap {
+      width: 100%;
+      max-width: 880px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .im-lang-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .im-lang-sub {
+      font-size: 0.85rem;
+      color: var(--muted2);
+      text-align: center;
+      margin-top: -0.5rem;
+    }
+    .im-lang-grid {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.3rem;
+    }
+    .im-lang-card {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .im-lang-card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--rule);
+    }
+    .im-lang-icon {
+      font-size: 1.3rem;
+    }
+    .im-lang-card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .im-lang-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .im-lang-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .im-lang-item-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .im-lang-item-desc {
+      font-size: 0.78rem;
+      color: var(--muted2);
+      line-height: 1.4;
+    }
+    .im-lang-principle {
+      background: linear-gradient(135deg, rgba(156,163,63,0.08), rgba(156,163,63,0.02));
+      border: 1px solid rgba(156,163,63,0.2);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+    }
+    .im-lang-prin-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+    .im-lang-prin-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+    }
+    .im-lang-prin-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .im-lang-prin-num {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0.8;
+    }
+    .im-lang-prin-text {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* 页3：场景切换与资源整合 */
+    .im-scene-wrap {
+      width: 100%;
+      max-width: 880px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .im-scene-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .im-scene-sub {
+      font-size: 0.85rem;
+      color: var(--muted2);
+      text-align: center;
+      margin-top: -0.5rem;
+    }
+    .im-scene-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .im-scene-sec-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      padding-left: 0.5rem;
+      border-left: 3px solid var(--accent);
+    }
+    .im-scene-cards {
+      display: flex;
+      gap: 0.8rem;
+    }
+    .im-scene-card {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      text-align: center;
+      transition: all 0.3s var(--ease);
+    }
+    .im-scene-card:hover {
+      border-color: var(--accent);
+      background: rgba(156,163,63,0.05);
+      transform: translateY(-2px);
+    }
+    .im-scene-card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.2rem;
+    }
+    .im-scene-card-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .im-scene-card-desc {
+      font-size: 0.75rem;
+      color: var(--muted2);
+      line-height: 1.5;
+      text-align: left;
+    }
+    .im-scene-rule {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px dashed var(--rule);
+      border-radius: 4px;
+      padding: 0.6rem 0.9rem;
+    }
+    .im-scene-rule-label {
+      flex-shrink: 0;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      font-family: var(--font-mono);
+    }
+    .im-scene-rule-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* 资源模块网格 */
+    .im-module-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .im-module-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--rule);
+      border-radius: 5px;
+      padding: 0.6rem 0.7rem;
+      transition: all 0.3s var(--ease);
+    }
+    .im-module-item:hover {
+      border-color: rgba(156,163,63,0.4);
+      background: rgba(156,163,63,0.04);
+    }
+    .im-module-tag {
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(156,163,63,0.1);
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      margin-top: 0.05rem;
+    }
+    .im-module-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .im-module-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .im-module-desc {
+      font-size: 0.72rem;
+      color: var(--muted2);
+      line-height: 1.4;
+    }
+
+    /* 系统耦合防范措施面板 */
+    .coupling-panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .coupling-panel.active { display: flex; }
+    .coupling-wrap {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .coupling-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .coupling-sub {
+      font-size: 0.85rem;
+      color: var(--muted2);
+      text-align: center;
+      margin-top: -0.5rem;
+    }
+    .coupling-icon {
+      font-size: 1.1rem;
+      margin-right: 0.4rem;
+    }
+    .coupling-icon.danger {
+      filter: grayscale(0);
+      color: #ff4d4f;
+    }
+
+    /* 问题引入 */
+    .coupling-problem {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+    }
+    .coupling-problem-title {
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .coupling-problem-title.danger {
+      color: #ff4d4f;
+    }
+    .coupling-problem-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 0.7rem;
+    }
+    .coupling-problem-list {
+      display: flex;
+      gap: 0.8rem;
+    }
+    .coupling-problem-item {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 0.6rem 0.7rem;
+    }
+    .coupling-p-num {
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0.8;
+    }
+    .coupling-p-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.15rem;
+    }
+    .coupling-p-desc {
+      font-size: 0.72rem;
+      color: var(--muted2);
+      line-height: 1.4;
+    }
+
+    /* 三层解耦架构 */
+    .coupling-arch {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+    }
+    .coupling-arch-title {
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.7rem;
+    }
+    .coupling-layers {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .coupling-layer {
+      width: 100%;
+      border-radius: 5px;
+      padding: 0.6rem 0.9rem;
+      border: 1px solid var(--rule);
+    }
+    .coupling-layer.layer-top {
+      background: linear-gradient(135deg, rgba(156,163,63,0.12), rgba(156,163,63,0.03));
+      border-color: rgba(156,163,63,0.3);
+    }
+    .coupling-layer.layer-mid {
+      background: rgba(255,255,255,0.03);
+    }
+    .coupling-layer.layer-bot {
+      background: linear-gradient(135deg, rgba(107,114,128,0.1), rgba(107,114,128,0.02));
+    }
+    .coupling-layer-head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.3rem;
+    }
+    .coupling-layer-tag {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(156,163,63,0.15);
+      padding: 0.1rem 0.5rem;
+      border-radius: 3px;
+    }
+    .coupling-layer-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .coupling-layer-desc {
+      font-size: 0.75rem;
+      color: var(--muted2);
+      font-family: var(--font-mono);
+      margin-left: auto;
+    }
+    .coupling-layer-body {
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding-left: 3.8rem;
+    }
+    .coupling-layer-arrow {
+      font-size: 0.7rem;
+      color: var(--muted2);
+      font-family: var(--font-mono);
+      opacity: 0.6;
+    }
+
+    /* 五大解耦策略 */
+    .coupling-strategies {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+    }
+    .coupling-strat-title {
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.7rem;
+    }
+    .coupling-strat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .coupling-strat-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      border-radius: 5px;
+      padding: 0.7rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      transition: all 0.3s var(--ease);
+    }
+    .coupling-strat-card:hover {
+      border-color: rgba(156,163,63,0.4);
+      background: rgba(156,163,63,0.04);
+    }
+    .coupling-strat-head {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .coupling-strat-num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(156,163,63,0.12);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+    .coupling-strat-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .coupling-strat-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .coupling-strat-how {
+      margin-top: auto;
+      padding-top: 0.5rem;
+      border-top: 1px dashed var(--rule);
+    }
+    .csh-title {
+      font-size: 0.7rem;
+      color: var(--muted2);
+      font-family: var(--font-mono);
+      margin-bottom: 0.4rem;
+    }
+    .csh-steps {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.2rem;
+    }
+    .csh-steps span {
+      font-size: 0.7rem;
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      padding: 0.2rem 0.35rem;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .csh-arrow {
+      color: var(--accent) !important;
+      background: transparent !important;
+      padding: 0 !important;
+      font-size: 0.65rem !important;
+    }
+
+    /* 实践案例 */
+    .coupling-practice {
+      background: linear-gradient(135deg, rgba(156,163,63,0.06), rgba(156,163,63,0.01));
+      border: 1px solid rgba(156,163,63,0.2);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+    }
+    .coupling-practice-title {
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.7rem;
+    }
+    .coupling-practice-body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .coupling-practice-item {
+      display: flex;
+      gap: 0.8rem;
+    }
+    .coupling-practice-label {
+      flex-shrink: 0;
+      width: 6rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .coupling-practice-content {
+      flex: 1;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* 页1：标识体系迭代 - 左右结构 */
+    .mark-evolution-h {
+      display: flex;
+      align-items: stretch;
+      gap: 1rem;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .evo-h-col {
+      flex: 1;
+      border-radius: 5px;
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .evo-h-left {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      opacity: 0.85;
+    }
+    .evo-h-right {
+      background: linear-gradient(135deg, rgba(255,250,0,0.05), rgba(255,250,0,0.01));
+      border: 1px solid rgba(255,250,0,0.25);
+      box-shadow: 0 0 25px rgba(255,250,0,0.05);
+    }
+    .evo-h-tag {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .evo-h-tag.v1 { color: var(--muted); }
+    .evo-h-tag.v2 { color: var(--accent); }
+    .evo-h-sub {
+      font-size: 0.78rem;
+      color: var(--muted2);
+      margin-top: -0.3rem;
+    }
+
+    /* 标识体系翻转卡片布局 V2 */
+    .mark-evolution-flip {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      align-items: center;
+    }
+
+    /* 迭代契机 - 轻量tag一行 */
+    .evo-flip-trigger-v2 {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: -1rem;
+    }
+    .evo-trigger-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .evo-trigger-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(255,250,0,0.05);
+      border: 1px solid rgba(255,250,0,0.15);
+      border-radius: 3px;
+      font-size: 0.7rem;
+    }
+    .evo-tag-num {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0.8;
+    }
+    .evo-tag-text {
+      color: var(--ink2);
+      font-size: 0.7rem;
+    }
+
+    /* 翻转卡片 */
+    .evo-flip-card {
+      perspective: 1500px;
+      width: 100%;
+      min-height: 260px;
+      cursor: pointer;
+    }
+    .evo-flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .evo-flip-card.flipped .evo-flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    .evo-flip-card-front,
+    .evo-flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .evo-flip-card-front { z-index: 2; }
+    .evo-flip-card-back {
+      transform: rotateY(180deg);
+      z-index: 1;
+    }
+
+    /* 卡片指示器 */
+    .evo-flip-card-indicator {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--muted2);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .evo-flip-card-indicator.v2 {
+      color: #000;
+      opacity: 0.4;
+    }
+
+    /* V1.0 卡片 - 黄框黑底 */
+    .evo-card-v1 {
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+      background: var(--bg2);
+      border: 1.5px solid var(--accent);
+      border-radius: 6px;
+      display: flex;
+      box-sizing: border-box;
+      padding: 1.2rem 1.5rem;
+      gap: 1.5rem;
+    }
+    .evo-card-side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .evo-card-left {
+      flex: 0.9;
+      gap: 0.4rem;
+    }
+    .evo-card-right {
+      flex: 1.1;
+      gap: 0.6rem;
+    }
+    .evo-card-tag {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .evo-card-tag.dark { color: #000; }
+    .evo-card-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 0.1rem;
+    }
+    .evo-card-title.dark { color: #1a1a1a; }
+    .evo-card-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .evo-card-sub.dark { color: rgba(0,0,0,0.6); }
+    .evo-card-desc {
+      font-size: 0.78rem;
+      color: var(--ink2);
+      line-height: 1.6;
+    }
+    .evo-card-desc.dark { color: rgba(0,0,0,0.75); }
+    .evo-card-section-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.3rem;
+    }
+    .evo-card-section-label.dark { color: #000; opacity: 0.7; }
+    .evo-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    .evo-card-cell {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 0.45rem 0.6rem;
+    }
+    .evo-cell-t {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--muted2);
+      margin-bottom: 0.15rem;
+    }
+    .evo-cell-d {
+      font-size: 0.78rem;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    /* V2.0 卡片 - 黄卡黑字（50%透明+黄边） */
+    .evo-card-v2 {
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+      background: rgba(255, 250, 0, 1);
+      border: 1.5px solid var(--accent);
+      border-radius: 6px;
+      display: flex;
+      box-sizing: border-box;
+      padding: 1.2rem 1.5rem;
+      gap: 1.5rem;
+    }
+    .evo-priority-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .evo-p-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0,0,0,0.08);
+      border-radius: 3px;
+      padding: 0.3rem 0.5rem;
+    }
+    .evo-p-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #000;
+      background: rgba(255,255,255,0.3);
+      padding: 0.1rem 0.35rem;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .evo-p-name {
+      font-size: 0.75rem;
+      color: #000;
+      font-weight: 600;
+      flex: 1;
+    }
+    .evo-p-meta {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: rgba(0,0,0,0.6);
+      flex-shrink: 0;
+    }
+
+    /* 提示信息 - 卡片下方 */
+    .evo-flip-hint-v2 {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      opacity: 0.5;
+      animation: hintBreathe 2.5s ease-in-out infinite;
+    }
+    @keyframes hintBreathe {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+    }
+    .hint-deco-left,
+    .hint-deco-right {
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-dim));
+    }
+    .hint-deco-right {
+      background: linear-gradient(90deg, var(--accent-dim), transparent);
+    }
+    .hint-text {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .evo-h-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .evo-h-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+    .evo-h-text {
+      font-size: 0.82rem;
+      color: var(--ink2);
+      line-height: 1.6;
+    }
+    /* 1.0 四宫格 */
+    .evo-h-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .evo-h-cell {
+      background: rgba(0,0,0,0.15);
+      border-radius: 3px;
+      padding: 0.5rem 0.6rem;
+    }
+    .evo-h-cell-t {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.2rem;
+    }
+    .evo-h-cell-d {
+      font-size: 0.78rem;
+      color: var(--ink2);
+      line-height: 1.5;
+    }
+    /* 中间：迭代契机 */
+    .evo-h-mid {
+      flex: 0 0 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      position: relative;
+    }
+    .evo-h-arrow {
+      width: 60px;
+      height: 16px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .evo-h-arrow::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 10px;
+      top: 50%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-dim), var(--accent));
+    }
+    .evo-h-arrow::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 1.5px solid var(--accent);
+      border-right: 1.5px solid var(--accent);
+      transform: translateY(-50%) rotate(45deg);
+    }
+    .evo-h-trigger {
+      background: rgba(255,250,0,0.04);
+      border: 1px dashed rgba(255,250,0,0.25);
+      border-radius: 4px;
+      padding: 0.7rem 0.8rem;
+      width: 100%;
+    }
+    .evo-h-trigger-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .evo-h-trigger-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--ink2);
+      line-height: 1.5;
+      margin-bottom: 0.3rem;
+    }
+    .evo-h-trigger-item:last-child { margin-bottom: 0; }
+    .evo-h-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 0.45rem;
+      flex-shrink: 0;
+    }
+    /* 2.0 优先级列表 */
+    .evo-h-p-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .evo-h-p-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      background: rgba(0,0,0,0.15);
+      border-radius: 3px;
+      border-left: 2px solid transparent;
+    }
+    .evo-h-p-item:nth-child(1) { border-left-color: #ff6464; }
+    .evo-h-p-item:nth-child(2) { border-left-color: #ffa64d; }
+    .evo-h-p-item:nth-child(3) { border-left-color: #fffa00; }
+    .evo-h-p-item:nth-child(4) { border-left-color: #7fff7f; }
+    .evo-h-p-item:nth-child(5) { border-left-color: #66ccff; }
+    .evo-h-p-item:nth-child(6) { border-left-color: #c98cff; }
+    .evo-h-p-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 24px;
+    }
+    .evo-h-p-name {
+      flex: 1;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .evo-h-p-meta {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ===== D1 幕布转场 ===== */
+    .im-curtain-wrap {
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+    }
+    /* 迭代契机 tag 行 */
+    .im-curtain-triggers {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .im-ct-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .im-ct-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(255,250,0,0.05);
+      border: 1px solid rgba(255,250,0,0.15);
+      border-radius: 3px;
+      font-size: 0.72rem;
+      color: var(--ink2);
+    }
+    .im-ct-tag::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    /* 幕布容器 */
+    .im-curtain-stage {
+      position: relative;
+      width: 100%;
+      min-height: 360px;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .im-curtain-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 1.6rem 1.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
+    }
+    .im-curtain-panel.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    /* V1 面板 */
+    .im-panel-v1 {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+    }
+    /* V2 面板 */
+    .im-panel-v2 {
+      background: rgba(255, 250, 0, 1);
+      border: 1px solid rgba(255,250,0,0.5);
+    }
+    /* 幕布 */
+    .im-curtain {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      transform: translateY(-100%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    .im-curtain.animate-down {
+      animation: curtainDown 0.5s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+    }
+    .im-curtain.animate-up {
+      animation: curtainUp 0.5s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+    }
+    @keyframes curtainDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+    @keyframes curtainUp {
+      from { transform: translateY(0); }
+      to { transform: translateY(100%); }
+    }
+    /* 面板头部 */
+    .im-panel-head {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      margin-bottom: 0.2rem;
+    }
+    .im-panel-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .im-panel-v2 .im-panel-title { color: #1a1a1a; }
+    .im-panel-sub {
+      font-size: 0.78rem;
+      color: var(--muted2);
+    }
+    .im-panel-v2 .im-panel-sub { color: rgba(0,0,0,0.6); }
+    .im-panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .im-panel-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+    .im-panel-v2 .im-panel-label { color: #000; opacity: 0.7; }
+    .im-panel-desc {
+      font-size: 0.82rem;
+      color: var(--ink2);
+      line-height: 1.6;
+    }
+    .im-panel-v2 .im-panel-desc { color: rgba(0,0,0,0.8); }
+    /* V1 四宫格 */
+    .im-panel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .im-grid-cell {
+      background: rgba(0,0,0,0.15);
+      border-radius: 3px;
+      padding: 0.5rem 0.6rem;
+    }
+    .im-panel-v2 .im-grid-cell { background: rgba(0,0,0,0.08); }
+    .im-grid-cell-t {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.2rem;
+    }
+    .im-panel-v2 .im-grid-cell-t { color: rgba(0,0,0,0.5); }
+    .im-grid-cell-d {
+      font-size: 0.78rem;
+      color: var(--ink2);
+      line-height: 1.5;
+    }
+    .im-panel-v2 .im-grid-cell-d { color: rgba(0,0,0,0.8); }
+    /* V2 升级列表 */
+    .im-upgrade-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .im-up-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0,0,0,0.08);
+      border-radius: 3px;
+      padding: 0.35rem 0.6rem;
+      border-left: 2px solid var(--accent);
+    }
+    .im-up-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #000;
+      background: var(--accent);
+      padding: 0.1rem 0.35rem;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .im-up-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      flex: 1;
+    }
+    .im-up-meta {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+    /* 底部提示 */
+    .im-curtain-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--ink2);
+      opacity: 0.9;
+      font-weight: 500;
+    }
+    .im-curtain-hint .hint-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: hintPulse 2s ease-in-out infinite;
+      box-shadow: 0 0 8px rgba(255,250,0,0.6);
+    }
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    /* 页2：UI层级构建 - 统一列表 */
+    .layer-unified {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .layer-u-item {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.7rem 0.9rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      transition: all 0.2s var(--ease);
+    }
+    .layer-u-item:hover {
+      border-color: rgba(255,250,0,0.2);
+      background: rgba(255,250,0,0.03);
+    }
+    .layer-u-item.top {
+      border-color: rgba(255,250,0,0.3);
+      background: linear-gradient(135deg, rgba(255,250,0,0.06), transparent);
+    }
+    .layer-u-item.bottom {
+      opacity: 0.55;
+    }
+    .layer-u-num {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      width: 36px;
+      flex-shrink: 0;
+    }
+    .layer-u-bar {
+      width: 4px;
+      height: 36px;
+      border-radius: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .layer-u-item:nth-child(1) .layer-u-bar { background: #fffa00; }
+    .layer-u-item:nth-child(2) .layer-u-bar { background: #ffd400; }
+    .layer-u-item:nth-child(3) .layer-u-bar { background: #66ccff; }
+    .layer-u-item:nth-child(4) .layer-u-bar { background: #7fff7f; }
+    .layer-u-item:nth-child(5) .layer-u-bar { background: #c98cff; }
+    .layer-u-item:nth-child(6) .layer-u-bar { background: #ffa64d; }
+    .layer-u-item:nth-child(7) .layer-u-bar { background: #6b7280; }
+    .layer-u-content { flex: 1; }
+    .layer-u-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+    }
+    .layer-u-desc {
+      font-size: 0.78rem;
+      color: var(--muted2);
+      line-height: 1.5;
+    }
 
     .cp-inner {
       width: 100%; max-width: 1000px;
@@ -385,7 +1878,7 @@
     .cp-page.active { display: flex; }
 
     .cp-header {
-      text-align: center; margin-bottom: 1.2rem; flex-shrink: 0;
+      text-align: center; margin-bottom: 0.8rem; flex-shrink: 0;
     }
     .cp-section-label {
       font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700;
@@ -393,13 +1886,13 @@
       margin-bottom: 0.6rem;
     }
     .cp-section-title {
-      font-family: var(--font-display); font-size: 1.4rem; font-weight: 700;
+      font-family: var(--font-display); font-size: 1.25rem; font-weight: 700;
       color: var(--ink); letter-spacing: 0.03em;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
     }
     .cp-section-desc {
-      font-size: 0.78rem; color: var(--muted2);
-      max-width: 600px; margin: 0 auto;
+      font-size: 0.75rem; color: var(--muted2);
+      max-width: 600px; margin: 0 auto; line-height: 1.5;
     }
 
     /* 选品矩阵 */
@@ -440,26 +1933,43 @@
       z-index: 2;
     }
     .cp-game-avatar {
-      width: 44px; height: 44px; border-radius: 50%;
+      width: 72px; height: 48px; border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
       font-family: var(--font-display); font-size: 1rem; font-weight: 700;
       color: #fff;
-      border: 2px solid rgba(255,250,0,0.5);
+      border: 1.5px solid rgba(255,250,0,0.5);
       box-shadow: 0 2px 12px rgba(0,0,0,0.4);
       transition: all 0.25s var(--ease);
       user-select: none;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: rgba(0,0,0,0.3);
     }
     .cp-game-point:hover .cp-game-avatar {
-      transform: scale(1.15);
+      transform: scale(1.1);
       border-color: var(--accent);
-      box-shadow: 0 4px 20px rgba(255,250,0,0.3);
+      box-shadow: 0 4px 20px rgba(255,250,0,0.4);
     }
-    .cp-avatar-yanyun { background: linear-gradient(135deg, #2d1f3d, #4a2c5e); }
-    .cp-avatar-genshin { background: linear-gradient(135deg, #1a3a5c, #2d5a8a); }
-    .cp-avatar-nikki { background: linear-gradient(135deg, #4a2c5e, #7b4a9e); }
-    .cp-avatar-emo { background: linear-gradient(135deg, #1f3d2d, #2c5e4a); }
-    .cp-avatar-locke { background: linear-gradient(135deg, #3d2d1f, #5e4a2c); }
-    .cp-avatar-once { background: linear-gradient(135deg, #3d1f1f, #5e2c2c); }
+    .cp-game-point.highlight .cp-game-avatar {
+      transform: scale(1.1);
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(255,250,0,0.5);
+    }
+    .cp-game-point.dimmed {
+      opacity: 0.3;
+      transition: opacity 0.25s var(--ease);
+    }
+    .cp-game-point.highlight {
+      z-index: 5;
+      transition: all 0.25s var(--ease);
+    }
+    .cp-avatar-emo { background-image: url('../../assets/1.png'); }
+    .cp-avatar-yanyun { background-image: url('../../assets/2.png'); }
+    .cp-avatar-nikki { background-image: url('../../assets/3.png'); }
+    .cp-avatar-genshin { background-image: url('../../assets/4.png'); }
+    .cp-avatar-locke { background-image: url('../../assets/5.png'); }
+    .cp-avatar-once { background-image: url('../../assets/6.png'); }
 
     /* Tooltip - 全局浮动 */
     .cp-game-tooltip {
@@ -518,12 +2028,16 @@
       margin-bottom: 0.7rem;
     }
     .cp-tt-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
+      width: 52px; height: 36px; border-radius: 4px;
       display: flex; align-items: center; justify-content: center;
       font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
       color: #fff;
       border: 1.5px solid rgba(255,250,0,0.4);
       flex-shrink: 0;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: rgba(0,0,0,0.3);
     }
     .cp-tt-name {
       font-size: 0.85rem; font-weight: 600; color: var(--ink);
@@ -559,10 +2073,10 @@
       border-radius: 50%;
     }
 
-    .cp-pos-yanyun { top: 22%; left: 20%; }
-    .cp-pos-genshin { top: 14%; right: 24%; }
-    .cp-pos-nikki { top: 22%; right: 12%; }
     .cp-pos-emo { top: 55%; left: 28%; }
+    .cp-pos-yanyun { top: 22%; left: 20%; }
+    .cp-pos-nikki { top: 22%; right: 12%; }
+    .cp-pos-genshin { top: 14%; right: 24%; }
     .cp-pos-locke { top: 65%; left: 42%; }
     .cp-pos-once { bottom: 12%; right: 18%; }
 
@@ -683,9 +2197,9 @@
     .cp-bars-wrap {
       flex: 0 1 auto;
       display: flex;
-      gap: 0.8rem;
+      gap: 1rem;
       width: 100%;
-      max-width: 850px;
+      max-width: 900px;
       margin: 0 auto;
       align-items: stretch;
       align-self: center;
@@ -698,7 +2212,7 @@
       background: rgba(255,255,255,0.02);
       border: 1px solid var(--rule);
       border-radius: 4px;
-      padding: 0.9rem 0.8rem;
+      padding: 1rem 0.9rem;
       transition: all 0.3s var(--ease);
     }
     .cp-dim-col:hover {
@@ -707,23 +2221,23 @@
     }
     .cp-dim-header {
       text-align: center;
-      margin-bottom: 0.7rem;
-      padding-bottom: 0.6rem;
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.7rem;
       border-bottom: 1px solid var(--rule);
     }
     .cp-dim-icon {
-      width: 22px; height: 22px;
-      margin: 0 auto 0.35rem;
+      width: 28px; height: 28px;
+      margin: 0 auto 0.4rem;
       color: var(--accent);
       display: flex; align-items: center; justify-content: center;
     }
     .cp-dim-icon svg { width: 100%; height: 100%; }
     .cp-dim-title {
-      font-size: 0.82rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: var(--ink);
       letter-spacing: 0.05em;
-      margin-bottom: 0.2rem;
+      margin-bottom: 0.25rem;
     }
     .cp-dim-title-row {
       display: flex;
@@ -737,25 +2251,39 @@
     }
     .cp-dim-info {
       position: relative;
-      width: 14px; height: 14px;
+      width: 16px; height: 16px;
       color: var(--muted2);
       cursor: help;
       transition: color 0.2s var(--ease);
+      flex-shrink: 0;
     }
     .cp-dim-info:hover {
       color: var(--accent);
     }
-    .cp-dim-info svg { width: 100%; height: 100%; }
+    .cp-dim-info svg { display: none; }
+    .cp-dim-info::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      background-image: url('../../assets/help-icon.png');
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
     .cp-dim-info-tip {
       position: absolute;
-      bottom: calc(100% + 8px);
+      top: calc(100% + 8px);
       left: 50%;
-      transform: translateX(-50%) translateY(4px);
-      width: 180px;
+      transform: translateX(-50%) translateY(-4px);
+      width: 220px;
       background: var(--bg2);
       border: 1px solid rgba(156,163,63,0.35);
       border-radius: 4px;
-      padding: 0.7rem 0.8rem;
+      padding: 0.8rem 0.9rem;
       opacity: 0;
       visibility: hidden;
       transition: all 0.2s var(--ease);
@@ -772,54 +2300,54 @@
     .cp-dim-info-tip::after {
       content: '';
       position: absolute;
-      top: 100%;
+      bottom: 100%;
       left: 50%;
       transform: translateX(-50%);
       border: 5px solid transparent;
-      border-top-color: rgba(156,163,63,0.35);
+      border-bottom-color: rgba(156,163,63,0.35);
     }
     .cp-dim-info-title {
-      font-size: 0.65rem;
+      font-size: 0.8rem;
       font-family: var(--font-mono);
       font-weight: 700;
       color: var(--accent);
       letter-spacing: 0.08em;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.6rem;
     }
     .cp-dim-info-list {
       list-style: none;
       padding: 0;
-      margin: 0 0 0.5rem 0;
+      margin: 0 0 0.6rem 0;
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
+      gap: 0.35rem;
     }
     .cp-dim-info-list li {
-      font-size: 0.65rem;
+      font-size: 0.78rem;
       color: var(--ink2);
-      padding-left: 0.7rem;
+      padding-left: 0.8rem;
       position: relative;
-      line-height: 1.4;
+      line-height: 1.5;
     }
     .cp-dim-info-list li::before {
       content: '';
       position: absolute;
       left: 0;
-      top: 0.45em;
+      top: 0.5em;
       width: 4px;
       height: 4px;
       background: var(--accent-dim);
       border-radius: 50%;
     }
     .cp-dim-info-note {
-      font-size: 0.6rem;
+      font-size: 0.72rem;
       color: var(--muted2);
       font-family: var(--font-mono);
-      padding-top: 0.5rem;
+      padding-top: 0.6rem;
       border-top: 1px solid rgba(156,163,63,0.15);
     }
     .cp-dim-sub {
-      font-size: 0.58rem;
+      font-size: 0.72rem;
       color: var(--muted2);
       font-family: var(--font-mono);
       letter-spacing: 0.03em;
@@ -827,17 +2355,17 @@
     .cp-bar-list {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.6rem;
       flex: 0 0 auto;
       justify-content: flex-start;
     }
     .cp-bar-item {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.3rem;
       cursor: pointer;
-      padding: 0.3rem 0.4rem;
-      margin: 0 -0.4rem;
+      padding: 0.4rem 0.5rem;
+      margin: 0 -0.5rem;
       border-radius: 3px;
       transition: all 0.25s var(--ease);
     }
@@ -853,15 +2381,15 @@
     .cp-bar-label {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
     }
     .cp-bar-dot {
-      width: 6px; height: 6px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
     }
     .cp-bar-name {
-      font-size: 0.65rem;
+      font-size: 0.82rem;
       color: var(--ink2);
       font-weight: 500;
       flex: 1;
@@ -871,20 +2399,20 @@
       font-weight: 600;
     }
     .cp-bar-track {
-      height: 4px;
+      height: 5px;
       background: rgba(255,255,255,0.04);
-      border-radius: 2px;
+      border-radius: 3px;
       overflow: hidden;
       position: relative;
     }
     .cp-bar-fill {
       height: 100%;
-      border-radius: 2px;
+      border-radius: 3px;
       width: 0;
       transition: width 1s var(--ease);
     }
     .cp-bar-score {
-      font-size: 0.58rem;
+      font-size: 0.75rem;
       font-family: var(--font-mono);
       font-weight: 700;
       color: var(--accent);
@@ -892,52 +2420,158 @@
       line-height: 1;
     }
 
-    /* 选型推演 */
-    .cp-decision {
+    /* 选型推演 v2 - 突出最终方案 */
+    .cp-decision-v2 {
       flex: 0 1 auto;
-      display: flex; align-items: center; justify-content: center;
-      gap: 1rem;
-      width: 100%; max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7rem;
+      width: 100%;
+      max-width: 600px;
       margin: 0 auto;
     }
-    .cp-decision-item {
+
+    /* 排除的方案 - 弱化 */
+    .cp-decision-excluded {
+      width: 100%;
+      opacity: 0.5;
+    }
+    .cp-excluded-row {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0.7rem;
+    }
+    .cp-excluded-item {
       flex: 1;
-      background: url('../assets/map-card-bg.png') center/contain no-repeat;
-      background-size: 100% 100%;
-      padding: 2rem 1.5rem;
-      display: flex; flex-direction: column;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      padding: 0.7rem 0.9rem;
+      text-align: center;
       position: relative;
     }
-    .cp-decision-tag {
-      font-family: var(--font-mono); font-size: 0.6rem;
-      font-weight: 700; letter-spacing: 0.1em;
-      padding: 0.2rem 0.6rem;
-      display: inline-block; align-self: flex-start;
-      margin-bottom: 1rem;
+    .cp-excluded-cross {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 22px;
+      height: 22px;
+      background: var(--bg2);
+      border: 1px solid rgba(255,100,100,0.4);
+      border-radius: 50%;
+      color: #ff6464;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
-    .cp-decision-no .cp-decision-tag {
-      background: rgba(255,250,0,0.1);
-      color: var(--accent-dim);
-      border: 1px solid var(--accent-dim);
+    .cp-excluded-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink2);
+      margin-bottom: 0.3rem;
     }
-    .cp-decision-yes .cp-decision-tag {
+    .cp-excluded-reason {
+      font-size: 0.72rem;
+      color: var(--muted2);
+      line-height: 1.5;
+    }
+
+    /* 最终选择 - 突出 */
+    .cp-decision-final {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(255,250,0,0.06), rgba(255,250,0,0.02));
+      border: 1px solid rgba(255,250,0,0.3);
+      border-radius: 5px;
+      padding: 1.1rem 1.4rem;
+      position: relative;
+      box-shadow: 0 0 25px rgba(255,250,0,0.05);
+    }
+    .cp-decision-final::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: -1px; right: -1px; bottom: -1px;
+      border-radius: 5px;
+      background: linear-gradient(135deg, rgba(255,250,0,0.3), transparent 40%, transparent 60%, rgba(255,250,0,0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      padding: 1px;
+      pointer-events: none;
+    }
+    .cp-final-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
       background: var(--accent);
       color: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 0.22rem 0.65rem;
+      border-radius: 2px;
+      margin-bottom: 0.6rem;
     }
-    .cp-decision-title {
-      font-family: var(--font-display); font-size: 1rem;
-      font-weight: 700; color: var(--ink);
-      margin-bottom: 1rem;
+    .cp-final-badge svg {
+      width: 12px;
+      height: 12px;
     }
-    .cp-decision-reason p {
-      font-size: 0.76rem; color: var(--muted2);
-      line-height: 1.7; margin-bottom: 0.6rem;
+    .cp-final-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0.03em;
+      margin-bottom: 0.35rem;
     }
-    .cp-decision-reason p:last-child { margin-bottom: 0; }
-    .cp-decision-arrow {
-      color: var(--accent-dim); opacity: 0.6;
+    .cp-final-tagline {
+      font-size: 0.78rem;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255,250,0,0.15);
+    }
+    .cp-final-reasons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .cp-final-reason {
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-start;
+    }
+    .cp-final-reason-num {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
       flex-shrink: 0;
-      animation: pulse 2s ease-in-out infinite;
+      width: 26px;
+      line-height: 1.2;
+    }
+    .cp-final-reason-content {
+      flex: 1;
+    }
+    .cp-final-reason-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.2rem;
+    }
+    .cp-final-reason-desc {
+      font-size: 0.75rem;
+      color: var(--ink2);
+      line-height: 1.6;
     }
 
     /* 关键借鉴 */
@@ -1017,11 +2651,75 @@
       .cp-reference-grid { grid-template-columns: 1fr; gap: 1rem; }
       .cp-reflect { flex-direction: column; gap: 1rem; }
       .cp-reflect-arrow { transform: rotate(90deg); height: 20px; }
-      .cp-decision { flex-direction: column; gap: 0.8rem; }
-      .cp-decision-arrow { transform: rotate(90deg); }
+      .cp-decision-v2 { gap: 0.8rem; }
+      .cp-excluded-row { flex-direction: column; gap: 0.5rem; }
+      .cp-excluded-item { width: 100%; }
       .cp-eval-head .cp-eval-cell { font-size: 0.55rem; }
       .cp-eval-cell { padding: 0.6rem 0.4rem; }
       .cp-game-icon img { width: 40px; height: 40px; }
+
+      /* B-1选品矩阵 - 移动端 */
+      .cp-matrix { max-width: 100%; aspect-ratio: 4/3; }
+      .cp-game-avatar { width: 52px; height: 36px; }
+
+      /* 标识体系移动端 */
+      .display-area:has(.mark-panel.active) .display-title-area,
+      .display-area:has(.mark-panel.active) .display-counter,
+      .display-area:has(.mark-panel.active) .display-tag {
+        display: none;
+      }
+      .display-area:has(.mark-panel.active) .mark-panel {
+        padding-top: 1.25rem;
+      }
+      .mark-panel { padding-top: 4rem; padding-bottom: 4rem; }
+      .mark-inner { height: auto; min-height: 100%; }
+      .mark-evolution-h { flex-direction: column; gap: 0.8rem; }
+      .evo-h-mid { flex: none; flex-direction: row; width: 100%; }
+      .evo-h-arrow { transform: rotate(90deg); }
+      .evo-h-p-item { flex-wrap: wrap; }
+      .evo-h-p-meta { width: 100%; padding-left: 24px; }
+      .layer-unified { max-width: 100%; }
+
+      /* 信息模块化面板 - 移动端 */
+      .display-area:has(.info-module-panel.active) .display-title-area,
+      .display-area:has(.info-module-panel.active) .display-counter,
+      .display-area:has(.info-module-panel.active) .display-tag {
+        display: none;
+      }
+      .display-area:has(.info-module-panel.active) .info-module-panel {
+        padding-top: 1.25rem;
+      }
+      .info-module-panel { padding-top: 4rem; padding-bottom: 4rem; }
+      .im-lang-grid { flex-direction: column; gap: 0.6rem; }
+      .im-lang-prin-grid { grid-template-columns: repeat(2, 1fr); }
+      .im-scene-cards { flex-direction: column; gap: 0.5rem; }
+      .im-module-grid { grid-template-columns: repeat(2, 1fr); }
+
+      /* D1 幕布转场 - 移动端 */
+      .im-curtain-wrap { max-width: 100%; }
+      .im-curtain-stage { min-height: 360px; }
+      .im-curtain-panel { padding: 1rem 1.1rem; gap: 0.6rem; }
+      .im-panel-head { flex-wrap: wrap; gap: 0.3rem; }
+      .im-panel-title { font-size: 1.05rem; }
+      .im-panel-sub { font-size: 0.7rem; }
+      .im-panel-grid { grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+      .im-up-item { flex-wrap: wrap; gap: 0.35rem; }
+      .im-up-meta { width: 100%; padding-left: 28px; }
+
+      /* 系统耦合面板 - 移动端 */
+      .display-area:has(.coupling-panel.active) .display-title-area,
+      .display-area:has(.coupling-panel.active) .display-counter,
+      .display-area:has(.coupling-panel.active) .display-tag {
+        display: none;
+      }
+      .display-area:has(.coupling-panel.active) .coupling-panel {
+        padding-top: 1.25rem;
+      }
+      .coupling-panel { padding-top: 4rem; padding-bottom: 4rem; }
+      .coupling-problem-list { flex-direction: column; gap: 0.4rem; }
+      .coupling-strat-grid { grid-template-columns: repeat(2, 1fr); }
+      .coupling-practice-item { flex-direction: column; gap: 0.2rem; }
+      .coupling-practice-label { width: auto; }
     }
     }
 
@@ -1037,6 +2735,20 @@
         padding-top: 0.18rem;
         padding-bottom: 0.18rem;
       }
+      .mark-panel { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+      .info-module-panel { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+      .im-lang-wrap { gap: 0.8rem; }
+      .im-lang-card { padding: 0.7rem; gap: 0.5rem; }
+      .im-scene-wrap { gap: 0.7rem; }
+      .im-scene-card { padding: 0.7rem; }
+      .im-module-item { padding: 0.5rem; }
+      .coupling-panel { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+      .coupling-wrap { gap: 0.7rem; }
+      .coupling-problem { padding: 0.7rem 0.8rem; }
+      .coupling-arch { padding: 0.7rem 0.8rem; }
+      .coupling-strategies { padding: 0.7rem 0.8rem; }
+      .coupling-practice { padding: 0.7rem 0.8rem; }
+      .coupling-strat-card { padding: 0.5rem 0.6rem; }
     }
 
     @media (max-width: 768px) {
@@ -1142,42 +2854,28 @@
 
     <div class="display-area" id="displayArea">
       <div class="scan-line"></div>
-      <div class="hud-ring hud-ring-1"></div>
-      <div class="hud-ring hud-ring-2"></div>
-      <div class="hud-ring hud-ring-3"></div>
       <div class="particles" id="particles"></div>
 
-      <!-- 信息覆盖层 -->
-      <div class="display-info display-title-area">
-        <div class="display-title-label" id="titleLabel">MAP // SYSTEM</div>
-        <div class="display-title" id="displayTitle">地图版本优化历程</div>
-        <div class="display-subtitle" id="displaySubtitle">大地图系统</div>
-      </div>
-      <div class="display-info display-counter">
-        <div class="display-counter-num" id="counterNum">01</div>
-        <div class="display-counter-label" id="counterLabel">地图版本优化历程</div>
-      </div>
-
-      <!-- 空白页提示（默认隐藏） -->
-      <div class="empty-hint" id="emptyHint" style="display:none;">
-        <div class="empty-hint-text">内容维护中</div>
-        <div class="empty-hint-sub">敬请期待</div>
+      <!-- 底部滚动提示 -->
+      <div class="scroll-hint" id="scrollHint">
+        <div class="scroll-hint-text">向下滚动探索更多</div>
+        <div class="scroll-hint-arrow">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
       </div>
 
-      <!-- 底部页签翻页 -->
-      <div class="display-switcher">
-        <button class="switcher-arrow" id="pagePrev"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-        <div class="switcher-dots" id="pageDots"></div>
-        <button class="switcher-arrow" id="pageNext"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg></button>
-      </div>
+      <!-- 模块A：地图版本优化历程（单页） -->
+      <section class="module-section" id="module-timeline">
+        <div class="module-header">
+          <div class="module-label">A · MAP EVOLUTION</div>
+          <h2 class="module-title">地图版本优化历程</h2>
+          <div class="module-sub">从v1.0到v1.3，四版本迭代见证大地图从可用到好用</div>
+        </div>
+        <div class="module-content">
 
-      <div class="display-tag" id="displayTag">
-        <span class="display-tag-item">版本迭代</span>
-        <span class="display-tag-item">需求分析</span>
-        <span class="display-tag-item">体验优化</span>
-      </div>
-
-      <!-- 版本时间轴（仅"地图版本优化历程"页签显示） -->
+      <!-- 版本时间轴 -->
       <div class="version-timeline" id="versionTimeline">
         <div class="vt-container">
           <!-- V1.0 -->
@@ -1234,9 +2932,20 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- 竞品分析面板（仅"竞品分析与方案选型"页签显示） -->
+        </div><!-- /module-content -->
+      </section><!-- /模块A -->
+
+      <!-- 模块B：竞品分析与方案选型（3页） -->
+      <section class="module-section" id="module-competitive">
+        <div class="module-header">
+          <div class="module-label">B · COMPETITIVE ANALYSIS</div>
+          <h2 class="module-title">竞品分析与方案选型</h2>
+          <div class="module-sub">5款竞品深度拆解，三维度量化评估，锁定最终定位</div>
+        </div>
+        <div class="module-content">
+
+      <!-- 竞品分析面板 -->
       <div class="competitive-panel" id="competitivePanel">
         <!-- 全局浮动tooltip（层级最高） -->
         <div class="cp-game-tooltip" id="cpTooltip">
@@ -1254,7 +2963,6 @@
           <!-- 页1：选品逻辑 -->
           <div class="cp-page active" data-cp-page="0">
             <div class="cp-header">
-              <div class="cp-section-label">01 / SCOPE</div>
               <h3 class="cp-section-title">调研范围与选品逻辑</h3>
               <p class="cp-section-desc">6 款竞品，按核心玩法划分为四个象限，悬停图标查看详细调研内容</p>
             </div>
@@ -1265,7 +2973,6 @@
                 </div>
                 <div class="cp-quad cp-quad-top-right">
                   <div class="cp-quad-label">探索 / 剧情 / 任务</div>
-                  <div class="cp-quad-hl">定位</div>
                 </div>
               </div>
               <div class="cp-matrix-row cp-matrix-bottom">
@@ -1278,23 +2985,23 @@
               </div>
               <!-- 游戏图标点位层 -->
               <div class="cp-game-points">
-                <div class="cp-game-point cp-pos-yanyun" style="--delay:0.1s" data-game="yanyun">
-                  <div class="cp-game-avatar cp-avatar-yanyun">燕</div>
+                <div class="cp-game-point cp-pos-emo" style="--delay:0.1s" data-game="emo">
+                  <div class="cp-game-avatar cp-avatar-emo"></div>
                 </div>
-                <div class="cp-game-point cp-pos-genshin" style="--delay:0.2s" data-game="genshin">
-                  <div class="cp-game-avatar cp-avatar-genshin">原</div>
+                <div class="cp-game-point cp-pos-yanyun" style="--delay:0.2s" data-game="yanyun">
+                  <div class="cp-game-avatar cp-avatar-yanyun"></div>
                 </div>
                 <div class="cp-game-point cp-pos-nikki" style="--delay:0.25s" data-game="nikki">
-                  <div class="cp-game-avatar cp-avatar-nikki">暖</div>
+                  <div class="cp-game-avatar cp-avatar-nikki"></div>
                 </div>
-                <div class="cp-game-point cp-pos-emo" style="--delay:0.35s" data-game="emo">
-                  <div class="cp-game-avatar cp-avatar-emo">伊</div>
+                <div class="cp-game-point cp-pos-genshin" style="--delay:0.35s" data-game="genshin">
+                  <div class="cp-game-avatar cp-avatar-genshin"></div>
                 </div>
                 <div class="cp-game-point cp-pos-locke" style="--delay:0.45s" data-game="locke">
-                  <div class="cp-game-avatar cp-avatar-locke">洛</div>
+                  <div class="cp-game-avatar cp-avatar-locke"></div>
                 </div>
                 <div class="cp-game-point cp-pos-once" style="--delay:0.55s" data-game="once">
-                  <div class="cp-game-avatar cp-avatar-once">七</div>
+                  <div class="cp-game-avatar cp-avatar-once"></div>
                 </div>
               </div>
             </div>
@@ -1303,7 +3010,6 @@
           <!-- 页2：三维评估 -->
           <div class="cp-page" data-cp-page="1">
             <div class="cp-header">
-              <div class="cp-section-label">02 / EVALUATION</div>
               <h3 class="cp-section-title">三维度横向评估</h3>
               <p class="cp-section-desc">信息架构 · 交互效率 · 探索驱动力——分维度条形对比，各产品能力差异一目了然</p>
             </div>
@@ -1472,40 +3178,56 @@
           <!-- 页3：选型推演 -->
           <div class="cp-page" data-cp-page="2">
             <div class="cp-header">
-              <div class="cp-section-label">03 / DECISION</div>
-              <h3 class="cp-section-title">选型推演：我们走哪条路</h3>
-              <p class="cp-section-desc">三条路线的排除与选择，最终落在"轻量架构 + 深度探索 + 捉宠核心"的交集上</p>
+              <h3 class="cp-section-title">我们的选择：轻架构 + 深度探索 + 捉宠核心</h3>
+              <p class="cp-section-desc">排除两条极端路线，取三者之长，找到最适合 Palworld 的地图定位</p>
             </div>
-            <div class="cp-decision">
-              <div class="cp-decision-item cp-decision-no">
-                <div class="cp-decision-tag">排除</div>
-                <div class="cp-decision-title">纯 MMO 重架构路线</div>
-                <div class="cp-decision-reason">
-                  <p>燕云式的多层级筛选 + 任务/挑战/技能全功能入口，信息密度高但学习成本大。</p>
-                  <p>Palworld 玩家的核心目标是捉宠与建造，而非任务推进，过重的 MMO 架构会喧宾夺主。</p>
+            <div class="cp-decision-v2">
+              <!-- 排除的方案（弱化） -->
+              <div class="cp-decision-excluded">
+                <div class="cp-excluded-row">
+                  <div class="cp-excluded-item">
+                    <div class="cp-excluded-cross">×</div>
+                    <div class="cp-excluded-title">纯 MMO 重架构</div>
+                    <div class="cp-excluded-reason">信息密度过高，学习成本大，与捉宠核心体验相悖</div>
+                  </div>
+                  <div class="cp-excluded-item">
+                    <div class="cp-excluded-cross">×</div>
+                    <div class="cp-excluded-title">生存建造工具化</div>
+                    <div class="cp-excluded-reason">地图退化为纯工具，牺牲探索沉浸感和发现乐趣</div>
+                  </div>
                 </div>
               </div>
-              <div class="cp-decision-arrow">
-                <svg viewBox="0 0 40 40" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="12 8 20 20 12 32"></polyline><polyline points="22 8 30 20 22 32"></polyline></svg>
-              </div>
-              <div class="cp-decision-item cp-decision-no">
-                <div class="cp-decision-tag">排除</div>
-                <div class="cp-decision-title">生存建造工具化路线</div>
-                <div class="cp-decision-reason">
-                  <p>七日世界式的打点筛选 + 资源/基地标记，地图退化为纯工具面板。</p>
-                  <p>筛选器屏蔽所有信息只能打点的交互，牺牲了探索的沉浸感，与捉宠探索的核心体验相悖。</p>
+
+              <!-- 最终选择（突出） -->
+              <div class="cp-decision-final">
+                <div class="cp-final-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>最终选型</span>
                 </div>
-              </div>
-              <div class="cp-decision-arrow">
-                <svg viewBox="0 0 40 40" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="12 8 20 20 12 32"></polyline><polyline points="22 8 30 20 22 32"></polyline></svg>
-              </div>
-              <div class="cp-decision-item cp-decision-yes">
-                <div class="cp-decision-tag">选择</div>
-                <div class="cp-decision-title">轻架构 + 深探索 + 捉宠核心</div>
-                <div class="cp-decision-reason">
-                  <p>以原神/暖暖的极简交互为骨架，保证上手门槛低、操作直觉。</p>
-                  <p>融合伊莫/洛克的宠物收集驱动，把捉宠体验做成地图探索的核心反馈。</p>
-                  <p>从燕云选择性吸收任务与收集系统，作为中后期内容填充，而非核心骨架。</p>
+                <div class="cp-final-title">轻量架构 · 深度探索 · 捉宠核心</div>
+                <div class="cp-final-tagline">以极简交互为骨，以宠物收集为魂</div>
+                <div class="cp-final-reasons">
+                  <div class="cp-final-reason">
+                    <div class="cp-final-reason-num">01</div>
+                    <div class="cp-final-reason-content">
+                      <div class="cp-final-reason-title">骨架：极简交互</div>
+                      <div class="cp-final-reason-desc">借鉴原神 / 暖暖，操作路径短、上手零门槛，玩家注意力放在探索而非学习地图</div>
+                    </div>
+                  </div>
+                  <div class="cp-final-reason">
+                    <div class="cp-final-reason-num">02</div>
+                    <div class="cp-final-reason-content">
+                      <div class="cp-final-reason-title">灵魂：捉宠驱动</div>
+                      <div class="cp-final-reason-desc">吸收伊莫 / 洛克的宠物收集体系，让地图探索的每一步都有捉宠反馈</div>
+                    </div>
+                  </div>
+                  <div class="cp-final-reason">
+                    <div class="cp-final-reason-num">03</div>
+                    <div class="cp-final-reason-content">
+                      <div class="cp-final-reason-title">补充：选择性吸收</div>
+                      <div class="cp-final-reason-desc">从燕云取任务与收集系统作为中后期填充，而非核心骨架，保持轻量化</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1514,47 +3236,754 @@
         </div>
       </div>
 
+        </div><!-- /module-content -->
+        <div class="module-nav" data-module="competitive">
+          <button class="module-nav-btn module-prev" data-dir="prev">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="module-nav-dots">
+            <div class="module-nav-dot active" data-slide="0">1</div>
+            <div class="module-nav-dot" data-slide="1">2</div>
+            <div class="module-nav-dot" data-slide="2">3</div>
+          </div>
+          <button class="module-nav-btn module-next" data-dir="next">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+          </button>
+        </div>
+      </section><!-- /模块B -->
+
+      <!-- 模块C：标识体系与层级构建（2页） -->
+      <section class="module-section" id="module-mark">
+        <div class="module-header">
+          <div class="module-label">C · IDENTITY & HIERARCHY</div>
+          <h2 class="module-title">标识体系与层级构建</h2>
+          <div class="module-sub">信息秩序 + 空间秩序，构建大地图双螺旋架构</div>
+        </div>
+        <div class="module-content">
+
+      <!-- 标识体系面板 -->
+      <div class="mark-panel" id="markPanel">
+        <div class="mark-inner">
+          <!-- 页1：标识体系设计迭代 -->
+          <div class="mark-page active" data-mark-page="0">
+            <div class="mark-evolution-flip">
+              <!-- 上侧：迭代契机（轻量tag一行） -->
+              <div class="evo-flip-trigger-v2">
+                <span class="evo-trigger-label">迭代契机</span>
+                <span class="evo-trigger-tag">
+                  <span class="evo-tag-num">01</span>
+                  <span class="evo-tag-text">缩放层级扩展</span>
+                </span>
+                <span class="evo-trigger-tag">
+                  <span class="evo-tag-num">02</span>
+                  <span class="evo-tag-text">功能点位过载</span>
+                </span>
+                <span class="evo-trigger-tag">
+                  <span class="evo-tag-num">03</span>
+                  <span class="evo-tag-text">捉宠玩法对齐</span>
+                </span>
+              </div>
+
+              <!-- 翻转卡片 -->
+              <div class="evo-flip-card" id="evoFlipCard">
+                <div class="evo-flip-card-inner">
+                  <!-- 正面：V1.0（黄框黑底） -->
+                  <div class="evo-flip-card-front">
+                    <div class="evo-card-v1">
+                      <div class="evo-card-side evo-card-left">
+                        <div class="evo-card-title">功能驱动期</div>
+                        <div class="evo-card-sub">早期版本 · 快速迭代</div>
+                        <div class="evo-card-desc">地图功能快速扩张期，按功能模块逐个接入标识，满足"能用"的基本需求</div>
+                      </div>
+                      <div class="evo-card-side evo-card-right">
+                        <div class="evo-card-section-label">设计内容</div>
+                        <div class="evo-card-grid">
+                          <div class="evo-card-cell">
+                            <div class="evo-cell-t">分类方式</div>
+                            <div class="evo-cell-d">按功能模块划分</div>
+                          </div>
+                          <div class="evo-card-cell">
+                            <div class="evo-cell-t">视觉层级</div>
+                            <div class="evo-cell-d">A~E 五档分级</div>
+                          </div>
+                          <div class="evo-card-cell">
+                            <div class="evo-cell-t">缩放关联</div>
+                            <div class="evo-cell-d">按需显隐</div>
+                          </div>
+                          <div class="evo-card-cell">
+                            <div class="evo-cell-t">特点</div>
+                            <div class="evo-cell-d">接入灵活</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 背面：V2.0（黄卡黑字） -->
+                  <div class="evo-flip-card-back">
+                    <div class="evo-card-v2">
+                      <div class="evo-card-side evo-card-left">
+                        <div class="evo-card-title dark">体验驱动期</div>
+                        <div class="evo-card-sub dark">当前版本 · 体系化设计</div>
+                        <div class="evo-card-desc dark">以优先级为骨架，绑定缩放层级与视觉重要性，构建可扩展体系</div>
+                      </div>
+                      <div class="evo-card-side evo-card-right">
+                        <div class="evo-card-section-label dark">设计内容</div>
+                        <div class="evo-priority-list">
+                          <div class="evo-p-item"><span class="evo-p-tag p0">P0</span><span class="evo-p-name">核心设施</span><span class="evo-p-meta">1~11级 · A级</span></div>
+                          <div class="evo-p-item"><span class="evo-p-tag p1">P1</span><span class="evo-p-name">限时/主活动</span><span class="evo-p-meta">12~21级 · A/B级</span></div>
+                          <div class="evo-p-item"><span class="evo-p-tag p2">P2</span><span class="evo-p-name">重要点位</span><span class="evo-p-meta">22~32级 · B级</span></div>
+                          <div class="evo-p-item"><span class="evo-p-tag p3">P3</span><span class="evo-p-name">普通点位</span><span class="evo-p-meta">33~46级 · B/C级</span></div>
+                          <div class="evo-p-item"><span class="evo-p-tag p4">P4</span><span class="evo-p-name">一次性探索</span><span class="evo-p-meta">47级 · C级</span></div>
+                          <div class="evo-p-item"><span class="evo-p-tag p5">P5</span><span class="evo-p-name">系统功能交互</span><span class="evo-p-meta">任意 · C/D级</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 提示：卡片下方 -->
+              <div class="evo-flip-hint-v2">
+                <span class="hint-deco-left"></span>
+                <span class="hint-text">点击卡片翻转查看</span>
+                <span class="hint-deco-right"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页2：UI层级构建 -->
+          <div class="mark-page" data-mark-page="1">
+            <div class="layer-unified">
+              <div class="layer-u-item top">
+                <div class="layer-u-num">L7</div>
+                <div class="layer-u-bar"></div>
+                <div class="layer-u-content">
+                  <div class="layer-u-name">系统 UI 层</div>
+                  <div class="layer-u-desc">地图界面外的系统级 UI，包括顶部系统按钮栏、单位缩略面板、地图外管理功能，作为地图功能的操作载体</div>
+                </div>
+              </div>
+              <div class="layer-u-item">
+                <div class="layer-u-num">L6</div>
+                <div class="layer-u-bar"></div>
+                <div class="layer-u-content">
+                  <div class="layer-u-name">地图 UI 层</div>
+                  <div class="layer-u-desc">直接叠加在地图上的交互元素，包括点位图标、中心锚点、玩家坐标、缩放等级指示器，是玩家与地图交互的主要层</div>
+                </div>
+              </div>
+              <div class="layer-u-item">
+                <div class="layer-u-num">L5</div>
+                <div class="layer-u-bar"></div>
+                <div class="layer-u-content">
+                  <div class="layer-u-name">区块边界线</div>
+                  <div class="layer-u-desc">一级区域与二级区域的边界线，纯视觉分隔作用，不承载交互，帮助玩家快速建立空间认知</div>
+                </div>
+              </div>
+              <div class="layer-u-item">
+                <div class="layer-u-num">L4</div>
+                <div class="layer-u-bar"></div>
+                <div class="layer-u-content">
+                  <div class="layer-u-name">装饰 / 网格层</div>
+                  <div class="layer-u-desc">辅助定位的网格线与装饰性元素，提升地图可读性和视觉质感，不参与核心交互</div>
+                </div>
+              </div>
+              <div class="layer-u-item">
+                <div class="layer-u-num">L3</div>
+                <div class="layer-u-bar"></div>
+                <div class="layer-u-content">
+                  <div class="layer-u-name">迷雾层</div>
+                  <div class="layer-u-desc">未探索区域的遮挡效果，随玩家探索逐步揭开，提供探索反馈与成就感</div>
+                </div>
+              </div>
+              <div class="layer-u-item">
+                <div class="layer-u-num">L2</div>
+                <div class="layer-u-bar"></div>
+                <div class="layer-u-content">
+                  <div class="layer-u-name">地图区域层</div>
+                  <div class="layer-u-desc">大地图像素级地形底图，关联地图缩放层级，是所有上层元素的空间参照基础</div>
+                </div>
+              </div>
+              <div class="layer-u-item bottom">
+                <div class="layer-u-num">L1</div>
+                <div class="layer-u-bar"></div>
+                <div class="layer-u-content">
+                  <div class="layer-u-name">无响应区域层</div>
+                  <div class="layer-u-desc">大海等无直接交互的区域，支持特殊功能，是地图的最底层</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        </div><!-- /module-content -->
+        <div class="module-nav" data-module="mark">
+          <button class="module-nav-btn module-prev" data-dir="prev">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="module-nav-dots">
+            <div class="module-nav-dot active" data-slide="0">1</div>
+            <div class="module-nav-dot" data-slide="1">2</div>
+          </div>
+          <button class="module-nav-btn module-next" data-dir="next">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+          </button>
+        </div>
+      </section><!-- /模块C -->
+
+      <!-- 模块D：信息模块化设计（3页） -->
+      <section class="module-section" id="module-infomodule">
+        <div class="module-header">
+          <div class="module-label">D · INFO MODULARIZATION</div>
+          <h2 class="module-title">信息模块化设计</h2>
+          <div class="module-sub">从准心模式到自由探索，交互语言与资源信息的体系化重构</div>
+        </div>
+        <div class="module-content">
+
+      <!-- 信息模块化设计面板 -->
+      <div class="info-module-panel" id="infoModulePanel">
+        <div class="mark-inner">
+          <!-- 页1：信息模块设计迭代 - 幕布转场 -->
+          <div class="im-page active" data-im-page="0">
+            <div class="im-curtain-wrap">
+              <!-- 迭代契机 -->
+              <div class="im-curtain-triggers">
+                <span class="im-ct-label">迭代契机</span>
+                <span class="im-ct-tag">准心模式操作效率低</span>
+                <span class="im-ct-tag">资源信息分散，浏览成本高</span>
+                <span class="im-ct-tag">多场景切换需求出现</span>
+                <span class="im-ct-tag">移动端手势体验待优化</span>
+              </div>
+
+              <!-- 幕布舞台 -->
+              <div class="im-curtain-stage" id="imCurtainStage">
+                <!-- V1.0 面板 -->
+                <div class="im-curtain-panel im-panel-v1 active" data-panel="v1">
+                  <div class="im-panel-head">
+                    <div class="im-panel-title">准心模式</div>
+                    <div class="im-panel-sub">v1.0 · 早期版本 · 功能导向</div>
+                  </div>
+                  <div class="im-panel-section">
+                    <div class="im-panel-label">设计模式</div>
+                    <div class="im-panel-desc">中心准心 + 点击弹出信息面板，聚焦单点信息展示</div>
+                  </div>
+                  <div class="im-panel-section">
+                    <div class="im-panel-label">交互方式</div>
+                    <div class="im-panel-grid">
+                      <div class="im-grid-cell">
+                        <div class="im-grid-cell-t">选中方式</div>
+                        <div class="im-grid-cell-d">中心准心瞄准</div>
+                      </div>
+                      <div class="im-grid-cell">
+                        <div class="im-grid-cell-t">信息展示</div>
+                        <div class="im-grid-cell-d">悬浮弹窗</div>
+                      </div>
+                      <div class="im-grid-cell">
+                        <div class="im-grid-cell-t">资源浏览</div>
+                        <div class="im-grid-cell-d">逐一点击查看</div>
+                      </div>
+                      <div class="im-grid-cell">
+                        <div class="im-grid-cell-t">缩放操作</div>
+                        <div class="im-grid-cell-d">单指 / 按钮</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="im-panel-section">
+                    <div class="im-panel-label">信息板类型</div>
+                    <div class="im-panel-desc">玩家本人 / 世界BOSS / 高塔 / 传送点 / 帕鲁 / 物品信息 / 自定义标识 / 据点 / 服务 / 建筑道具使用 — 共10类独立面板</div>
+                  </div>
+                </div>
+
+                <!-- V2.0 面板 -->
+                <div class="im-curtain-panel im-panel-v2" data-panel="v2">
+                  <div class="im-panel-head">
+                    <div class="im-panel-title">自由探索模式</div>
+                    <div class="im-panel-sub">v2.0 · 当前版本 · 体验导向</div>
+                  </div>
+                  <div class="im-panel-section">
+                    <div class="im-panel-label">设计目标</div>
+                    <div class="im-panel-desc">无准心自由选择 + 右侧资源整合窗，降低操作门槛，提升信息获取效率</div>
+                  </div>
+                  <div class="im-panel-section">
+                    <div class="im-panel-label">四大升级</div>
+                    <div class="im-upgrade-list">
+                      <div class="im-up-item"><span class="im-up-tag">01</span><span class="im-up-name">交互方式重构</span><span class="im-up-meta">无准心 + 自由选择</span></div>
+                      <div class="im-up-item"><span class="im-up-tag">02</span><span class="im-up-name">资源信息整合</span><span class="im-up-meta">右侧窗统一展示</span></div>
+                      <div class="im-up-item"><span class="im-up-tag">03</span><span class="im-up-name">双指缩放新增</span><span class="im-up-meta">移动端手势优化</span></div>
+                      <div class="im-up-item"><span class="im-up-tag">04</span><span class="im-up-name">多场景切换</span><span class="im-up-meta">大世界 / 公会 / 社交主城</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 幕布 -->
+                <div class="im-curtain" id="imCurtain"></div>
+              </div>
+
+              <!-- 底部提示 -->
+              <div class="im-curtain-hint">
+                <span class="hint-dot"></span>
+                <span>点击卡片切换</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页2：交互设计语言体系 -->
+          <div class="im-page" data-im-page="1">
+            <div class="im-lang-wrap">
+              <div class="im-lang-title">交互设计语言体系</div>
+              <div class="im-lang-sub">从手势到反馈，建立统一的地图交互语言</div>
+
+              <div class="im-lang-grid">
+                <!-- 手势交互 -->
+                <div class="im-lang-card">
+                  <div class="im-lang-card-head">
+                    <span class="im-lang-icon">✋</span>
+                    <span class="im-lang-card-title">手势交互体系</span>
+                  </div>
+                  <div class="im-lang-list">
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">单指拖拽</div>
+                      <div class="im-lang-item-desc">平移地图视野，惯性滚动提升流畅感</div>
+                    </div>
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">双指缩放</div>
+                      <div class="im-lang-item-desc">5档缩放层级，无级过渡，以触点为中心缩放</div>
+                    </div>
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">单击选中</div>
+                      <div class="im-lang-item-desc">自由点击点位，右侧窗展示详情，取消准心束缚</div>
+                    </div>
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">双击放大</div>
+                      <div class="im-lang-item-desc">快速定位至点击区域，逐级放大</div>
+                    </div>
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">双指旋转</div>
+                      <div class="im-lang-item-desc">可选开启，满足视角偏好，默认锁定北向上</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 反馈体系 -->
+                <div class="im-lang-card">
+                  <div class="im-lang-card-head">
+                    <span class="im-lang-icon">✨</span>
+                    <span class="im-lang-card-title">反馈设计体系</span>
+                  </div>
+                  <div class="im-lang-list">
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">视觉反馈</div>
+                      <div class="im-lang-item-desc">选中态高亮 + 缩放动效 + 右侧窗滑入动画</div>
+                    </div>
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">层级反馈</div>
+                      <div class="im-lang-item-desc">缩放切换时点位渐入渐出，按优先级依次显现</div>
+                    </div>
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">状态反馈</div>
+                      <div class="im-lang-item-desc">加载态 / 空状态 / 锁定态 均有明确视觉提示</div>
+                    </div>
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">触控反馈</div>
+                      <div class="im-lang-item-desc">点击点位轻微震动 + 触感反馈，确认操作有效</div>
+                    </div>
+                    <div class="im-lang-item">
+                      <div class="im-lang-item-name">转场反馈</div>
+                      <div class="im-lang-item-desc">场景切换时淡入淡出 + 进度指示，感知过渡过程</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="im-lang-principle">
+                <div class="im-lang-prin-title">设计原则</div>
+                <div class="im-lang-prin-grid">
+                  <div class="im-lang-prin-item">
+                    <div class="im-lang-prin-num">01</div>
+                    <div class="im-lang-prin-text">直觉优先 — 操作符合玩家预期，零学习成本</div>
+                  </div>
+                  <div class="im-lang-prin-item">
+                    <div class="im-lang-prin-num">02</div>
+                    <div class="im-lang-prin-text">反馈及时 — 每步操作都有对应视觉/触感回应</div>
+                  </div>
+                  <div class="im-lang-prin-item">
+                    <div class="im-lang-prin-num">03</div>
+                    <div class="im-lang-prin-text">层级一致 — 同类交互统一反馈节奏和视觉语言</div>
+                  </div>
+                  <div class="im-lang-prin-item">
+                    <div class="im-lang-prin-num">04</div>
+                    <div class="im-lang-prin-text">容错友好 — 误操作可撤销，关键操作二次确认</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页3：场景切换与资源整合 -->
+          <div class="im-page" data-im-page="2">
+            <div class="im-scene-wrap">
+              <div class="im-scene-title">场景切换 & 资源信息整合</div>
+              <div class="im-scene-sub">多场景统一框架 + 资源信息模块化规则</div>
+
+              <div class="im-scene-section">
+                <div class="im-scene-sec-title">多场景切换体系</div>
+                <div class="im-scene-cards">
+                  <div class="im-scene-card">
+                    <div class="im-scene-card-icon">🌍</div>
+                    <div class="im-scene-card-name">大世界</div>
+                    <div class="im-scene-card-desc">主探索场景，全量点位类型，P0-P5完整优先级体系，传送/副本/收集/任务全功能</div>
+                  </div>
+                  <div class="im-scene-card">
+                    <div class="im-scene-card-icon">🏰</div>
+                    <div class="im-scene-card-name">公会场景</div>
+                    <div class="im-scene-card-desc">公会专属区域，精简点位类型：公会建筑 / 成员位置 / 资源点，侧重管理与协作</div>
+                  </div>
+                  <div class="im-scene-card">
+                    <div class="im-scene-card-icon">🏙️</div>
+                    <div class="im-scene-card-name">社交主城</div>
+                    <div class="im-scene-card-desc">玩家聚集场景，点位类型：NPC / 商店 / 活动入口 / 社交功能，侧重导航与社交</div>
+                  </div>
+                </div>
+                <div class="im-scene-rule">
+                  <div class="im-scene-rule-label">切换规则</div>
+                  <div class="im-scene-rule-text">顶部场景Tab一键切换 · 记住各场景独立视角 · 切换动效淡入淡出 · 当前场景高亮标识</div>
+                </div>
+              </div>
+
+              <div class="im-scene-section">
+                <div class="im-scene-sec-title">右侧资源窗模块化规则</div>
+                <div class="im-module-grid">
+                  <div class="im-module-item">
+                    <div class="im-module-tag">M01</div>
+                    <div class="im-module-info">
+                      <div class="im-module-name">点位详情模块</div>
+                      <div class="im-module-desc">选中点位后展示名称、类型、描述、操作按钮</div>
+                    </div>
+                  </div>
+                  <div class="im-module-item">
+                    <div class="im-module-tag">M02</div>
+                    <div class="im-module-info">
+                      <div class="im-module-name">筛选器模块</div>
+                      <div class="im-module-desc">按类型/优先级/状态筛选点位，可多选组合</div>
+                    </div>
+                  </div>
+                  <div class="im-module-item">
+                    <div class="im-module-tag">M03</div>
+                    <div class="im-module-info">
+                      <div class="im-module-name">搜索模块</div>
+                      <div class="im-module-desc">关键词搜索点位，支持模糊匹配 + 历史记录</div>
+                    </div>
+                  </div>
+                  <div class="im-module-item">
+                    <div class="im-module-tag">M04</div>
+                    <div class="im-module-info">
+                      <div class="im-module-name">探索度模块</div>
+                      <div class="im-module-desc">区域探索进度、收集品完成度、成就追踪</div>
+                    </div>
+                  </div>
+                  <div class="im-module-item">
+                    <div class="im-module-tag">M05</div>
+                    <div class="im-module-info">
+                      <div class="im-module-name">标记管理模块</div>
+                      <div class="im-module-desc">自定义标记增删改查、分类管理、批量操作</div>
+                    </div>
+                  </div>
+                  <div class="im-module-item">
+                    <div class="im-module-tag">M06</div>
+                    <div class="im-module-info">
+                      <div class="im-module-name">场景切换模块</div>
+                      <div class="im-module-desc">大世界/公会/主城 Tab切换，独立记忆视角</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="im-scene-rule">
+                  <div class="im-scene-rule-label">设计原则</div>
+                  <div class="im-scene-rule-text">模块独立可插拔 · 不同场景按需加载模块 · 统一间距/圆角/字体规范 · 展开收起状态记忆</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        </div><!-- /module-content -->
+        <div class="module-nav" data-module="infomodule">
+          <button class="module-nav-btn module-prev" data-dir="prev">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="module-nav-dots">
+            <div class="module-nav-dot active" data-slide="0">1</div>
+            <div class="module-nav-dot" data-slide="1">2</div>
+            <div class="module-nav-dot" data-slide="2">3</div>
+          </div>
+          <button class="module-nav-btn module-next" data-dir="next">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+          </button>
+        </div>
+      </section><!-- /模块D -->
+
+      <!-- 模块E：多系统耦合处理思考（单页） -->
+      <section class="module-section" id="module-coupling">
+        <div class="module-header">
+          <div class="module-label">E · SYSTEM DECOUPLING</div>
+          <h2 class="module-title">多系统耦合处理思考</h2>
+          <div class="module-sub">三层解耦架构 + 五大策略，从设计到前端建立边界规则</div>
+        </div>
+        <div class="module-content">
+
+      <!-- 系统耦合防范措施面板 -->
+      <div class="coupling-panel" id="couplingPanel">
+        <div class="coupling-wrap">
+          <div class="coupling-title">系统耦合防范措施</div>
+          <div class="coupling-sub">从架构设计到前端落地，建立多层解耦防御体系</div>
+
+          <!-- 问题引入 -->
+          <div class="coupling-problem">
+            <div class="coupling-problem-title danger">
+              <span class="coupling-icon danger">⚠</span>
+              <span>为什么大地图容易产生耦合问题</span>
+            </div>
+            <div class="coupling-problem-desc">
+              大地图是游戏中系统耦合最多的界面——任务、副本、收集、BOSS、活动、公会……
+              所有系统都想在地图上「插一脚」。如果没有边界规则，最终会变成一锅粥：
+              改一个系统牵一发而动全身，新功能接入要改多处代码，出问题不知道谁的锅。
+            </div>
+            <div class="coupling-problem-list">
+              <div class="coupling-problem-item">
+                <span class="coupling-p-num">01</span>
+                <div>
+                  <div class="coupling-p-name">数据耦合</div>
+                  <div class="coupling-p-desc">各系统直接读写地图数据，没有统一数据入口</div>
+                </div>
+              </div>
+              <div class="coupling-problem-item">
+                <span class="coupling-p-num">02</span>
+                <div>
+                  <div class="coupling-p-name">逻辑耦合</div>
+                  <div class="coupling-p-desc">地图UI里直接写各系统的业务逻辑，越堆越乱</div>
+                </div>
+              </div>
+              <div class="coupling-problem-item">
+                <span class="coupling-p-num">03</span>
+                <div>
+                  <div class="coupling-p-name">表现耦合</div>
+                  <div class="coupling-p-desc">各系统点位样式不统一，各写各的渲染逻辑</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 三层解耦架构 -->
+          <div class="coupling-arch">
+            <div class="coupling-arch-title">
+              <span class="coupling-icon">🏗</span>
+              <span>三层解耦架构</span>
+            </div>
+            <div class="coupling-layers">
+              <div class="coupling-layer layer-top">
+                <div class="coupling-layer-head">
+                  <span class="coupling-layer-tag">L3</span>
+                  <span class="coupling-layer-name">表现层</span>
+                  <span class="coupling-layer-desc">UMG Widget / Lua UI Component</span>
+                </div>
+                <div class="coupling-layer-body">
+                  组件化UI · 统一点位基类 · 样式配置化 · 状态机驱动显隐
+                </div>
+              </div>
+              <div class="coupling-layer-arrow">↓ 通过统一接口调用 ↓</div>
+              <div class="coupling-layer layer-mid">
+                <div class="coupling-layer-head">
+                  <span class="coupling-layer-tag">L2</span>
+                  <span class="coupling-layer-name">逻辑层</span>
+                  <span class="coupling-layer-desc">MapSystem / EventBus</span>
+                </div>
+                <div class="coupling-layer-body">
+                  事件总线通信 · 统一数据协议 · 优先级调度 · 生命周期管理
+                </div>
+              </div>
+              <div class="coupling-layer-arrow">↓ 通过数据层读写 ↓</div>
+              <div class="coupling-layer layer-bot">
+                <div class="coupling-layer-head">
+                  <span class="coupling-layer-tag">L1</span>
+                  <span class="coupling-layer-name">数据层</span>
+                  <span class="coupling-layer-desc">MapData / Config</span>
+                </div>
+                <div class="coupling-layer-body">
+                  配置表驱动 · 数据订阅机制 · 只读访问 · 状态与表现分离
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 五大解耦策略 -->
+          <div class="coupling-strategies">
+            <div class="coupling-strat-title">
+              <span class="coupling-icon">🛡</span>
+              <span>五大解耦策略</span>
+            </div>
+            <div class="coupling-strat-grid">
+              <div class="coupling-strat-card">
+                <div class="coupling-strat-head">
+                  <span class="coupling-strat-num">01</span>
+                  <span class="coupling-strat-name">配置化驱动</span>
+                </div>
+                <div class="coupling-strat-desc">
+                  点位信息、筛选规则、显隐逻辑全部走配置表，新系统接入不需要改地图核心代码
+                </div>
+                <div class="coupling-strat-how">
+                  <div class="csh-title">落地方式</div>
+                  <div class="csh-steps">
+                    <span>配表声明</span>
+                    <span class="csh-arrow">→</span>
+                    <span>自动注册</span>
+                    <span class="csh-arrow">→</span>
+                    <span>即时生效</span>
+                  </div>
+                </div>
+              </div>
+              <div class="coupling-strat-card">
+                <div class="coupling-strat-head">
+                  <span class="coupling-strat-num">02</span>
+                  <span class="coupling-strat-name">事件总线通信</span>
+                </div>
+                <div class="coupling-strat-desc">
+                  各系统不直接调用地图接口，通过事件总线发布订阅，系统间完全解耦
+                </div>
+                <div class="coupling-strat-how">
+                  <div class="csh-title">落地方式</div>
+                  <div class="csh-steps">
+                    <span>发布事件</span>
+                    <span class="csh-arrow">→</span>
+                    <span>总线转发</span>
+                    <span class="csh-arrow">→</span>
+                    <span>地图响应</span>
+                  </div>
+                </div>
+              </div>
+              <div class="coupling-strat-card">
+                <div class="coupling-strat-head">
+                  <span class="coupling-strat-num">03</span>
+                  <span class="coupling-strat-name">组件化UI</span>
+                </div>
+                <div class="coupling-strat-desc">
+                  统一点位基类，公共逻辑（缩放、选中、tooltip）基类实现，业务系统只扩展差异
+                </div>
+                <div class="coupling-strat-how">
+                  <div class="csh-title">落地方式</div>
+                  <div class="csh-steps">
+                    <span>继承基类</span>
+                    <span class="csh-arrow">→</span>
+                    <span>覆写差异</span>
+                    <span class="csh-arrow">→</span>
+                    <span>自动复用</span>
+                  </div>
+                </div>
+              </div>
+              <div class="coupling-strat-card">
+                <div class="coupling-strat-head">
+                  <span class="coupling-strat-num">04</span>
+                  <span class="coupling-strat-name">数据订阅机制</span>
+                </div>
+                <div class="coupling-strat-desc">
+                  数据层统一管理，UI层订阅数据变化。谁改数据谁通知，UI只负责响应刷新
+                </div>
+                <div class="coupling-strat-how">
+                  <div class="csh-title">落地方式</div>
+                  <div class="csh-steps">
+                    <span>数据变更</span>
+                    <span class="csh-arrow">→</span>
+                    <span>自动通知</span>
+                    <span class="csh-arrow">→</span>
+                    <span>UI刷新</span>
+                  </div>
+                </div>
+              </div>
+              <div class="coupling-strat-card">
+                <div class="coupling-strat-head">
+                  <span class="coupling-strat-num">05</span>
+                  <span class="coupling-strat-name">优先级调度器</span>
+                </div>
+                <div class="coupling-strat-desc">
+                  点位显隐、动效、加载统一由调度器管理，避免各系统各自控制导致层级冲突
+                </div>
+                <div class="coupling-strat-how">
+                  <div class="csh-title">落地方式</div>
+                  <div class="csh-steps">
+                    <span>注册申请</span>
+                    <span class="csh-arrow">→</span>
+                    <span>调度排序</span>
+                    <span class="csh-arrow">→</span>
+                    <span>统一执行</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 实践案例 -->
+          <div class="coupling-practice">
+            <div class="coupling-practice-title">
+              <span class="coupling-icon">💡</span>
+              <span>实践案例：区域探索功能接入</span>
+            </div>
+            <div class="coupling-practice-body">
+              <div class="coupling-practice-item">
+                <div class="coupling-practice-label">接入前的耦合风险</div>
+                <div class="coupling-practice-content">
+                  区域探索涉及声望、商栈、Boss、公会4个子系统，如果各子系统直接往地图塞UI，
+                  会导致地图代码里混入大量探索业务逻辑，后续改动任何子系统都要改地图
+                </div>
+              </div>
+              <div class="coupling-practice-item">
+                <div class="coupling-practice-label">解耦后的接入方式</div>
+                <div class="coupling-practice-content">
+                  ① 各子系统独立维护自己的点位数据，通过配表声明类型和优先级
+                  ② 统一通过EventBus通知地图增删点位，不直接操作地图Widget
+                  ③ 探索详情窗作为独立模块接入右侧窗，通过ModuleManager动态加载卸载
+                  ④ 各子系统只负责提供数据，地图只负责渲染和交互，职责清晰
+                </div>
+              </div>
+              <div class="coupling-practice-item">
+                <div class="coupling-practice-label">效果</div>
+                <div class="coupling-practice-content">
+                  新增子系统不需要修改地图核心代码，配表 + 注册事件即可接入；
+                  地图出bug时可以快速定位是数据层、逻辑层还是表现层的问题，排查效率提升
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        </div><!-- /module-content -->
+      </section><!-- /模块E -->
+
     </div><!-- display-area -->
 
   <script>
   (function() {
     'use strict';
 
-    /* ===== 系统数据（每个系统包含多个页面） ===== */
-    var systems = [
-      {
-        name: '大地图系统',
-        label: 'MAP // SYSTEM',
-        pages: [
-          { subtitle: '地图版本优化历程', tags: ['版本迭代', '需求分析', '体验优化'], hasTimeline: true },
-          { subtitle: '竞品分析与方案选型_01', tags: ['竞品分析', '选品逻辑', '四象限定位'], competitiveIdx: 0 },
-          { subtitle: '竞品分析与方案选型_02', tags: ['竞品分析', '三维评估', '横向对比'], competitiveIdx: 1 },
-          { subtitle: '竞品分析与方案选型_03', tags: ['竞品分析', '选型推演', '决策路径'], competitiveIdx: 2 },
-          { subtitle: '标识体系与层级构建', tags: ['标识体系', '层级架构', '分类系统'] },
-          { subtitle: '信息模块化设计', tags: ['信息模块', '交互语言', '信息层级'] },
-          { subtitle: '系统耦合防范措施', tags: ['解耦设计', '组件规范', '边界定义'] }
-        ]
-      },
-      { name: '建造系统', label: 'BUILD // SYSTEM', pages: [] },
-      { name: '玩法外围框架', label: 'GAMEPLAY // SYSTEM', pages: [] },
-      { name: '活动中心', label: 'ACTIVITY // SYSTEM', pages: [] },
-      { name: '角色升级系统', label: 'LEVEL // SYSTEM', pages: [] }
+    /* ===== 模块数据 ===== */
+    var modules = [
+      { id: 'module-timeline', name: '地图版本优化历程', pageCount: 1 },
+      { id: 'module-competitive', name: '竞品分析与方案选型', pageCount: 3 },
+      { id: 'module-mark', name: '标识体系与层级构建', pageCount: 2 },
+      { id: 'module-infomodule', name: '信息模块化设计', pageCount: 3 },
+      { id: 'module-coupling', name: '多系统耦合处理思考', pageCount: 1 },
     ];
+    var curModuleIdx = 0;
 
-    var total = systems.length;
-    var curSys = 0;   // 当前系统索引
-    var curPage = 0;   // 当前页签索引
+    /* ===== 各模块当前子页 ===== */
+    var modulePages = {
+      competitive: 0,
+      mark: 0,
+      infomodule: 0,
+    };
 
     /* ===== DOM ===== */
     var navItems = document.querySelectorAll('.nav-item');
-    var displayTitle = document.getElementById('displayTitle');
-    var displaySubtitle = document.getElementById('displaySubtitle');
-    var titleLabel = document.getElementById('titleLabel');
-    var counterNum = document.getElementById('counterNum');
-    var counterLabel = document.getElementById('counterLabel');
-    var displayTag = document.getElementById('displayTag');
-    var emptyHint = document.getElementById('emptyHint');
-    var pageDots = document.getElementById('pageDots');
+    var displayArea = document.getElementById('displayArea');
     var sideNav = document.getElementById('sideNav');
     var mobileToggle = document.getElementById('mobileToggle');
 
@@ -1578,8 +4007,8 @@
       var ox = Math.random() * 100;
       var oy = Math.random() * 100;
       var size = 1 + Math.random() * 2;
-      var speed = 0.02 + Math.random() * 0.04; // 向上飘动速度（%/帧）
-      var phase = Math.random() * Math.PI * 2;   // 呼吸相位
+      var speed = 0.02 + Math.random() * 0.04;
+      var phase = Math.random() * Math.PI * 2;
       pd.style.width = size + 'px';
       pd.style.height = size + 'px';
       particlesEl.appendChild(pd);
@@ -1591,15 +4020,12 @@
       particleEls.push(pd);
     }
 
-    // 延迟淡入
     for (var fi = 0; fi < particleEls.length; fi++) {
       (function(el, delay) {
         setTimeout(function() { el.style.opacity = '0.3'; }, delay);
       })(particleEls[fi], fi * 25 + Math.random() * 500);
     }
 
-    // 鼠标追踪
-    var displayArea = document.getElementById('displayArea');
     displayArea.addEventListener('mousemove', function(e) {
       var rect = displayArea.getBoundingClientRect();
       mouseX = (e.clientX - rect.left) / rect.width * 100;
@@ -1609,7 +4035,6 @@
       mouseX = -999; mouseY = -999;
     });
 
-    // 动画循环
     function animateParticles() {
       var rect = displayArea.getBoundingClientRect();
       var w = rect.width, h = rect.height;
@@ -1619,7 +4044,6 @@
         var d = particleData[i];
         d.time += 0.016;
 
-        // 自动向上飘动 + 水平轻微摆动
         d.y -= d.speed;
         if (d.y < -2) {
           d.y = 102;
@@ -1630,7 +4054,6 @@
         var baseX = d.ox + sway;
         var baseY = d.y;
 
-        // 鼠标推离
         var offX = 0, offY = 0, opacity = d.baseOpacity;
         if (mouseActive) {
           var dx = baseX - mouseX;
@@ -1642,302 +4065,239 @@
             var angle = Math.atan2(dy, dx);
             offX = Math.cos(angle) * force;
             offY = Math.sin(angle) * force;
-            opacity = Math.min(1, d.baseOpacity + 0.5);
+            opacity = d.baseOpacity + (1 - d.baseOpacity) * (1 - dist / radius) * 0.6;
           }
         }
 
-        var finalX = baseX + offX;
-        var finalY = baseY + offY;
-        // 转为像素偏移（基于原始百分比位置）
-        var px = d.x - d.ox + (finalX - d.x);
-        var py = d.y - d.oy + (finalY - d.y);
-        // 简化：直接用百分比位置计算像素
-        var posX = finalX / 100 * w;
-        var posY = finalY / 100 * h;
-        particleEls[i].style.transform = 'translate(' + posX + 'px,' + posY + 'px)';
-        particleEls[i].style.opacity = String(opacity);
+        particleEls[i].style.left = (baseX + offX) + '%';
+        particleEls[i].style.top = (baseY + offY) + '%';
+        particleEls[i].style.opacity = opacity;
       }
+
       requestAnimationFrame(animateParticles);
     }
-    // 启动动画（首帧延迟确保DOM就绪）
-    setTimeout(function() { requestAnimationFrame(animateParticles); }, 100);
+    animateParticles();
 
-    /* ===== 生成页签dots ===== */
-    function buildDots(pageCount) {
-      pageDots.innerHTML = '';
-      for (var i = 0; i < pageCount; i++) {
-        var dot = document.createElement('div');
-        dot.className = 'switcher-dot' + (i === 0 ? ' active' : '');
-        dot.dataset.index = i;
-        pageDots.appendChild(dot);
-        (function(idx) {
-          dot.addEventListener('click', function() { flipPage(idx); });
-        })(i);
-      }
-    }
-    var dots = [];
-
-    /* ===== 切换系统 ===== */
-    function switchSystem(index) {
-      if (index < 0) index = total - 1;
-      if (index >= total) index = 0;
-      navItems[curSys].classList.remove('active');
-      curSys = index;
-      navItems[curSys].classList.add('active');
-
-      var sys = systems[curSys];
-      titleLabel.textContent = sys.label;
-      displaySubtitle.textContent = sys.name;
-
-      var pageCount = Math.max(sys.pages.length, 1);
-      buildDots(pageCount);
-      dots = document.querySelectorAll('.switcher-dot');
-      curPage = 0;
-
-      if (sys.pages.length > 0) {
-        emptyHint.style.display = 'none';
-        flipPage(0, true);
-      } else {
-        emptyHint.style.display = '';
-        displayTitle.textContent = '';
-        displayTitle.classList.remove('fade');
-        counterNum.textContent = '--';
-        counterLabel.textContent = '维护中';
-        displayTag.innerHTML = '<span class="display-tag-item">维护中</span>';
-        var vt = document.getElementById('versionTimeline');
-        vt.classList.remove('active');
-      }
-
-      if (window.innerWidth <= 768) sideNav.classList.remove('open');
-    }
-
-    /* ===== 翻页（页签内） ===== */
-    function flipPage(index, instant) {
-      var sys = systems[curSys];
-      var pageCount = Math.max(sys.pages.length, 1);
-      if (index < 0) index = pageCount - 1;
-      if (index >= pageCount) index = 0;
-      curPage = index;
-      var page = sys.pages[curPage];
-
-      if (instant) {
-        displayTitle.textContent = page.subtitle;
-        displayTitle.classList.remove('fade');
-      } else {
-        displayTitle.classList.add('fade');
-        setTimeout(function() {
-          displayTitle.textContent = page.subtitle;
-          displayTitle.classList.remove('fade');
-        }, 300);
-      }
-
-      counterNum.textContent = String(curPage + 1).padStart(2, '0');
-      counterLabel.textContent = page.subtitle;
-
-      displayTag.innerHTML = '';
-      page.tags.forEach(function(t) {
-        var span = document.createElement('span');
-        span.className = 'display-tag-item'; span.textContent = t;
-        displayTag.appendChild(span);
-      });
-
-      for (var d = 0; d < dots.length; d++) {
-        dots[d].classList.toggle('active', d === curPage);
-      }
-
-      // 时间轴显隐
-      var vt = document.getElementById('versionTimeline');
-      if (sys.pages[curPage] && sys.pages[curPage].hasTimeline) {
-        vt.classList.add('active');
-      } else {
-        vt.classList.remove('active');
-      }
-
-      // 竞品分析面板显隐 + 子页切换
-      var cp = document.getElementById('competitivePanel');
-      var pageData = sys.pages[curPage];
-      if (pageData && pageData.competitiveIdx !== undefined) {
-        cp.classList.add('active');
-        var idx = pageData.competitiveIdx;
-        cpPages.forEach(function(p, i) { p.classList.toggle('active', i === idx); });
-      } else {
-        cp.classList.remove('active');
-      }
-    }
-
+    /* ===== 内部页面引用 ===== */
     var cpPages = document.querySelectorAll('.cp-page');
+    var markPages = document.querySelectorAll('.mark-page');
+    var imPages = document.querySelectorAll('.im-page');
 
-    /* ===== 竞品tooltip 数据与交互 ===== */
-    var cpTooltipData = {
-      yanyun: {
-        name: '燕云十六声', tag: 'MMO · 任务收集',
-        avatarClass: 'cp-avatar-yanyun', avatarText: '燕',
-        sections: [
-          { title: '核心参考', items: ['多层级筛选器体系', '地区区块切换器', '探索度进度量化', '标记系统分类规范'] },
-          { title: '交互特点', items: ['拖拽过地图自动关闭筛选器', '空白区域双击关闭侧窗', '单人/多人双模式切换'] }
-        ]
-      },
-      genshin: {
-        name: '原神', tag: '开放世界 · 交互标杆',
-        avatarClass: 'cp-avatar-genshin', avatarText: '原',
-        sections: [
-          { title: '核心参考', items: ['极简信息架构，扁平层级', '直觉式交互，学习成本极低', '探索驱动力设计天花板', '传送锚点 + 七天神像体系'] },
-          { title: '交互特点', items: ['点击空白关闭面板', '缩放自动定位当前区域', '分层筛选简洁高效'] }
-        ]
-      },
-      nikki: {
-        name: '无限暖暖', tag: '开放世界 · 收集交互',
-        avatarClass: 'cp-avatar-nikki', avatarText: '暖',
-        sections: [
-          { title: '核心参考', items: ['拖拽即筛选的轻量交互', '进入地图自动触发定位', '收集度作为探索反馈', '未解锁区域迷雾区分'] },
-          { title: '交互特点', items: ['点击空白拖拽关闭侧窗', '对应一级区域板块后再次出现', '缩放后默认定位玩家所在区域'] }
-        ]
-      },
-      emo: {
-        name: '伊莫', tag: '捉宠 · 探索（未上线）',
-        avatarClass: 'cp-avatar-emo', avatarText: '伊',
-        sections: [
-          { title: '核心参考', items: ['宠物收集度作为核心反馈', '区域图鉴与地图联动', '捉宠流程与地图标记结合'] },
-          { title: '交互特点', items: ['聚焦捉宠的专项交互设计', '宠物分布可视化呈现', '稀有度标记层级清晰'] }
-        ]
-      },
-      locke: {
-        name: '洛克王国世界', tag: '捉宠 · 探索',
-        avatarClass: 'cp-avatar-locke', avatarText: '洛',
-        sections: [
-          { title: '核心参考', items: ['二级区域展开查看', '图鉴驱动的探索体系', '图标化筛选操作', '自动 / 手动布局切换'] },
-          { title: '交互特点', items: ['一级地图概览 + 二级详情', '筛选器一键展开收起', '宠物点位密集但不拥挤'] }
-        ]
-      },
-      once: {
-        name: '七日世界', tag: '生存建造 · 资源收集',
-        avatarClass: 'cp-avatar-once', avatarText: '七',
-        sections: [
-          { title: '核心参考', items: ['资源点标记与筛选体系', '基地建造位置标记', '危险区域等级划分'] },
-          { title: '交互特点', items: ['开启筛选器屏蔽所有信息', '关闭只能用按钮，空白无响应', '工具化倾向，沉浸感弱'] }
-        ]
-      }
-    };
+    /* ===== 多页模块固定高度（防止切换时上下晃动） ===== */
+    function setModuleFixedHeight(pages, container) {
+      if (!pages || pages.length < 2) return;
+      var maxHeight = 0;
+      var originalStyles = [];
 
-    var cpTooltipEl = document.getElementById('cpTooltip');
-    var cpTooltipAvatar = document.getElementById('cpTooltipAvatar');
-    var cpTooltipName = document.getElementById('cpTooltipName');
-    var cpTooltipTag = document.getElementById('cpTooltipTag');
-    var cpTooltipBody = document.getElementById('cpTooltipBody');
-
-    function showCpTooltip(gameKey, targetEl) {
-      var data = cpTooltipData[gameKey];
-      if (!data) return;
-
-      // 填充内容
-      cpTooltipAvatar.className = 'cp-tt-avatar ' + data.avatarClass;
-      cpTooltipAvatar.textContent = data.avatarText;
-      cpTooltipName.textContent = data.name;
-      cpTooltipTag.textContent = data.tag;
-
-      var bodyHtml = '';
-      data.sections.forEach(function(sec) {
-        bodyHtml += '<div class="cp-tt-section"><div class="cp-tt-section-title">' + sec.title + '</div><ul class="cp-tt-list">';
-        sec.items.forEach(function(item) {
-          bodyHtml += '<li>' + item + '</li>';
-        });
-        bodyHtml += '</ul></div>';
+      // 临时显示所有页面来测量高度
+      pages.forEach(function(p, i) {
+        originalStyles[i] = {
+          display: p.style.display,
+          position: p.style.position,
+          visibility: p.style.visibility,
+          opacity: p.style.opacity
+        };
+        p.style.position = 'relative';
+        p.style.visibility = 'hidden';
+        p.style.opacity = '0';
+        if (p.classList.contains('cp-page')) {
+          p.style.display = 'flex';
+        } else {
+          p.style.display = 'block';
+        }
       });
-      cpTooltipBody.innerHTML = bodyHtml;
 
-      // 先显示以获取尺寸
-      cpTooltipEl.classList.add('show');
-      cpTooltipEl.style.visibility = 'hidden';
+      // 测量最大高度
+      pages.forEach(function(p) {
+        var h = p.offsetHeight;
+        if (h > maxHeight) maxHeight = h;
+      });
 
-      // 计算位置
-      var rect = targetEl.getBoundingClientRect();
-      var tipW = cpTooltipEl.offsetWidth;
-      var tipH = cpTooltipEl.offsetHeight;
-      var gap = 12;
+      // 恢复样式
+      pages.forEach(function(p, i) {
+        p.style.display = originalStyles[i].display;
+        p.style.position = originalStyles[i].position;
+        p.style.visibility = originalStyles[i].visibility;
+        p.style.opacity = originalStyles[i].opacity;
+      });
 
-      // 优先显示在右侧，空间不够则左侧，再不够则上下
-      var left, top;
-      var posClass = 'pos-right';
+      // 设置容器最小高度
+      if (container && maxHeight > 0) {
+        container.style.minHeight = maxHeight + 'px';
+      }
+    }
 
-      var rightSpace = window.innerWidth - rect.right - gap;
-      var leftSpace = rect.left - gap;
-      var topSpace = rect.top - gap;
-      var bottomSpace = window.innerHeight - rect.bottom - gap;
+    // 初始化时设置固定高度
+    function initFixedHeights() {
+      // 竞品分析模块
+      var cpInner = document.querySelector('.cp-inner');
+      setModuleFixedHeight(cpPages, cpInner);
 
-      if (rightSpace >= tipW) {
-        // 右侧空间足够
-        left = rect.right + gap;
-        top = rect.top + rect.height / 2 - tipH / 2;
-        posClass = 'pos-right';
-      } else if (leftSpace >= tipW) {
-        // 左侧空间足够
-        left = rect.left - tipW - gap;
-        top = rect.top + rect.height / 2 - tipH / 2;
-        posClass = 'pos-left';
-      } else if (topSpace >= tipH) {
-        // 上方空间足够
-        left = rect.left + rect.width / 2 - tipW / 2;
-        top = rect.top - tipH - gap;
-        posClass = 'pos-top';
+      // 标识体系模块
+      var markPanel = document.querySelector('.mark-panel');
+      setModuleFixedHeight(markPages, markPanel);
+
+      // 信息模块
+      var infoPanel = document.querySelector('.info-module-panel');
+      setModuleFixedHeight(imPages, infoPanel);
+    }
+
+    // 延迟执行确保内容渲染完成
+    setTimeout(initFixedHeights, 100);
+    // 窗口变化时重新计算
+    var resizeTimer = null;
+    window.addEventListener('resize', function() {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(initFixedHeights, 200);
+    });
+
+    /* ===== 模块内翻页 ===== */
+    function flipModulePage(moduleKey, direction) {
+      var current = modulePages[moduleKey];
+      var total = 0;
+      var pages;
+      if (moduleKey === 'competitive') { total = cpPages.length; pages = cpPages; }
+      else if (moduleKey === 'mark') { total = markPages.length; pages = markPages; }
+      else if (moduleKey === 'infomodule') { total = imPages.length; pages = imPages; }
+
+      var next = current + direction;
+      if (next < 0) next = 0;
+      if (next >= total) next = total - 1;
+      if (next === current) return;
+
+      modulePages[moduleKey] = next;
+      pages.forEach(function(p, i) { p.classList.toggle('active', i === next); });
+
+      // 更新dots
+      var section = document.getElementById('module-' + moduleKey);
+      if (section) {
+        var dots = section.querySelectorAll('.module-nav-dot');
+        dots.forEach(function(d, i) { d.classList.toggle('active', i === next); });
+        var prevBtn = section.querySelector('.module-prev');
+        var nextBtn = section.querySelector('.module-next');
+        if (prevBtn) prevBtn.disabled = (next === 0);
+        if (nextBtn) nextBtn.disabled = (next === total - 1);
+      }
+
+      // 特殊：竞品分析第二页条形图动画
+      if (moduleKey === 'competitive' && next === 1 && !barAnimPlayed) {
+        barAnimPlayed = true;
+        setTimeout(animateBars, 250);
+      }
+    }
+
+    /* ===== 模块导航按钮事件 ===== */
+    document.querySelectorAll('.module-nav-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var nav = this.closest('.module-nav');
+        var moduleKey = nav.dataset.module;
+        var dir = this.dataset.dir === 'prev' ? -1 : 1;
+        flipModulePage(moduleKey, dir);
+      });
+    });
+
+    document.querySelectorAll('.module-nav-dot').forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        var nav = this.closest('.module-nav');
+        var moduleKey = nav.dataset.module;
+        var target = parseInt(this.dataset.slide);
+        var current = modulePages[moduleKey];
+        var diff = target - current;
+        if (diff !== 0) flipModulePage(moduleKey, diff);
+      });
+    });
+
+    /* ===== 左侧导航点击滚动到对应模块 ===== */
+    function scrollToModule(index) {
+      if (index < 0 || index >= modules.length) return;
+      var el = document.getElementById(modules[index].id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      curModuleIdx = index;
+    }
+
+    navItems.forEach(function(item, idx) {
+      item.addEventListener('click', function() {
+        var i = parseInt(this.dataset.index);
+        if (i === 0) {
+          scrollToModule(0);
+        }
+        if (window.innerWidth <= 768) sideNav.classList.remove('open');
+      });
+    });
+
+    /* ===== 滚动监听 - 更新导航激活状态 ===== */
+    var scrollTimer = null;
+    var scrollHint = document.getElementById('scrollHint');
+    displayArea.addEventListener('scroll', function() {
+      // 滚动提示：滚过一屏后隐藏
+      if (displayArea.scrollTop > 100) {
+        scrollHint.classList.add('hidden');
       } else {
-        // 底部兜底
-        left = rect.left + rect.width / 2 - tipW / 2;
-        top = rect.bottom + gap;
-        posClass = 'pos-bottom';
+        scrollHint.classList.remove('hidden');
       }
 
-      // 边界修正
-      if (left < 10) left = 10;
-      if (left + tipW > window.innerWidth - 10) left = window.innerWidth - tipW - 10;
-      if (top < 10) top = 10;
-      if (top + tipH > window.innerHeight - 10) top = window.innerHeight - tipH - 10;
+      if (scrollTimer) return;
+      scrollTimer = setTimeout(function() {
+        scrollTimer = null;
+        var viewHeight = displayArea.clientHeight;
+        var activeIdx = 0;
 
-      cpTooltipEl.style.left = left + 'px';
-      cpTooltipEl.style.top = top + 'px';
-      cpTooltipEl.className = 'cp-game-tooltip show ' + posClass;
-      cpTooltipEl.style.visibility = 'visible';
-    }
-
-    function hideCpTooltip() {
-      cpTooltipEl.classList.remove('show');
-    }
-
-    document.querySelectorAll('.cp-game-point').forEach(function(point) {
-      point.addEventListener('mouseenter', function() {
-        showCpTooltip(this.dataset.game, this);
-      });
-      point.addEventListener('mouseleave', function() {
-        hideCpTooltip();
-      });
-    });
-
-    /* ===== 条形图交互：hover联动高亮 ===== */
-    // 悬停某个游戏的条形时，三个维度中该游戏的条形同时高亮，其他变暗
-    document.querySelectorAll('.cp-bar-item').forEach(function(item) {
-      item.addEventListener('mouseenter', function() {
-        var game = this.dataset.game;
-        document.querySelectorAll('.cp-bar-item').forEach(function(el) {
-          if (el.dataset.game === game) {
-            el.classList.add('highlight');
-            el.classList.remove('dimmed');
-          } else {
-            el.classList.add('dimmed');
-            el.classList.remove('highlight');
+        for (var i = 0; i < modules.length; i++) {
+          var el = document.getElementById(modules[i].id);
+          if (!el) continue;
+          var rect = el.getBoundingClientRect();
+          var displayRect = displayArea.getBoundingClientRect();
+          var relativeTop = rect.top - displayRect.top;
+          if (relativeTop < viewHeight * 0.4) {
+            activeIdx = i;
           }
-        });
-      });
-      item.addEventListener('mouseleave', function() {
-        document.querySelectorAll('.cp-bar-item').forEach(function(el) {
-          el.classList.remove('highlight', 'dimmed');
-        });
-      });
+        }
+
+        if (activeIdx !== curModuleIdx) {
+          navItems[curModuleIdx].classList.remove('active');
+          curModuleIdx = activeIdx;
+          navItems[0].classList.add('active');
+        }
+      }, 50);
     });
 
-    // 条形图入场动画
+    /* ===== 键盘导航 ===== */
+    mobileToggle.addEventListener('click', function() { sideNav.classList.toggle('open'); });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        scrollToModule(curModuleIdx - 1);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        scrollToModule(curModuleIdx + 1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        var m = modules[curModuleIdx];
+        if (m.pageCount > 1) {
+          var key = m.id.replace('module-', '');
+          flipModulePage(key, -1);
+        }
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        var m2 = modules[curModuleIdx];
+        if (m2.pageCount > 1) {
+          var key2 = m2.id.replace('module-', '');
+          flipModulePage(key2, 1);
+        }
+      }
+    });
+
+    /* ===== 条形图动画（保留原逻辑） ===== */
+    var barAnimPlayed = false;
     function animateBars() {
-      var fills = document.querySelectorAll('.cp-bar-fill');
-      fills.forEach(function(fill, idx) {
-        var targetWidth = fill.style.width;
+      var barItems = document.querySelectorAll('.cp-bar-item');
+      barItems.forEach(function(item, idx) {
+        var fill = item.querySelector('.cp-bar-fill');
+        if (!fill) return;
+        var score = item.dataset.score || 0;
+        var targetWidth = score + '%';
         fill.style.width = '0%';
         setTimeout(function() {
           fill.style.width = targetWidth;
@@ -1945,38 +4305,344 @@
       });
     }
 
-    /* ===== 事件绑定 ===== */
-    navItems.forEach(function(item) {
-      item.addEventListener('click', function() { switchSystem(parseInt(this.dataset.index)); });
-    });
-    document.getElementById('pagePrev').addEventListener('click', function() {
-      flipPage(curPage - 1);
-      checkBarAnim();
-    });
-    document.getElementById('pageNext').addEventListener('click', function() {
-      flipPage(curPage + 1);
-      checkBarAnim();
-    });
-    mobileToggle.addEventListener('click', function() { sideNav.classList.toggle('open'); });
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'ArrowLeft') { e.preventDefault(); flipPage(curPage - 1); checkBarAnim(); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); flipPage(curPage + 1); checkBarAnim(); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); switchSystem(curSys - 1); }
-      else if (e.key === 'ArrowDown') { e.preventDefault(); switchSystem(curSys + 1); }
-    });
+    /* ===== 初始化 - 默认显示所有面板内容 ===== */
+    // 时间轴默认显示
+    var vt = document.getElementById('versionTimeline');
+    if (vt) vt.classList.add('active');
 
-    // 检查是否需要播放条形图动画
-    var barAnimPlayed = false;
-    function checkBarAnim() {
-      // 竞品分析模块（第4个系统，index=3）的第2页（cp-page=1）
-      if (curSys === 3 && curPage === 1 && !barAnimPlayed) {
-        barAnimPlayed = true;
-        setTimeout(animateBars, 250);
-      }
+    // 竞品分析默认显示第一页
+    var cp = document.getElementById('competitivePanel');
+    if (cp) {
+      cp.classList.add('active');
+      cpPages.forEach(function(p, i) { p.classList.toggle('active', i === 0); });
     }
 
-    /* ===== 初始化 ===== */
-    switchSystem(0);
+    // 标识体系默认显示第一页
+    var mk = document.getElementById('markPanel');
+    if (mk) {
+      mk.classList.add('active');
+      markPages.forEach(function(p, i) { p.classList.toggle('active', i === 0); });
+    }
+
+    // 信息模块默认显示第一页
+    var im = document.getElementById('infoModulePanel');
+    if (im) {
+      im.classList.add('active');
+      imPages.forEach(function(p, i) { p.classList.toggle('active', i === 0); });
+    }
+
+    // 耦合面板默认显示
+    var cpl = document.getElementById('couplingPanel');
+    if (cpl) cpl.classList.add('active');
+
+    // 初始化按钮禁用状态
+    ['competitive', 'mark', 'infomodule'].forEach(function(key) {
+      var section = document.getElementById('module-' + key);
+      if (!section) return;
+      var prevBtn = section.querySelector('.module-prev');
+      if (prevBtn) prevBtn.disabled = true;
+    });
+
+    /* ===== 竞品分析 Tooltip ===== */
+    var cpTooltip = document.getElementById('cpTooltip');
+    var cpTooltipAvatar = document.getElementById('cpTooltipAvatar');
+    var cpTooltipName = document.getElementById('cpTooltipName');
+    var cpTooltipTag = document.getElementById('cpTooltipTag');
+    var cpTooltipBody = document.getElementById('cpTooltipBody');
+
+    // 游戏数据
+    var gameData = {
+      yanyun: {
+        name: '燕云十六声',
+        tag: '开放世界 · 武侠',
+        avatarClass: 'cp-avatar-yanyun',
+        avatarText: '燕',
+        sections: [
+          {
+            title: '地图特点',
+            items: ['超大无缝开放世界', '地形丰富：山林/城镇/荒野', '强探索驱动设计']
+          },
+          {
+            title: '交互亮点',
+            items: ['多层级缩放地图', 'POI分类筛选系统', '自定义标记功能']
+          },
+          {
+            title: '可借鉴',
+            items: ['探索点密度控制', '地形与导航的结合', '大世界信息分层']
+          }
+        ]
+      },
+      genshin: {
+        name: '原神',
+        tag: '开放世界 · 探索',
+        avatarClass: 'cp-avatar-genshin',
+        avatarText: '原',
+        sections: [
+          {
+            title: '地图特点',
+            items: ['提瓦特七国大陆', '区域风格差异极大', '七天神像解锁机制']
+          },
+          {
+            title: '交互亮点',
+            items: ['神像传送网络', '分层探索奖励', '树脂系统控制节奏']
+          },
+          {
+            title: '可借鉴',
+            items: ['区域解锁的成就感', '地图与剧情的结合', '探索内容的密度管理']
+          }
+        ]
+      },
+      nikki: {
+        name: '无限暖暖',
+        tag: '开放世界 · 收集',
+        avatarClass: 'cp-avatar-nikki',
+        avatarText: '暖',
+        sections: [
+          {
+            title: '地图特点',
+            items: ['治愈系开放世界', '穿搭探索核心玩法', '场景互动丰富']
+          },
+          {
+            title: '交互亮点',
+            items: ['拍照打卡点系统', '穿搭与环境互动', '轻量化导航设计']
+          },
+          {
+            title: '可借鉴',
+            items: ['收集型探索体验', '女性向UI审美', '轻量化信息架构']
+          }
+        ]
+      },
+      emo: {
+        name: '伊洛纳',
+        tag: ' Roguelike · 生存',
+        avatarClass: 'cp-avatar-emo',
+        avatarText: '伊',
+        sections: [
+          {
+            title: '地图特点',
+            items: ['像素风开放世界', '高自由度探索', '随机事件驱动']
+          },
+          {
+            title: '交互亮点',
+            items: ['极简地图界面', '功能型信息优先', '生存数据实时展示']
+          },
+          {
+            title: '可借鉴',
+            items: ['信息密度控制', '极简设计哲学', '生存类信息优先级']
+          }
+        ]
+      },
+      locke: {
+        name: '洛克王国',
+        tag: '宠物收集 · 社交',
+        avatarClass: 'cp-avatar-locke',
+        avatarText: '洛',
+        sections: [
+          {
+            title: '地图特点',
+            items: ['多区域场景切换', '宠物栖息地分布', '儿童向友好设计']
+          },
+          {
+            title: '交互亮点',
+            items: ['场景式地图导航', '宠物出没点标注', '轻量化UI风格']
+          },
+          {
+            title: '可借鉴',
+            items: ['宠物与地图的关联', '场景切换的流畅性', '低龄友好信息层级']
+          }
+        ]
+      },
+      once: {
+        name: '七日世界',
+        tag: '生存建造 · 多人',
+        avatarClass: 'cp-avatar-once',
+        avatarText: '七',
+        sections: [
+          {
+            title: '地图特点',
+            items: ['末日生存开放世界', '基地建造系统', '多人协作探索']
+          },
+          {
+            title: '交互亮点',
+            items: ['资源点地图标注', '基地位置管理', '多人共享地图']
+          },
+          {
+            title: '可借鉴',
+            items: ['资源信息整合', '多人协作地图设计', '生存类信息优先级']
+          }
+        ]
+      }
+    };
+
+    function showCpTooltip(gameKey, targetEl) {
+      var data = gameData[gameKey];
+      if (!data) return;
+
+      // 填充内容
+      cpTooltipAvatar.className = 'cp-tt-avatar ' + data.avatarClass;
+      cpTooltipName.textContent = data.name;
+      cpTooltipTag.textContent = data.tag;
+
+      // 填充内容区
+      var bodyHtml = '';
+      data.sections.forEach(function(sec) {
+        bodyHtml += '<div class="cp-tt-section">';
+        bodyHtml += '<div class="cp-tt-section-title">' + sec.title + '</div>';
+        bodyHtml += '<ul class="cp-tt-list">';
+        sec.items.forEach(function(item) {
+          bodyHtml += '<li>' + item + '</li>';
+        });
+        bodyHtml += '</ul></div>';
+      });
+      cpTooltipBody.innerHTML = bodyHtml;
+
+      // 计算位置
+      var targetRect = targetEl.getBoundingClientRect();
+      var tooltipWidth = 260;
+      var tooltipHeight = cpTooltip.offsetHeight || 200;
+      var gap = 10;
+
+      var left, top, posClass = '';
+
+      // 优先放在右边
+      if (targetRect.right + gap + tooltipWidth < window.innerWidth) {
+        left = targetRect.right + gap;
+        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
+        posClass = 'pos-right';
+      } else if (targetRect.left - gap - tooltipWidth > 0) {
+        left = targetRect.left - gap - tooltipWidth;
+        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
+        posClass = 'pos-left';
+      } else if (targetRect.top - gap - tooltipHeight > 0) {
+        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+        top = targetRect.top - gap - tooltipHeight;
+        posClass = 'pos-top';
+      } else {
+        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+        top = targetRect.bottom + gap;
+        posClass = 'pos-bottom';
+      }
+
+      // 边界修正
+      left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
+      top = Math.max(10, Math.min(top, window.innerHeight - tooltipHeight - 10));
+
+      cpTooltip.style.left = left + 'px';
+      cpTooltip.style.top = top + 'px';
+      cpTooltip.className = 'cp-game-tooltip show ' + posClass;
+    }
+
+    function hideCpTooltip() {
+      cpTooltip.classList.remove('show');
+    }
+
+    // 绑定事件
+    var gamePoints = document.querySelectorAll('.cp-game-point');
+    var barItems = document.querySelectorAll('.cp-bar-item');
+    gamePoints.forEach(function(point) {
+      point.addEventListener('mouseenter', function(e) {
+        var gameKey = point.dataset.game;
+        showCpTooltip(gameKey, point);
+        // 联动高亮进度条
+        barItems.forEach(function(item) {
+          if (item.dataset.game === gameKey) {
+            item.classList.add('highlight');
+            item.classList.remove('dimmed');
+          } else {
+            item.classList.add('dimmed');
+            item.classList.remove('highlight');
+          }
+        });
+      });
+      point.addEventListener('mouseleave', function() {
+        hideCpTooltip();
+        // 恢复进度条
+        barItems.forEach(function(item) {
+          item.classList.remove('highlight');
+          item.classList.remove('dimmed');
+        });
+      });
+    });
+
+    // 进度条hover反向联动
+    barItems.forEach(function(item) {
+      item.addEventListener('mouseenter', function() {
+        var gameKey = item.dataset.game;
+        barItems.forEach(function(other) {
+          if (other.dataset.game === gameKey) {
+            other.classList.add('highlight');
+            other.classList.remove('dimmed');
+          } else {
+            other.classList.add('dimmed');
+            other.classList.remove('highlight');
+          }
+        });
+        // 同时高亮对应游戏图标
+        gamePoints.forEach(function(point) {
+          if (point.dataset.game === gameKey) {
+            point.classList.add('highlight');
+          } else {
+            point.classList.add('dimmed');
+          }
+        });
+      });
+      item.addEventListener('mouseleave', function() {
+        barItems.forEach(function(other) {
+          other.classList.remove('highlight');
+          other.classList.remove('dimmed');
+        });
+        gamePoints.forEach(function(point) {
+          point.classList.remove('highlight');
+          point.classList.remove('dimmed');
+        });
+      });
+    });
+
+    /* ===== 标识体系翻转卡片交互 ===== */
+    var flipCard = document.getElementById('evoFlipCard');
+    if (flipCard) {
+      flipCard.addEventListener('click', function() {
+        flipCard.classList.toggle('flipped');
+      });
+    }
+
+    /* ===== D1 幕布转场交互 ===== */
+    var imStage = document.getElementById('imCurtainStage');
+    var imCurtain = document.getElementById('imCurtain');
+    var imPanels = document.querySelectorAll('.im-curtain-panel');
+    var imCurtainAnimating = false;
+    var imCurrentPanel = 'v1';
+
+    if (imStage && imCurtain && imPanels.length > 0) {
+      imStage.addEventListener('click', function() {
+        if (imCurtainAnimating) return;
+        imCurtainAnimating = true;
+
+        // 幕布下滑
+        imCurtain.classList.remove('animate-up');
+        imCurtain.classList.add('animate-down');
+
+        // 幕布完全覆盖后切换内容
+        setTimeout(function() {
+          var nextPanel = imCurrentPanel === 'v1' ? 'v2' : 'v1';
+          imPanels.forEach(function(p) {
+            p.classList.remove('active');
+          });
+          document.querySelector('.im-curtain-panel[data-panel="' + nextPanel + '"]').classList.add('active');
+          imCurrentPanel = nextPanel;
+
+          // 幕布上滑收起
+          imCurtain.classList.remove('animate-down');
+          imCurtain.classList.add('animate-up');
+
+          // 动画结束后重置
+          setTimeout(function() {
+            imCurtainAnimating = false;
+          }, 500);
+        }, 500);
+      });
+    }
+
   })();
   </script>
 </body>
