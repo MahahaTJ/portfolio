@@ -205,6 +205,43 @@
     }
     .module-section:last-child { border-bottom: none; }
 
+    /* 系统面板切换 */
+    .system-panel {
+      display: none;
+    }
+    .system-panel.active {
+      display: block;
+      animation: systemFadeIn 0.4s var(--ease);
+    }
+    @keyframes systemFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 占位页 */
+    .system-placeholder {
+      justify-content: center;
+    }
+    .placeholder-box {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    .placeholder-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.6;
+    }
+    .placeholder-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--ink2);
+      margin-bottom: 0.5rem;
+    }
+    .placeholder-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
     /* 底部滚动提示 */
     .scroll-hint {
       position: fixed;
@@ -1100,6 +1137,695 @@
       font-size: 0.8rem;
       color: var(--muted);
       line-height: 1.6;
+    }
+
+    /* ===== F. 玩法外围框架 ===== */
+    .gameplay-hero {
+      text-align: center;
+      padding: 1.5rem 0 2rem;
+    }
+    .gameplay-hero-tag {
+      display: inline-block;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(255, 250, 0, 0.08);
+      border: 1px solid rgba(255, 250, 0, 0.2);
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.8rem;
+    }
+    .gameplay-hero-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .gameplay-hero-sub {
+      font-size: 0.88rem;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* 玩法流程卡片 */
+    .gp-flow-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.6rem;
+      margin: 1.2rem 0;
+    }
+    .gp-flow-card {
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.8rem 0.7rem;
+      text-align: center;
+      transition: all 0.25s var(--ease);
+      position: relative;
+    }
+    .gp-flow-card:hover {
+      border-color: var(--accent-dim, rgba(255,250,0,0.3));
+      transform: translateY(-2px);
+    }
+    .gp-flow-card::after {
+      content: '→';
+      position: absolute;
+      right: -0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+    .gp-flow-card:last-child::after { display: none; }
+    .gp-flow-icon {
+      font-size: 1.4rem;
+      margin-bottom: 0.4rem;
+    }
+    .gp-flow-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .gp-flow-desc {
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* 双版本对比 */
+    .gp-version-row {
+      display: grid;
+      grid-template-columns: 1fr 40px 1fr;
+      gap: 0.6rem;
+      margin: 1rem 0;
+      align-items: stretch;
+    }
+    .gp-ver-col {
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 1rem 1.1rem;
+    }
+    .gp-ver-col.v1 { border-top: 2px solid var(--muted2, #6c6e75); }
+    .gp-ver-col.v2 { border-top: 2px solid var(--accent); }
+    .gp-ver-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+    .gp-ver-label {
+      font-family: monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+    .gp-ver-col.v1 .gp-ver-label { color: var(--muted); }
+    .gp-ver-col.v2 .gp-ver-label { color: var(--accent); }
+    .gp-ver-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .gp-ver-list { list-style: none; padding: 0; }
+    .gp-ver-list li {
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding-left: 0.9rem;
+      position: relative;
+      margin-bottom: 0.25rem;
+      line-height: 1.6;
+    }
+    .gp-ver-list li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* 副本类型矩阵 */
+    .gp-dungeon-matrix {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+      margin: 1rem 0;
+    }
+    .gp-dungeon-card {
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 1rem;
+      transition: border-color 0.2s var(--ease);
+    }
+    .gp-dungeon-card:hover {
+      border-color: rgba(255, 250, 0, 0.3);
+    }
+    .gp-dungeon-head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+    .gp-dungeon-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: rgba(255, 250, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .gp-dungeon-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .gp-dungeon-type {
+      font-size: 0.72rem;
+      color: var(--accent);
+    }
+    .gp-dungeon-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+    }
+    .gp-dungeon-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+    .gp-dungeon-feat {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      color: var(--muted);
+    }
+
+    /* 结算流程 */
+    .gp-settle-flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .gp-settle-step {
+      flex: 1;
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.8rem;
+      text-align: center;
+      position: relative;
+    }
+    .gp-settle-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: -0.55rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 7px solid var(--accent-dim, rgba(255,250,0,0.4));
+      z-index: 1;
+    }
+    .gp-settle-num {
+      font-family: monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .gp-settle-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .gp-settle-detail {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* 设计理念卡片 */
+    .gp-philosophy-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.7rem;
+      margin: 1rem 0;
+    }
+    .gp-philo-card {
+      background: linear-gradient(135deg, rgba(255,250,0,0.04), rgba(255,250,0,0.01));
+      border: 1px solid rgba(255, 250, 0, 0.15);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+    }
+    .gp-philo-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .gp-philo-title::before {
+      content: '';
+      width: 3px;
+      height: 0.9em;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    .gp-philo-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* 页内导航 */
+    .gp-sub-nav {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+    }
+    .gp-sub-nav-item {
+      padding: 0.4rem 0.9rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+    .gp-sub-nav-item:hover {
+      color: var(--text);
+      border-color: rgba(255, 250, 0, 0.3);
+    }
+    .gp-sub-nav-item.active {
+      color: var(--accent);
+      background: rgba(255, 250, 0, 0.08);
+      border-color: rgba(255, 250, 0, 0.3);
+      font-weight: 600;
+    }
+
+    /* 页切换容器 */
+    .gp-pages {
+      position: relative;
+    }
+    .gp-page {
+      display: none;
+      animation: fadeSlideIn 0.4s var(--ease);
+    }
+    .gp-page.active {
+      display: block;
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 页1：入口与引导 - 引导路径图 */
+    .gp-entry-paths {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin: 1rem 0;
+    }
+    .gp-entry-path {
+      display: flex;
+      align-items: stretch;
+      gap: 0.8rem;
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      transition: border-color 0.2s var(--ease);
+    }
+    .gp-entry-path:hover {
+      border-color: rgba(255, 250, 0, 0.25);
+    }
+    .gp-entry-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(255, 250, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .gp-entry-content { flex: 1; }
+    .gp-entry-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .gp-entry-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 0.4rem;
+    }
+    .gp-entry-steps {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+    }
+    .gp-entry-step {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 3px;
+      color: var(--muted2);
+    }
+    .gp-entry-arrow {
+      color: var(--accent);
+      font-size: 0.7rem;
+      font-family: monospace;
+    }
+
+    /* 页3：局内HUD */
+    .gp-hud-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin: 1rem 0;
+    }
+    .gp-hud-zone {
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.9rem;
+    }
+    .gp-hud-zone-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .gp-hud-zone-title span {
+      font-family: monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .gp-hud-items { list-style: none; padding: 0; }
+    .gp-hud-items li {
+      font-size: 0.78rem;
+      color: var(--muted);
+      padding: 0.2rem 0 0.2rem 0.9rem;
+      position: relative;
+      line-height: 1.5;
+    }
+    .gp-hud-items li::before {
+      content: '○';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.6rem;
+      top: 0.3rem;
+    }
+
+    /* 页4：结算机制对比 */
+    .gp-settle-compare {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+      margin: 1rem 0;
+    }
+    .gp-settle-type {
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+    }
+    .gp-settle-type-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .gp-settle-type-sub {
+      font-size: 0.72rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .gp-settle-type-list { list-style: none; padding: 0; }
+    .gp-settle-type-list li {
+      font-size: 0.78rem;
+      color: var(--muted);
+      padding-left: 0.9rem;
+      position: relative;
+      margin-bottom: 0.2rem;
+      line-height: 1.5;
+    }
+    .gp-settle-type-list li::before {
+      content: '✦';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.65rem;
+      top: 0.15rem;
+    }
+
+    /* ===== 玩法特色组件 ===== */
+    /* 高光时刻卡片 */
+    .gp-highlight-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.7rem;
+      margin: 1rem 0;
+    }
+    .gp-highlight-card {
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s var(--ease);
+    }
+    .gp-highlight-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s var(--ease);
+    }
+    .gp-highlight-card:hover {
+      border-color: rgba(255,250,0,0.3);
+      transform: translateY(-2px);
+    }
+    .gp-highlight-card:hover::before {
+      opacity: 1;
+    }
+    .gp-highlight-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      filter: drop-shadow(0 0 8px rgba(255,250,0,0.3));
+    }
+    .gp-highlight-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .gp-highlight-desc {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* 玩家旅程时间线 */
+    .gp-journey {
+      position: relative;
+      margin: 1.2rem 0;
+      padding: 0 1rem;
+    }
+    .gp-journey-line {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent-dim), var(--rule));
+      transform: translateX(-50%);
+      opacity: 0.3;
+    }
+    .gp-journey-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .gp-journey-item:nth-child(even) {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+    .gp-journey-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      position: absolute;
+      left: 50%;
+      top: 0.3rem;
+      transform: translateX(-50%);
+      z-index: 2;
+      box-shadow: 0 0 8px rgba(255,250,0,0.4);
+      flex-shrink: 0;
+    }
+    .gp-journey-content {
+      flex: 1;
+      max-width: calc(50% - 1rem);
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+    }
+    .gp-journey-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.3rem;
+    }
+    .gp-journey-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .gp-journey-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* 情绪曲线条 */
+    .gp-emotion-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.3rem;
+      height: 80px;
+      margin: 1rem 0;
+      padding: 0 0.5rem;
+    }
+    .gp-emotion-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .gp-emotion-bar-item {
+      width: 100%;
+      background: linear-gradient(to top, rgba(255,250,0,0.1), rgba(255,250,0,0.4));
+      border-radius: 4px 4px 0 0;
+      transition: all 0.5s var(--ease);
+      position: relative;
+    }
+    .gp-emotion-bar-item::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(255,250,0,0.6);
+    }
+    .gp-emotion-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* 玩法标签云 */
+    .gp-tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+    .gp-feat-tag {
+      padding: 0.3rem 0.8rem;
+      background: rgba(255,250,0,0.06);
+      border: 1px solid rgba(255,250,0,0.15);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 500;
+      transition: all 0.2s var(--ease);
+    }
+    .gp-feat-tag:hover {
+      background: rgba(255,250,0,0.12);
+      transform: scale(1.05);
+    }
+
+    /* 场景化描述块 */
+    .gp-scenario-block {
+      background: linear-gradient(135deg, rgba(255,250,0,0.03), transparent);
+      border: 1px solid var(--rule);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 1rem 1.2rem;
+      margin: 1rem 0;
+      position: relative;
+    }
+    .gp-scenario-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    .gp-scenario-text {
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .gp-scenario-text em {
+      color: var(--accent);
+      font-style: normal;
+      font-weight: 600;
     }
 
     /* 页1：标识体系迭代 - 左右结构 */
@@ -2815,19 +3541,19 @@
         </div>
         <div class="nav-item" data-index="1">
           <div class="nav-item-icon"><div class="nav-item-icon-inner">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
           </div></div>
           <div class="nav-item-text">
-            <div class="nav-item-name">建造系统</div>
-            <div class="nav-item-ver">维护中</div>
+            <div class="nav-item-name">副本/玩法系统</div>
+            <div class="nav-item-ver">v1.0-v2.0</div>
           </div>
         </div>
         <div class="nav-item" data-index="2">
           <div class="nav-item-icon"><div class="nav-item-icon-inner">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           </div></div>
           <div class="nav-item-text">
-            <div class="nav-item-name">玩法外围框架</div>
+            <div class="nav-item-name">建造_孵化系统</div>
             <div class="nav-item-ver">维护中</div>
           </div>
         </div>
@@ -2837,15 +3563,6 @@
           </div></div>
           <div class="nav-item-text">
             <div class="nav-item-name">活动中心</div>
-            <div class="nav-item-ver">维护中</div>
-          </div>
-        </div>
-        <div class="nav-item" data-index="4">
-          <div class="nav-item-icon"><div class="nav-item-icon-inner">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14h4v6H4zM10 10h4v10h-4zM16 6h4v14h-4z"/></svg>
-          </div></div>
-          <div class="nav-item-text">
-            <div class="nav-item-name">角色升级系统</div>
             <div class="nav-item-ver">维护中</div>
           </div>
         </div>
@@ -2865,6 +3582,9 @@
           </svg>
         </div>
       </div>
+
+      <!-- 系统1：大地图系统 -->
+      <div class="system-panel active" data-system="0">
 
       <!-- 模块A：地图版本优化历程（单页） -->
       <section class="module-section" id="module-timeline">
@@ -3958,24 +4678,644 @@
         </div><!-- /module-content -->
       </section><!-- /模块E -->
 
+      </div><!-- /大地图系统 -->
+
+      <!-- 系统2：玩法外围框架 -->
+      <div class="system-panel" data-system="1">
+
+      <!-- 模块F：玩法外围框架（5页） -->
+      <section class="module-section" id="module-gameplay">
+        <div class="module-header">
+          <div class="module-label">F · GAMEPLAY FRAMEWORK</div>
+          <h2 class="module-title">副本/玩法系统</h2>
+          <div class="module-sub">从入口引导到结算体验，打造完整的玩法交互闭环</div>
+        </div>
+        <div class="module-content">
+
+        <div class="gp-pages" id="gameplayPages">
+          <!-- 页1：玩法入口与引导设计 -->
+          <div class="gp-page active" data-gp-page="0">
+            <div class="gameplay-hero">
+              <div class="gameplay-hero-tag">F-1 · ENTRY &amp; ONBOARDING</div>
+              <h3 class="gameplay-hero-title">玩法入口与引导设计</h3>
+              <p class="gameplay-hero-sub">让玩家在冒险的路上"遇见"玩法，而非在菜单里"找到"玩法</p>
+            </div>
+
+            <div class="gp-scenario-block">
+              <div class="gp-scenario-label">玩家视角 · PLAYER'S JOURNEY</div>
+              <div class="gp-scenario-text">
+                你在帕鲁世界里悠闲地探索，突然发现远处有一座神秘的<em>古老高塔</em>。
+                走近时，NPC凑过来告诉你传说中的宝藏。带着好奇，你踏入了塔内——
+                就这样，你"自然而然"地开始了第一次副本挑战。
+              </div>
+            </div>
+
+            <div class="gp-highlight-row">
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">✨</div>
+                <div class="gp-highlight-title">发现的乐趣</div>
+                <div class="gp-highlight-desc">探索时意外发现副本，比菜单里点击"开始游戏"更有成就感</div>
+              </div>
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">🎭</div>
+                <div class="gp-highlight-title">剧情即引导</div>
+                <div class="gp-highlight-desc">做任务的过程中学会玩法，玩家甚至意识不到这是"教程"</div>
+              </div>
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">🗺️</div>
+                <div class="gp-highlight-title">世界的一部分</div>
+                <div class="gp-highlight-desc">副本入口是世界的建筑/NPC，而非悬浮的UI按钮</div>
+              </div>
+            </div>
+
+            <div class="gp-entry-paths">
+              <div class="gp-entry-path">
+                <div class="gp-entry-icon">📜</div>
+                <div class="gp-entry-content">
+                  <div class="gp-entry-title">主线任务引入</div>
+                  <div class="gp-entry-desc">通过剧情任务自然带出副本玩法，将"教程"包裹在"冒险"中，避免生硬的教学感</div>
+                  <div class="gp-entry-steps">
+                    <span class="gp-entry-step">剧情触发</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">NPC对话</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">首次引导</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">玩法解锁</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gp-entry-path">
+                <div class="gp-entry-icon">🏰</div>
+                <div class="gp-entry-content">
+                  <div class="gp-entry-title">场景建筑 / NPC入口</div>
+                  <div class="gp-entry-desc">大地图上的物理建筑与NPC作为玩法入口，增强世界沉浸感，让玩法成为世界的一部分</div>
+                  <div class="gp-entry-steps">
+                    <span class="gp-entry-step">地图探索</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">发现建筑</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">接近触发</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">进入玩法</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gp-entry-path">
+                <div class="gp-entry-icon">🎉</div>
+                <div class="gp-entry-content">
+                  <div class="gp-entry-title">活动限时入口</div>
+                  <div class="gp-entry-desc">活动期间通过主界面banner、活动中心、推送等多渠道触达，强化限时感与稀缺性</div>
+                  <div class="gp-entry-steps">
+                    <span class="gp-entry-step">活动推送</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">活动中心</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">快捷跳转</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">参与玩法</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gp-entry-path">
+                <div class="gp-entry-icon">🗺️</div>
+                <div class="gp-entry-content">
+                  <div class="gp-entry-title">大地图点位入口</div>
+                  <div class="gp-entry-desc">大地图上的副本点位直接点击进入，配合标记与追踪功能，降低寻找成本</div>
+                  <div class="gp-entry-steps">
+                    <span class="gp-entry-step">地图浏览</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">点位点击</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">详情预览</span>
+                    <span class="gp-entry-arrow">→</span>
+                    <span class="gp-entry-step">前往/匹配</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="gp-philosophy-grid">
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">叙事包裹教学</div>
+                <div class="gp-philo-desc">好的引导不是"教玩家怎么玩"，而是"让玩家在完成目标的过程中自然学会玩法"。将教程嵌入剧情任务，而非独立出来。</div>
+              </div>
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">多入口 ≠ 乱入口</div>
+                <div class="gp-philo-desc">每个入口都有明确的场景和用户心智：主线是"第一次遇见"，地图是"主动探索"，活动是"限时机会"。</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页2：挑战流程设计 -->
+          <div class="gp-page" data-gp-page="1">
+            <div class="gameplay-hero">
+              <div class="gameplay-hero-tag">F-2 · CHALLENGE FLOW</div>
+              <h3 class="gameplay-hero-title">挑战流程设计</h3>
+              <p class="gameplay-hero-sub">从"想打"到"开打"，每一步都在积累战斗的期待感</p>
+            </div>
+
+            <div class="gp-scenario-block">
+              <div class="gp-scenario-label">仪式感设计 · RITUAL DESIGN</div>
+              <div class="gp-scenario-text">
+                站在传送门前，你深吸一口气——<em>准备好了吗？</em>
+                踏入传送门的瞬间，画面暗下，音乐渐起。当光芒散去，你已置身于Boss的巢穴。
+                低沉的咆哮声从深处传来……这场战斗，从你踏入传送门的那一刻就已经开始了。
+              </div>
+            </div>
+
+            <div class="gp-flow-cards">
+              <div class="gp-flow-card">
+                <div class="gp-flow-icon">🖼️</div>
+                <div class="gp-flow-name">入口预览</div>
+                <div class="gp-flow-desc">Boss立绘 + 难度 + 奖励预览</div>
+              </div>
+              <div class="gp-flow-card">
+                <div class="gp-flow-icon">👥</div>
+                <div class="gp-flow-name">匹配组队</div>
+                <div class="gp-flow-desc">单人/多人切换，匹配状态反馈</div>
+              </div>
+              <div class="gp-flow-card">
+                <div class="gp-flow-icon">🚪</div>
+                <div class="gp-flow-name">场景进入</div>
+                <div class="gp-flow-desc">过场/加载 + 进入条件检测</div>
+              </div>
+              <div class="gp-flow-card">
+                <div class="gp-flow-icon">⚔️</div>
+                <div class="gp-flow-name">Boss登场</div>
+                <div class="gp-flow-desc">Boss展示演出 + 战斗准备</div>
+              </div>
+              <div class="gp-flow-card">
+                <div class="gp-flow-icon">🏆</div>
+                <div class="gp-flow-name">奖励结算</div>
+                <div class="gp-flow-desc">胜利/失败结算 + 奖励发放</div>
+              </div>
+            </div>
+
+            <div class="gp-highlight-row">
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">🎬</div>
+                <div class="gp-highlight-title">进入演出</div>
+                <div class="gp-highlight-desc">传送门、过场动画、环境变化——让"进入副本"成为一个事件</div>
+              </div>
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">👹</div>
+                <div class="gp-highlight-title">Boss登场秀</div>
+                <div class="gp-highlight-desc">音乐、镜头、特效三重配合，建立Boss的压迫感</div>
+              </div>
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">⏱️</div>
+                <div class="gp-highlight-title">倒计时悬念</div>
+                <div class="gp-highlight-desc">战斗开始前的3秒倒计时，让期待感达到顶峰</div>
+              </div>
+            </div>
+
+            <div class="gp-version-row">
+              <div class="gp-ver-col v1">
+                <div class="gp-ver-label">V1.0 · 基础框架期</div>
+                <div class="gp-ver-title">单玩法独立流程</div>
+                <ul class="gp-ver-list">
+                  <li>每个副本独立设计入口界面</li>
+                  <li>日常副本 + 密域Boss两种类型</li>
+                  <li>单人/多人模式统一UI框架</li>
+                  <li>4套方案对比选型，确定最终布局</li>
+                  <li>基础匹配流程 + 二次确认入队</li>
+                </ul>
+              </div>
+              <div class="gp-ver-arrow">→</div>
+              <div class="gp-ver-col v2">
+                <div class="gp-ver-label">V2.0 · 体系化期</div>
+                <div class="gp-ver-title">多副本统一流程</div>
+                <ul class="gp-ver-list">
+                  <li>统筹所有副本玩法的入口统一性</li>
+                  <li>世界BOSS / 密域 / 洞窟 / 高塔等多类型</li>
+                  <li>差异化挑战机制（多人同屏、爬塔等）</li>
+                  <li>外围路径优化（洞窟多路径探索）</li>
+                  <li>结算阶段统一规范 + 体验优化</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="gp-philosophy-grid">
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">单人/多人统一框架</div>
+                <div class="gp-philo-desc">单人情况下相关组队/匹配信息不显示，其他功能一致。一套UI框架适配两种模式，降低维护成本。</div>
+              </div>
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">仪式感设计</div>
+                <div class="gp-philo-desc">Boss登场演出、场景进入过场、战斗开始倒计时……这些"非功能性"的节点体验，是玩法记忆点的关键。</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页3：局内HUD与信息引导 -->
+          <div class="gp-page" data-gp-page="2">
+            <div class="gameplay-hero">
+              <div class="gameplay-hero-tag">F-3 · IN-GAME HUD</div>
+              <h3 class="gameplay-hero-title">局内HUD与信息引导</h3>
+              <p class="gameplay-hero-sub">需要时信息就在那里，不需要时它就像不存在</p>
+            </div>
+
+            <div class="gp-scenario-block">
+              <div class="gp-scenario-label">设计哲学 · DESIGN PHILOSOPHY</div>
+              <div class="gp-scenario-text">
+                想象一下：你正全神贯注地和Boss激战，突然一个<em>巨大的弹窗</em>挡住了你的视线——
+                好的HUD设计，是让你在战斗中永远不会注意到它的存在，
+                但当你需要知道Boss血量、技能CD、自己状态时，视线扫过去，信息就在那里。
+              </div>
+            </div>
+
+            <div class="gp-highlight-row">
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">👁️</div>
+                <div class="gp-highlight-title">视野零干扰</div>
+                <div class="gp-highlight-desc">核心战斗区域不被任何UI遮挡，HUD沿屏幕边缘布局</div>
+              </div>
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">⚡</div>
+                <div class="gp-highlight-title">即时反馈</div>
+                <div class="gp-highlight-desc">受伤、获得Buff、技能就绪——状态变化第一时间感知</div>
+              </div>
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">💬</div>
+                <div class="gp-highlight-title">情境化提示</div>
+                <div class="gp-highlight-desc">"小心范围攻击！"像队友提醒，而非系统冰冷的警告</div>
+              </div>
+            </div>
+
+            <div class="gp-hud-layout">
+              <div class="gp-hud-zone">
+                <div class="gp-hud-zone-title"><span>TOP</span> 顶部信息区</div>
+                <ul class="gp-hud-items">
+                  <li>Boss血条 + 阶段提示</li>
+                  <li>战斗倒计时 / 剩余时间</li>
+                  <li>目标提示（任务/机制）</li>
+                  <li>退出/设置按钮</li>
+                </ul>
+              </div>
+              <div class="gp-hud-zone">
+                <div class="gp-hud-zone-title"><span>BOTTOM</span> 底部操作区</div>
+                <ul class="gp-hud-items">
+                  <li>技能栏 / 道具栏</li>
+                  <li>角色状态（血量/体力）</li>
+                  <li>组队成员状态</li>
+                  <li>聊天 / 快捷语音</li>
+                </ul>
+              </div>
+              <div class="gp-hud-zone">
+                <div class="gp-hud-zone-title"><span>LEFT</span> 左侧信息区</div>
+                <ul class="gp-hud-items">
+                  <li>小地图 / 方位指引</li>
+                  <li>任务追踪列表</li>
+                  <li>机制提示（关键机制警告）</li>
+                  <li>Buff / Debuff 状态</li>
+                </ul>
+              </div>
+              <div class="gp-hud-zone">
+                <div class="gp-hud-zone-title"><span>RIGHT</span> 右侧辅助区</div>
+                <ul class="gp-hud-items">
+                  <li>伤害统计 / 输出排名</li>
+                  <li>拾取物品提示</li>
+                  <li>系统通知飘字</li>
+                  <li>队友技能CD提示</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="gp-tag-cloud">
+              <span class="gp-feat-tag">核心信息常驻</span>
+              <span class="gp-feat-tag">重要信息触发显示</span>
+              <span class="gp-feat-tag">次要信息收起</span>
+              <span class="gp-feat-tag">情境化提示</span>
+              <span class="gp-feat-tag">视觉层次分明</span>
+              <span class="gp-feat-tag">操作便捷</span>
+              <span class="gp-feat-tag">沉浸感优先</span>
+            </div>
+
+            <div class="gp-philosophy-grid">
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">信息分层展示</div>
+                <div class="gp-philo-desc">不是所有信息都要常驻。核心信息常驻（血条、技能），重要信息触发时显示（机制警告），次要信息收起到菜单里。</div>
+              </div>
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">情境化提示</div>
+                <div class="gp-philo-desc">队友的"小心范围攻击！"、BOSS的技能前摇提示……让信息引导像"队友提醒"而非"系统弹窗"。</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页4：结算与退出机制 -->
+          <div class="gp-page" data-gp-page="3">
+            <div class="gameplay-hero">
+              <div class="gameplay-hero-tag">F-4 · SETTLEMENT &amp; EXIT</div>
+              <h3 class="gameplay-hero-title">结算与退出机制</h3>
+              <p class="gameplay-hero-sub">胜利要让你想炫耀，失败要让你想再来一局</p>
+            </div>
+
+            <div class="gp-scenario-block">
+              <div class="gp-scenario-label">情绪曲线 · EMOTION CURVE</div>
+              <div class="gp-scenario-text">
+                Boss倒下的瞬间——<em>胜利！</em>
+                音乐切换到凯旋的旋律，宝箱从空中缓缓落下，金光闪闪。
+                你屏住呼吸看着宝箱开启……"哇，出了稀有装备！"
+                这种从紧张到释放的情绪落差，就是玩家愿意一次又一次挑战的原因。
+              </div>
+            </div>
+
+            <div class="gp-settle-flow">
+              <div class="gp-settle-step">
+                <div class="gp-settle-num">01</div>
+                <div class="gp-settle-name">战斗结束</div>
+                <div class="gp-settle-detail">胜利/失败判定 结算动画演出</div>
+              </div>
+              <div class="gp-settle-step">
+                <div class="gp-settle-num">02</div>
+                <div class="gp-settle-name">奖励展示</div>
+                <div class="gp-settle-detail">宝箱开启动画 稀有物品特写</div>
+              </div>
+              <div class="gp-settle-step">
+                <div class="gp-settle-num">03</div>
+                <div class="gp-settle-name">结算面板</div>
+                <div class="gp-settle-detail">评分/MVP 奖励列表 统计数据</div>
+              </div>
+              <div class="gp-settle-step">
+                <div class="gp-settle-num">04</div>
+                <div class="gp-settle-name">倒计时退出</div>
+                <div class="gp-settle-detail">自动倒计时 手动提前退出</div>
+              </div>
+              <div class="gp-settle-step">
+                <div class="gp-settle-num">05</div>
+                <div class="gp-settle-name">返回大世界</div>
+                <div class="gp-settle-detail">进度保存 下次继续</div>
+              </div>
+            </div>
+
+            <div class="gp-highlight-row">
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">🎁</div>
+                <div class="gp-highlight-title">开箱期待感</div>
+                <div class="gp-highlight-desc">宝箱动画、金光特效、稀有物品特写——把"获得奖励"变成一段体验</div>
+              </div>
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">🏅</div>
+                <div class="gp-highlight-title">MVP荣誉感</div>
+                <div class="gp-highlight-desc">MVP评选、伤害排名、战斗统计——社交展示满足玩家的成就感</div>
+              </div>
+              <div class="gp-highlight-card">
+                <div class="gp-highlight-icon">🔄</div>
+                <div class="gp-highlight-title">再来亿局</div>
+                <div class="gp-highlight-desc">失败不挫败、胜利还想打——结算的终点是下一次挑战的起点</div>
+              </div>
+            </div>
+
+            <div class="gp-settle-compare">
+              <div class="gp-settle-type">
+                <div class="gp-settle-type-title">胜利结算</div>
+                <div class="gp-settle-type-sub">VICTORY</div>
+                <ul class="gp-settle-type-list">
+                  <li>胜利演出动画 + 音效</li>
+                  <li>宝箱开启（普通/稀有差异化表现）</li>
+                  <li>评分评级 + MVP评选</li>
+                  <li>奖励物品列表 + 稀有度展示</li>
+                  <li>战斗统计（伤害/承伤/治疗）</li>
+                  <li>再挑战 / 返回选项</li>
+                </ul>
+              </div>
+              <div class="gp-settle-type">
+                <div class="gp-settle-type-title">失败结算</div>
+                <div class="gp-settle-type-sub">DEFEAT</div>
+                <ul class="gp-settle-type-list">
+                  <li>失败表现（不挫败、鼓励再试）</li>
+                  <li>失败原因提示（建议改进方向）</li>
+                  <li>已获得的保底奖励</li>
+                  <li>快速重试选项</li>
+                  <li>难度调整建议</li>
+                  <li>返回 / 组队调整选项</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="gp-philosophy-grid">
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">成就感的节奏感</div>
+                <div class="gp-philo-desc">结算不是"一张面板"，而是一段体验：从胜利的瞬间冲击，到宝箱的期待感，再到看到奖励的满足感——每一步都有情绪递进。</div>
+              </div>
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">退出不焦虑</div>
+                <div class="gp-philo-desc">倒计时退出给玩家"从容看完奖励"的时间，同时自动退出避免挂机。进度保存机制让"下次再来"没有心理负担。</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 页5：多副本类型体系 -->
+          <div class="gp-page" data-gp-page="4">
+            <div class="gameplay-hero">
+              <div class="gameplay-hero-tag">F-5 · DUNGEON SYSTEM</div>
+              <h3 class="gameplay-hero-title">多副本类型体系</h3>
+              <p class="gameplay-hero-sub">每种玩家都能找到属于自己的挑战方式</p>
+            </div>
+
+            <div class="gp-scenario-block">
+              <div class="gp-scenario-label">玩家画像 · PLAYER PERSONA</div>
+              <div class="gp-scenario-text">
+                有人喜欢<em>每天刷日常</em>获取材料，有人热衷于<em>挑战高塔</em>追求极限；
+                有人喜欢<em>探索洞窟</em>发现秘密，有人享受<em>世界Boss</em>的热闹……
+                好的副本体系，不是让所有玩家玩同一种玩法，
+                而是让每种玩家都能在这个世界里找到自己的乐趣。
+              </div>
+            </div>
+
+            <div class="gp-dungeon-matrix">
+              <div class="gp-dungeon-card">
+                <div class="gp-dungeon-head">
+                  <div class="gp-dungeon-icon">🕳️</div>
+                  <div>
+                    <div class="gp-dungeon-name">洞窟副本</div>
+                    <div class="gp-dungeon-type">日常挑战 · 材料获取</div>
+                  </div>
+                </div>
+                <div class="gp-dungeon-desc">即日常副本（1.0命名），短平快的日常挑战提供稳定养成材料产出，洞窟内多路径探索+机关解谜强化探索感</div>
+                <div class="gp-dungeon-features">
+                  <span class="gp-dungeon-feat">每日重置</span>
+                  <span class="gp-dungeon-feat">多难度选择</span>
+                  <span class="gp-dungeon-feat">多路径探索</span>
+                  <span class="gp-dungeon-feat">组队/单人</span>
+                </div>
+              </div>
+              <div class="gp-dungeon-card">
+                <div class="gp-dungeon-head">
+                  <div class="gp-dungeon-icon">🗿</div>
+                  <div>
+                    <div class="gp-dungeon-name">密域Boss</div>
+                    <div class="gp-dungeon-type">区域探索 · 精英挑战</div>
+                  </div>
+                </div>
+                <div class="gp-dungeon-desc">分布在大世界各区域的Boss点位，探索过程中发现并挑战，是区域探索的目标点</div>
+                <div class="gp-dungeon-features">
+                  <span class="gp-dungeon-feat">大地图点位</span>
+                  <span class="gp-dungeon-feat">多属性Boss</span>
+                  <span class="gp-dungeon-feat">挑战机制</span>
+                  <span class="gp-dungeon-feat">多人组队</span>
+                </div>
+              </div>
+              <div class="gp-dungeon-card">
+                <div class="gp-dungeon-head">
+                  <div class="gp-dungeon-icon">🌍</div>
+                  <div>
+                    <div class="gp-dungeon-name">世界BOSS</div>
+                    <div class="gp-dungeon-type">多人同屏 · 全民参与</div>
+                  </div>
+                </div>
+                <div class="gp-dungeon-desc">大型世界Boss玩法，多人同屏挑战，参与即有奖，排名越高奖励越丰厚</div>
+                <div class="gp-dungeon-features">
+                  <span class="gp-dungeon-feat">多人同屏</span>
+                  <span class="gp-dungeon-feat">排名奖励</span>
+                  <span class="gp-dungeon-feat">限时开放</span>
+                  <span class="gp-dungeon-feat">参与奖</span>
+                </div>
+              </div>
+              <div class="gp-dungeon-card">
+                <div class="gp-dungeon-head">
+                  <div class="gp-dungeon-icon">🗼</div>
+                  <div>
+                    <div class="gp-dungeon-name">高塔挑战</div>
+                    <div class="gp-dungeon-type">爬塔Roguelike · 高难</div>
+                  </div>
+                </div>
+                <div class="gp-dungeon-desc">多层级爬塔玩法，越往上难度越高、奖励越好，是硬核玩家的长期挑战目标</div>
+                <div class="gp-dungeon-features">
+                  <span class="gp-dungeon-feat">层级递进</span>
+                  <span class="gp-dungeon-feat">排行榜</span>
+                  <span class="gp-dungeon-feat">MVP评选</span>
+                  <span class="gp-dungeon-feat">持续挑战</span>
+                </div>
+              </div>
+              <div class="gp-dungeon-card">
+                <div class="gp-dungeon-head">
+                  <div class="gp-dungeon-icon">🎭</div>
+                  <div>
+                    <div class="gp-dungeon-name">活动副本</div>
+                    <div class="gp-dungeon-type">限时活动 · 主题玩法</div>
+                  </div>
+                </div>
+                <div class="gp-dungeon-desc">与活动绑定的限时副本，每期有不同主题和机制，提供新鲜感和限定奖励</div>
+                <div class="gp-dungeon-features">
+                  <span class="gp-dungeon-feat">限时开放</span>
+                  <span class="gp-dungeon-feat">主题机制</span>
+                  <span class="gp-dungeon-feat">限定奖励</span>
+                  <span class="gp-dungeon-feat">活动剧情</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="gp-tag-cloud">
+              <span class="gp-feat-tag">统一入口框架</span>
+              <span class="gp-feat-tag">统一结算流程</span>
+              <span class="gp-feat-tag">差异化体验</span>
+              <span class="gp-feat-tag">覆盖不同需求</span>
+              <span class="gp-feat-tag">长期挑战目标</span>
+              <span class="gp-feat-tag">碎片化适配</span>
+              <span class="gp-feat-tag">社交展示</span>
+              <span class="gp-feat-tag">探索乐趣</span>
+            </div>
+
+            <div class="gp-philosophy-grid">
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">统一框架，差异化体验</div>
+                <div class="gp-philo-desc">所有副本共用一套入口、结算、匹配的基础框架，但每个类型有自己的特色机制和节奏，兼顾效率与新鲜感。</div>
+              </div>
+              <div class="gp-philo-card">
+                <div class="gp-philo-title">覆盖不同需求</div>
+                <div class="gp-philo-desc">洞窟（日常）满足材料需求，密域绑定探索，世界Boss做社交，高塔做硬核，活动做新鲜感——每种玩家都能找到适合的玩法。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div><!-- /module-content -->
+        <div class="module-nav" data-module="gameplay">
+          <button class="module-nav-btn module-prev" data-dir="prev">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="module-nav-dots">
+            <div class="module-nav-dot active" data-slide="0">1</div>
+            <div class="module-nav-dot" data-slide="1">2</div>
+            <div class="module-nav-dot" data-slide="2">3</div>
+            <div class="module-nav-dot" data-slide="3">4</div>
+            <div class="module-nav-dot" data-slide="4">5</div>
+          </div>
+          <button class="module-nav-btn module-next" data-dir="next">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+          </button>
+        </div>
+      </section><!-- /模块F -->
+
+      </div><!-- /玩法外围框架 -->
+
+      <!-- 系统3：建造_孵化系统 -->
+      <div class="system-panel" data-system="2">
+        <section class="module-section system-placeholder">
+          <div class="module-header">
+            <div class="module-label">C · BUILDING &amp; HATCHING</div>
+            <h2 class="module-title">建造_孵化系统</h2>
+            <div class="module-sub">内容整理中，敬请期待</div>
+          </div>
+          <div class="module-content">
+            <div class="placeholder-box">
+              <div class="placeholder-icon">🏗️</div>
+              <div class="placeholder-text">该系统内容正在整理中</div>
+              <div class="placeholder-sub">后续将逐步完善建造与孵化系统的交互设计内容</div>
+            </div>
+          </div>
+        </section>
+      </div><!-- /建造_孵化系统 -->
+
+      <!-- 系统4：活动中心 -->
+      <div class="system-panel" data-system="3">
+        <section class="module-section system-placeholder">
+          <div class="module-header">
+            <div class="module-label">D · EVENT CENTER</div>
+            <h2 class="module-title">活动中心</h2>
+            <div class="module-sub">内容整理中，敬请期待</div>
+          </div>
+          <div class="module-content">
+            <div class="placeholder-box">
+              <div class="placeholder-icon">🎉</div>
+              <div class="placeholder-text">该系统内容正在整理中</div>
+              <div class="placeholder-sub">后续将逐步完善活动中心的交互设计内容</div>
+            </div>
+          </div>
+        </section>
+      </div><!-- /活动中心 -->
+
     </div><!-- display-area -->
 
   <script>
   (function() {
     'use strict';
 
-    /* ===== 模块数据 ===== */
-    var modules = [
+    /* ===== 系统数据 ===== */
+    var systems = [
+      { id: 'system-map', name: '大地图系统' },
+      { id: 'system-gameplay', name: '副本/玩法系统' },
+      { id: 'system-building', name: '建造_孵化系统' },
+      { id: 'system-event', name: '活动中心' },
+    ];
+    var curSystemIdx = 0;
+
+    /* ===== 大地图系统内的子模块 ===== */
+    var mapModules = [
       { id: 'module-timeline', name: '地图版本优化历程', pageCount: 1 },
       { id: 'module-competitive', name: '竞品分析与方案选型', pageCount: 3 },
       { id: 'module-mark', name: '标识体系与层级构建', pageCount: 2 },
       { id: 'module-infomodule', name: '信息模块化设计', pageCount: 3 },
       { id: 'module-coupling', name: '多系统耦合处理思考', pageCount: 1 },
     ];
-    var curModuleIdx = 0;
+    var curMapModuleIdx = 0;
 
     /* ===== 各模块当前子页 ===== */
     var modulePages = {
+      gameplay: 0,
       competitive: 0,
       mark: 0,
       infomodule: 0,
@@ -4082,6 +5422,7 @@
     var cpPages = document.querySelectorAll('.cp-page');
     var markPages = document.querySelectorAll('.mark-page');
     var imPages = document.querySelectorAll('.im-page');
+    var gpPages = document.querySelectorAll('.gp-page');
 
     /* ===== 多页模块固定高度（防止切换时上下晃动） ===== */
     function setModuleFixedHeight(pages, container) {
@@ -4140,6 +5481,10 @@
       // 信息模块
       var infoPanel = document.querySelector('.info-module-panel');
       setModuleFixedHeight(imPages, infoPanel);
+
+      // 玩法外围框架模块
+      var gpPanel = document.querySelector('.gp-pages');
+      setModuleFixedHeight(gpPages, gpPanel);
     }
 
     // 延迟执行确保内容渲染完成
@@ -4159,6 +5504,7 @@
       if (moduleKey === 'competitive') { total = cpPages.length; pages = cpPages; }
       else if (moduleKey === 'mark') { total = markPages.length; pages = markPages; }
       else if (moduleKey === 'infomodule') { total = imPages.length; pages = imPages; }
+      else if (moduleKey === 'gameplay') { total = gpPages.length; pages = gpPages; }
 
       var next = current + direction;
       if (next < 0) next = 0;
@@ -4207,27 +5553,50 @@
       });
     });
 
-    /* ===== 左侧导航点击滚动到对应模块 ===== */
-    function scrollToModule(index) {
-      if (index < 0 || index >= modules.length) return;
-      var el = document.getElementById(modules[index].id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    /* ===== 左侧导航点击 - 切换系统面板 ===== */
+    function switchSystem(index) {
+      if (index < 0 || index >= systems.length) return;
+      if (index === curSystemIdx) return;
+
+      // 切换系统面板显示
+      var panels = document.querySelectorAll('.system-panel');
+      panels.forEach(function(p, i) {
+        p.classList.toggle('active', i === index);
+      });
+
+      // 更新导航激活状态
+      navItems[curSystemIdx].classList.remove('active');
+      navItems[index].classList.add('active');
+      curSystemIdx = index;
+
+      // 切换后滚动到顶部
+      displayArea.scrollTop = 0;
+
+      // 滚动提示：只有大地图系统显示
+      var scrollHint = document.getElementById('scrollHint');
+      if (scrollHint) {
+        if (index === 0) {
+          scrollHint.classList.remove('hidden');
+        } else {
+          scrollHint.classList.add('hidden');
+        }
       }
-      curModuleIdx = index;
+
+      // 如果是大地图系统，触发条形图动画
+      if (index === 0) {
+        setTimeout(animateBars, 300);
+      }
     }
 
     navItems.forEach(function(item, idx) {
       item.addEventListener('click', function() {
         var i = parseInt(this.dataset.index);
-        if (i === 0) {
-          scrollToModule(0);
-        }
+        switchSystem(i);
         if (window.innerWidth <= 768) sideNav.classList.remove('open');
       });
     });
 
-    /* ===== 滚动监听 - 更新导航激活状态 ===== */
+    /* ===== 滚动监听 - 大地图系统内的子模块激活状态 ===== */
     var scrollTimer = null;
     var scrollHint = document.getElementById('scrollHint');
     displayArea.addEventListener('scroll', function() {
@@ -4238,14 +5607,17 @@
         scrollHint.classList.remove('hidden');
       }
 
+      // 只有大地图系统激活时才更新子模块状态
+      if (curSystemIdx !== 0) return;
+
       if (scrollTimer) return;
       scrollTimer = setTimeout(function() {
         scrollTimer = null;
         var viewHeight = displayArea.clientHeight;
         var activeIdx = 0;
 
-        for (var i = 0; i < modules.length; i++) {
-          var el = document.getElementById(modules[i].id);
+        for (var i = 0; i < mapModules.length; i++) {
+          var el = document.getElementById(mapModules[i].id);
           if (!el) continue;
           var rect = el.getBoundingClientRect();
           var displayRect = displayArea.getBoundingClientRect();
@@ -4255,11 +5627,7 @@
           }
         }
 
-        if (activeIdx !== curModuleIdx) {
-          navItems[curModuleIdx].classList.remove('active');
-          curModuleIdx = activeIdx;
-          navItems[0].classList.add('active');
-        }
+        curMapModuleIdx = activeIdx;
       }, 50);
     });
 
@@ -4268,23 +5636,23 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        scrollToModule(curModuleIdx - 1);
+        switchSystem(curSystemIdx - 1);
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        scrollToModule(curModuleIdx + 1);
+        switchSystem(curSystemIdx + 1);
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        var m = modules[curModuleIdx];
-        if (m.pageCount > 1) {
-          var key = m.id.replace('module-', '');
-          flipModulePage(key, -1);
+        // 大地图系统内的子模块或玩法系统的子页
+        if (curSystemIdx === 0) {
+          // 大地图系统：子模块是纵向滚动的，用左箭头暂时不处理
+          return;
+        } else if (curSystemIdx === 1) {
+          flipModulePage('gameplay', -1);
         }
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
-        var m2 = modules[curModuleIdx];
-        if (m2.pageCount > 1) {
-          var key2 = m2.id.replace('module-', '');
-          flipModulePage(key2, 1);
+        if (curSystemIdx === 1) {
+          flipModulePage('gameplay', 1);
         }
       }
     });
@@ -4413,22 +5781,22 @@
         ]
       },
       emo: {
-        name: '伊洛纳',
-        tag: ' Roguelike · 生存',
+        name: '伊莫 Aniimo',
+        tag: '捉宠收集 · 大世界探索',
         avatarClass: 'cp-avatar-emo',
         avatarText: '伊',
         sections: [
           {
             title: '地图特点',
-            items: ['像素风开放世界', '高自由度探索', '随机事件驱动']
+            items: ['治愈系奇幻开放世界', '动态生态系统', '自然叙事探索模式']
           },
           {
             title: '交互亮点',
-            items: ['极简地图界面', '功能型信息优先', '生存数据实时展示']
+            items: ['共鸣系统与万物互动', '伊莫羁绊赋予特殊能力', '玩家选择影响世界变化']
           },
           {
             title: '可借鉴',
-            items: ['信息密度控制', '极简设计哲学', '生存类信息优先级']
+            items: ['宠物收集与探索驱动结合', '生态化地图设计思路', '沉浸式探索体验']
           }
         ]
       },
