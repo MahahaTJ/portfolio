@@ -457,6 +457,79 @@
       .hero h1 { font-size: 1.8rem; }
       .hero-stats { gap: 1.5rem; }
     }
+
+    /* === 涂抹开场动画 === */
+    .intro-scratch {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 9999; background: #0a0a1a; cursor: none;
+      transition: opacity 0.6s ease;
+    }
+    .intro-scratch.hidden { opacity: 0; pointer-events: none; }
+    .intro-scratch canvas {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    }
+    #introPaintCanvas { z-index: 2; }
+    #introCursorCanvas { z-index: 100; pointer-events: none; }
+    #introBgCanvas { z-index: 1; pointer-events: none; }
+
+    .intro-progress {
+      position: absolute; bottom: 2rem; left: 2rem; z-index: 200;
+      color: #fff; font-family: var(--font-mono); font-size: 0.75rem;
+      letter-spacing: 0.1em; pointer-events: none;
+    }
+    .intro-progress-label {
+      color: rgba(255,255,255,0.6); margin-bottom: 0.5rem;
+      text-transform: uppercase; font-size: 0.65rem;
+    }
+    .intro-progress-bar {
+      width: 200px; height: 4px; background: rgba(255,255,255,0.15);
+      border-radius: 2px; overflow: hidden; margin-bottom: 0.4rem;
+    }
+    .intro-progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #e91e63, #ff4081);
+      border-radius: 2px; transition: width 0.15s ease;
+    }
+    .intro-progress-text {
+      color: #ff4081; font-weight: 700; font-size: 0.9rem;
+    }
+
+    .intro-hint {
+      position: absolute; top: 2.5rem; left: 50%; transform: translateX(-50%);
+      z-index: 150; color: rgba(255,255,255,0.7); text-align: center;
+      pointer-events: none; transition: opacity 0.5s ease;
+    }
+    .intro-hint-sub {
+      font-size: 0.8rem; color: rgba(255,255,255,0.6);
+      letter-spacing: 0.25em; text-transform: uppercase;
+      font-family: var(--font-mono);
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* 花屏转场 */
+    .glitch-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 10000; pointer-events: none; opacity: 0;
+      background: #fff;
+    }
+    .glitch-overlay.active {
+      animation: glitchFlash 0.8s ease-out forwards;
+    }
+    @keyframes glitchFlash {
+      0% { opacity: 0; }
+      10% { opacity: 0.3; background: #e91e63; }
+      20% { opacity: 0.8; background: #fff; }
+      30% { opacity: 0.5; background: #1a1a2e; }
+      40% { opacity: 0.9; background: #fff; }
+      55% { opacity: 0.7; background: #e91e63; }
+      70% { opacity: 0.4; background: #1a1a2e; }
+      85% { opacity: 0.2; background: #fff; }
+      100% { opacity: 0; background: transparent; }
+    }
   </style>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -464,6 +537,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+  <!-- 涂抹开场动画 -->
+  <div class="intro-scratch" id="introScratch">
+    <canvas id="introBgCanvas"></canvas>
+    <canvas id="introPaintCanvas"></canvas>
+    <canvas id="introCursorCanvas"></canvas>
+    <div class="intro-hint" id="introHint">
+      <div class="intro-hint-sub">滑动鼠标 · 涂抹探索</div>
+    </div>
+    <div class="intro-progress">
+      <div class="intro-progress-label">DISCOVERY PROGRESS</div>
+      <div class="intro-progress-bar">
+        <div class="intro-progress-fill" id="introProgressFill"></div>
+      </div>
+      <div class="intro-progress-text"><span id="introProgressNum">0</span>%</div>
+    </div>
+  </div>
+
+  <!-- 花屏转场 -->
+  <div class="glitch-overlay" id="glitchOverlay"></div>
 
   <!-- 全屏翻页容器 -->
   <div class="page-slider" id="pageSlider">
@@ -702,6 +795,1243 @@
   <script>
   (function() {
     'use strict';
+
+    /* ===== 涂抹开场动画 ===== */
+    (function initIntroScratch() {
+      var introEl = document.getElementById('introScratch');
+      if (!introEl) return;
+
+      // 如果URL带有hash（从子页面返回），直接跳过splash screen
+      if (window.location.hash && window.location.hash.length > 1) {
+        introEl.style.display = 'none';
+        var glitchEl = document.getElementById('glitchOverlay');
+        if (glitchEl) glitchEl.style.display = 'none';
+        return;
+      }
+
+      // roundRect polyfill
+      if (!CanvasRenderingContext2D.prototype.roundRect) {
+        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+          if (typeof r === 'number') r = [r, r, r, r];
+          else if (Array.isArray(r) && r.length === 1) r = [r[0], r[0], r[0], r[0]];
+          r = r.map(function(v) { return Math.min(v, w/2, h/2); });
+          this.moveTo(x + r[0], y);
+          this.lineTo(x + w - r[1], y);
+          this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+          this.lineTo(x + w, y + h - r[2]);
+          this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+          this.lineTo(x + r[3], y + h);
+          this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+          this.lineTo(x, y + r[0]);
+          this.quadraticCurveTo(x, y, x + r[0], y);
+          this.closePath();
+          return this;
+        };
+      }
+
+      var bgCanvas = document.getElementById('introBgCanvas');
+      var paintCanvas = document.getElementById('introPaintCanvas');
+      var cursorCanvas = document.getElementById('introCursorCanvas');
+      var progressFill = document.getElementById('introProgressFill');
+      var progressNum = document.getElementById('introProgressNum');
+      var hintEl = document.getElementById('introHint');
+      var glitchEl = document.getElementById('glitchOverlay');
+
+      var bgCtx = bgCanvas.getContext('2d');
+      var paintCtx = paintCanvas.getContext('2d');
+      var cursorCtx = cursorCanvas.getContext('2d');
+
+      var W, H, cx, cy;
+      var mouseX = 0, mouseY = 0;
+      var smoothMX = 0, smoothMY = 0;
+      var lastMX = 0, lastMY = 0;
+      var hasLastPoint = false;
+      var pendingPoints = [];
+      var isErasing = false;
+      var progress = 0;
+      var completed = false;
+      var lastProgressCheck = 0;
+      var idleTime = 0;
+
+      // 角色参数
+      var charX, charY, charScale;
+      var armAngle = 0;
+      var targetArmAngle = 0;
+
+      // 擦除参数
+      var eraseRadius = 45;
+      var eraseStrength = 0.9;
+      var stepSize = 6;
+
+      function resize() {
+        W = window.innerWidth;
+        H = window.innerHeight;
+        cx = W / 2;
+        cy = H / 2;
+        bgCanvas.width = W;
+        paintCanvas.width = W;
+        cursorCanvas.width = W;
+        bgCanvas.height = H;
+        paintCanvas.height = H;
+        cursorCanvas.height = H;
+
+        // 角色大小适配屏幕
+        charScale = Math.min(W, H) / 850;
+        charX = cx - 100 * charScale;
+        charY = cy + 30 * charScale;
+
+        drawPaint();
+      }
+
+      // ==========================================
+      // 绘制角色（黑粉射手）
+      // ==========================================
+      function drawCharacter() {
+        bgCtx.clearRect(0, 0, W, H);
+
+        // 赛博朋克背景
+        drawBackground();
+
+        bgCtx.save();
+        bgCtx.translate(charX, charY);
+        bgCtx.scale(charScale, charScale);
+
+        // 呼吸动画
+        var breath = Math.sin(idleTime * 2) * 3;
+        bgCtx.translate(0, breath);
+
+        // 计算右手肩膀世界坐标
+        var shoulderLocalX = 42;
+        var shoulderLocalY = 0;
+        var shoulderWorldX = charX + shoulderLocalX * charScale;
+        var shoulderWorldY = charY + breath + shoulderLocalY * charScale;
+
+        // 计算手臂角度
+        var dx = smoothMX - shoulderWorldX;
+        var dy = smoothMY - shoulderWorldY;
+        targetArmAngle = Math.atan2(dy, dx);
+        armAngle += (targetArmAngle - armAngle) * 0.15;
+
+        // 背后翅膀
+        drawBackWings();
+
+        // 背后装置
+        drawBackpack();
+
+        // 身体
+        drawBody();
+
+        // 左手
+        drawLeftArm();
+
+        // 腿和鞋子
+        drawLegs();
+
+        // 头部
+        drawHead();
+
+        // 右手臂（持枪，跟随鼠标）
+        drawRightArm();
+
+        bgCtx.restore();
+      }
+
+      function drawBackground() {
+        // 深色渐变背景
+        var bg = bgCtx.createLinearGradient(0, 0, W, H);
+        bg.addColorStop(0, '#0a0a1a');
+        bg.addColorStop(0.3, '#12122a');
+        bg.addColorStop(0.7, '#1a1030');
+        bg.addColorStop(1, '#0a0a1a');
+        bgCtx.fillStyle = bg;
+        bgCtx.fillRect(0, 0, W, H);
+
+        // 霓虹光晕
+        var glow1 = bgCtx.createRadialGradient(W * 0.2, H * 0.3, 0, W * 0.2, H * 0.3, 300);
+        glow1.addColorStop(0, 'rgba(233, 30, 99, 0.15)');
+        glow1.addColorStop(1, 'rgba(233, 30, 99, 0)');
+        bgCtx.fillStyle = glow1;
+        bgCtx.fillRect(0, 0, W, H);
+
+        var glow2 = bgCtx.createRadialGradient(W * 0.8, H * 0.6, 0, W * 0.8, H * 0.6, 350);
+        glow2.addColorStop(0, 'rgba(100, 50, 200, 0.12)');
+        glow2.addColorStop(1, 'rgba(100, 50, 200, 0)');
+        bgCtx.fillStyle = glow2;
+        bgCtx.fillRect(0, 0, W, H);
+
+        // 光斑
+        for (var i = 0; i < 20; i++) {
+          var px = (i * 137.5) % W;
+          var py = (i * 89.3) % H;
+          var pr = 2 + Math.sin(idleTime + i) * 1.5;
+          var pa = 0.2 + Math.sin(idleTime * 1.5 + i * 0.5) * 0.15;
+          bgCtx.fillStyle = 'rgba(255, 100, 180, ' + pa + ')';
+          bgCtx.beginPath();
+          bgCtx.arc(px, py, pr, 0, Math.PI * 2);
+          bgCtx.fill();
+        }
+
+        // Portfolio文字（角色右侧）
+        var textX = charX + 160 * charScale;
+        var textY = charY - 20 * charScale;
+        bgCtx.save();
+        bgCtx.textAlign = 'left';
+        bgCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        bgCtx.font = '700 ' + (3.5 * charScale) + 'rem Teko, Oswald, sans-serif';
+        bgCtx.letterSpacing = '0.08em';
+        bgCtx.fillText('PORTFOLIO', textX, textY);
+        bgCtx.fillStyle = 'rgba(233, 30, 99, 0.8)';
+        bgCtx.font = '500 ' + (1.2 * charScale) + 'rem Oswald, sans-serif';
+        bgCtx.letterSpacing = '0.25em';
+        bgCtx.fillText('INTERACTION DESIGN', textX + 4, textY + 30 * charScale);
+        bgCtx.restore();
+      }
+
+      function drawBackWings() {
+        [-1, 1].forEach(function(side) {
+          bgCtx.save();
+          bgCtx.scale(side, 1);
+
+          var wingX = 50;
+          var wingY = 30;
+          var featherCount = 4;
+
+          for (var i = 0; i < featherCount; i++) {
+            var angle = -0.2 + i * 0.4;
+            var len = 35 - i * 4;
+            var fx = wingX + Math.cos(angle) * 10;
+            var fy = wingY + Math.sin(angle) * 10 - i * 8;
+
+            bgCtx.save();
+            bgCtx.translate(fx, fy);
+            bgCtx.rotate(angle);
+
+            var grad = bgCtx.createLinearGradient(0, 0, len, 0);
+            grad.addColorStop(0, '#ffcdd2');
+            grad.addColorStop(0.5, '#f8bbd0');
+            grad.addColorStop(1, '#f48fb1');
+
+            bgCtx.fillStyle = grad;
+            bgCtx.beginPath();
+            bgCtx.ellipse(len/2, 0, len/2, 8 - i, 0, 0, Math.PI * 2);
+            bgCtx.fill();
+
+            bgCtx.restore();
+          }
+
+          bgCtx.restore();
+        });
+      }
+
+      function drawBackpack() {
+        [-1, 1].forEach(function(side) {
+          var bx = side * 52;
+          var by = -55;
+
+          bgCtx.save();
+          bgCtx.translate(bx, by);
+
+          // 圆形底座
+          var diskGrad = bgCtx.createRadialGradient(-3, -3, 5, 0, 0, 35);
+          diskGrad.addColorStop(0, '#5d4037');
+          diskGrad.addColorStop(0.5, '#4e342e');
+          diskGrad.addColorStop(1, '#3e2723');
+
+          bgCtx.fillStyle = diskGrad;
+          bgCtx.beginPath();
+          bgCtx.arc(0, 0, 35, 0, Math.PI * 2);
+          bgCtx.fill();
+
+          // 外圈
+          bgCtx.strokeStyle = '#6d4c41';
+          bgCtx.lineWidth = 2;
+          bgCtx.beginPath();
+          bgCtx.arc(0, 0, 35, 0, Math.PI * 2);
+          bgCtx.stroke();
+
+          // 螺旋纹理
+          bgCtx.strokeStyle = '#795548';
+          bgCtx.lineWidth = 2;
+          for (var r = 8; r < 33; r += 7) {
+            bgCtx.beginPath();
+            bgCtx.arc(0, 0, r, 0, Math.PI * 2);
+            bgCtx.stroke();
+          }
+
+          // 中心圆
+          bgCtx.fillStyle = '#8d6e63';
+          bgCtx.beginPath();
+          bgCtx.arc(0, 0, 5, 0, Math.PI * 2);
+          bgCtx.fill();
+
+          // 周围的粉色胶囊
+          for (var i = 0; i < 8; i++) {
+            var angle = (i / 8) * Math.PI * 2 - Math.PI / 2 + idleTime * 0.2;
+            var ccx = Math.cos(angle) * 37;
+            var ccy = Math.sin(angle) * 37;
+
+            bgCtx.save();
+            bgCtx.translate(ccx, ccy);
+            bgCtx.rotate(angle + Math.PI / 2);
+
+            // 胶囊子弹身体
+            var capGrad = bgCtx.createLinearGradient(-4, -10, 4, 8);
+            capGrad.addColorStop(0, '#ffffff');
+            capGrad.addColorStop(0.5, '#fce4ec');
+            capGrad.addColorStop(1, '#f8bbd0');
+            bgCtx.fillStyle = capGrad;
+            bgCtx.beginPath();
+            bgCtx.roundRect(-4.5, -10, 9, 18, 4);
+            bgCtx.fill();
+
+            // 胶囊尖端
+            bgCtx.fillStyle = '#e91e63';
+            bgCtx.beginPath();
+            bgCtx.arc(0, 8, 4.5, 0, Math.PI * 2);
+            bgCtx.fill();
+
+            // 尖端高光
+            bgCtx.fillStyle = '#ff5252';
+            bgCtx.beginPath();
+            bgCtx.arc(-1.5, 7, 1.5, 0, Math.PI * 2);
+            bgCtx.fill();
+
+            // 子弹身高光
+            bgCtx.fillStyle = 'rgba(255,255,255,0.4)';
+            bgCtx.beginPath();
+            bgCtx.ellipse(-1.5, -4, 1.5, 5, 0, 0, Math.PI * 2);
+            bgCtx.fill();
+
+            bgCtx.restore();
+          }
+
+          bgCtx.restore();
+        });
+      }
+
+      function drawBody() {
+        bgCtx.save();
+
+        // 身体主体
+        var bodyGrad = bgCtx.createLinearGradient(-50, -20, 50, 80);
+        bodyGrad.addColorStop(0, '#ffffff');
+        bodyGrad.addColorStop(0.3, '#f5f5f5');
+        bodyGrad.addColorStop(1, '#e0e0e0');
+
+        bgCtx.fillStyle = bodyGrad;
+        bgCtx.beginPath();
+        bgCtx.moveTo(-45, -10);
+        bgCtx.quadraticCurveTo(-55, 0, -50, 40);
+        bgCtx.lineTo(-35, 80);
+        bgCtx.lineTo(35, 80);
+        bgCtx.lineTo(50, 40);
+        bgCtx.quadraticCurveTo(55, 0, 45, -10);
+        bgCtx.closePath();
+        bgCtx.fill();
+
+        // 领口
+        bgCtx.fillStyle = '#fafafa';
+        bgCtx.beginPath();
+        bgCtx.ellipse(0, -15, 45, 15, 0, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 领口粉色条纹
+        bgCtx.strokeStyle = '#f8bbd0';
+        bgCtx.lineWidth = 3;
+        bgCtx.beginPath();
+        bgCtx.ellipse(0, -12, 42, 12, 0, 0, Math.PI * 2);
+        bgCtx.stroke();
+
+        // 口袋
+        bgCtx.fillStyle = '#e91e63';
+        bgCtx.fillRect(-15, 15, 30, 25);
+        bgCtx.strokeStyle = '#c51162';
+        bgCtx.lineWidth = 2;
+        bgCtx.strokeRect(-15, 15, 30, 25);
+
+        // 肩章
+        bgCtx.fillStyle = '#f8bbd0';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-50, -5, 15, 25, 3);
+        bgCtx.fill();
+        bgCtx.beginPath();
+        bgCtx.roundRect(35, -5, 15, 25, 3);
+        bgCtx.fill();
+
+        // 粉色斜带
+        bgCtx.fillStyle = '#f48fb1';
+        bgCtx.save();
+        bgCtx.translate(-10, 20);
+        bgCtx.rotate(-0.3);
+        bgCtx.fillRect(-8, -30, 16, 50);
+        bgCtx.restore();
+
+        // 腰部阴影
+        var waistShadow = bgCtx.createLinearGradient(0, 50, 0, 80);
+        waistShadow.addColorStop(0, 'rgba(0,0,0,0)');
+        waistShadow.addColorStop(1, 'rgba(0,0,0,0.1)');
+        bgCtx.fillStyle = waistShadow;
+        bgCtx.fillRect(-50, 50, 100, 30);
+
+        bgCtx.restore();
+      }
+
+      function drawLeftArm() {
+        bgCtx.save();
+        bgCtx.translate(-40, 0);
+
+        // 手臂随呼吸轻微摆动
+        var swing = Math.sin(idleTime * 2) * 0.15;
+        bgCtx.rotate(0.4 + swing);
+
+        // 上臂
+        bgCtx.fillStyle = '#2d2d2d';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-9, -8, 22, 35, 7);
+        bgCtx.fill();
+
+        // 肘部
+        bgCtx.fillStyle = '#3d3d3d';
+        bgCtx.beginPath();
+        bgCtx.arc(2, 27, 8, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 前臂
+        bgCtx.fillStyle = '#2d2d2d';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-5, 28, 16, 30, 6);
+        bgCtx.fill();
+
+        // 白色手套
+        bgCtx.fillStyle = '#ffffff';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-9, 52, 24, 20, 9);
+        bgCtx.fill();
+
+        // 缝线
+        bgCtx.strokeStyle = '#e0e0e0';
+        bgCtx.lineWidth = 1;
+        bgCtx.beginPath();
+        bgCtx.moveTo(-9, 59);
+        bgCtx.lineTo(15, 59);
+        bgCtx.stroke();
+
+        // 拳头
+        var fistGrad = bgCtx.createRadialGradient(0, 68, 2, 0, 68, 11);
+        fistGrad.addColorStop(0, '#ffffff');
+        fistGrad.addColorStop(1, '#e0e0e0');
+        bgCtx.fillStyle = fistGrad;
+        bgCtx.beginPath();
+        bgCtx.arc(2, 68, 11, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        bgCtx.restore();
+      }
+
+      function drawRightArm() {
+        bgCtx.save();
+
+        var shoulderX = 42;
+        var shoulderY = 0;
+        bgCtx.translate(shoulderX, shoulderY);
+
+        // 手臂朝向鼠标旋转
+        bgCtx.rotate(armAngle);
+
+        // 上臂
+        bgCtx.fillStyle = '#2d2d2d';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-9, -9, 40, 18, 7);
+        bgCtx.fill();
+
+        // 肘部关节
+        bgCtx.fillStyle = '#3d3d3d';
+        bgCtx.beginPath();
+        bgCtx.arc(31, 0, 9, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 前臂
+        bgCtx.fillStyle = '#2d2d2d';
+        bgCtx.beginPath();
+        bgCtx.roundRect(26, -8, 38, 16, 6);
+        bgCtx.fill();
+
+        // 白色手套
+        bgCtx.fillStyle = '#ffffff';
+        bgCtx.beginPath();
+        bgCtx.roundRect(58, -11, 24, 22, 7);
+        bgCtx.fill();
+
+        // 手套缝线
+        bgCtx.strokeStyle = '#e0e0e0';
+        bgCtx.lineWidth = 1;
+        bgCtx.beginPath();
+        bgCtx.moveTo(58, -2);
+        bgCtx.lineTo(82, -2);
+        bgCtx.stroke();
+
+        // 手套粉色细节
+        bgCtx.fillStyle = '#e91e63';
+        bgCtx.beginPath();
+        bgCtx.arc(64, 0, 3, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 手枪
+        drawGun(78, 0);
+
+        bgCtx.restore();
+      }
+
+      function drawGun(x, y) {
+        bgCtx.save();
+        bgCtx.translate(x, y);
+
+        // 枪身主体
+        var gunBodyGrad = bgCtx.createLinearGradient(0, -10, 0, 8);
+        gunBodyGrad.addColorStop(0, '#616161');
+        gunBodyGrad.addColorStop(0.5, '#424242');
+        gunBodyGrad.addColorStop(1, '#303030');
+        bgCtx.fillStyle = gunBodyGrad;
+        bgCtx.beginPath();
+        bgCtx.roundRect(-5, -10, 42, 15, 2);
+        bgCtx.fill();
+
+        // 枪管
+        bgCtx.fillStyle = '#757575';
+        bgCtx.beginPath();
+        bgCtx.roundRect(25, -7, 32, 10, 2);
+        bgCtx.fill();
+
+        // 枪管散热槽
+        bgCtx.fillStyle = '#424242';
+        for (var i = 0; i < 5; i++) {
+          bgCtx.fillRect(30 + i * 5, -6, 2, 3);
+        }
+
+        // 枪口
+        bgCtx.fillStyle = '#212121';
+        bgCtx.beginPath();
+        bgCtx.arc(57, -2, 5, 0, Math.PI * 2);
+        bgCtx.fill();
+        bgCtx.fillStyle = '#111';
+        bgCtx.beginPath();
+        bgCtx.arc(57, -2, 2.5, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 准星
+        bgCtx.fillStyle = '#e91e63';
+        bgCtx.beginPath();
+        bgCtx.arc(18, -10, 2.5, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 握把
+        var gripGrad = bgCtx.createLinearGradient(0, 5, 0, 28);
+        gripGrad.addColorStop(0, '#f06292');
+        gripGrad.addColorStop(0.5, '#e91e63');
+        gripGrad.addColorStop(1, '#c51162');
+        bgCtx.fillStyle = gripGrad;
+        bgCtx.beginPath();
+        bgCtx.moveTo(0, 5);
+        bgCtx.lineTo(-7, 26);
+        bgCtx.lineTo(6, 28);
+        bgCtx.lineTo(10, 5);
+        bgCtx.closePath();
+        bgCtx.fill();
+
+        // 握把防滑纹理
+        bgCtx.strokeStyle = '#ad1457';
+        bgCtx.lineWidth = 1;
+        for (var j = 0; j < 3; j++) {
+          bgCtx.beginPath();
+          bgCtx.moveTo(-4 + j * 3, 10 + j * 4);
+          bgCtx.lineTo(-1 + j * 3, 12 + j * 4);
+          bgCtx.stroke();
+        }
+
+        // 扳机护圈
+        bgCtx.strokeStyle = '#616161';
+        bgCtx.lineWidth = 2.5;
+        bgCtx.beginPath();
+        bgCtx.arc(6, 8, 7, 0, Math.PI, false);
+        bgCtx.stroke();
+
+        // 扳机
+        bgCtx.fillStyle = '#424242';
+        bgCtx.beginPath();
+        bgCtx.arc(6, 7, 3, 0, Math.PI, false);
+        bgCtx.fill();
+
+        // 枪身高光
+        var gunGlow = bgCtx.createLinearGradient(-5, -10, -5, -2);
+        gunGlow.addColorStop(0, 'rgba(255,255,255,0.25)');
+        gunGlow.addColorStop(1, 'rgba(255,255,255,0)');
+        bgCtx.fillStyle = gunGlow;
+        bgCtx.fillRect(-5, -10, 42, 8);
+
+        // 枪口发射光效
+        var muzzleGlow = bgCtx.createRadialGradient(57, -2, 0, 57, -2, 15);
+        muzzleGlow.addColorStop(0, 'rgba(233, 30, 99, 0.15)');
+        muzzleGlow.addColorStop(1, 'rgba(233, 30, 99, 0)');
+        bgCtx.fillStyle = muzzleGlow;
+        bgCtx.beginPath();
+        bgCtx.arc(57, -2, 15, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        bgCtx.restore();
+      }
+
+      function drawLegs() {
+        // 左腿
+        bgCtx.save();
+        bgCtx.translate(-18, 75);
+        bgCtx.rotate(-0.1 + Math.sin(idleTime * 2) * 0.05);
+
+        bgCtx.fillStyle = '#2d2d2d';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-10, 0, 20, 30, 8);
+        bgCtx.fill();
+
+        bgCtx.fillStyle = '#3d3d3d';
+        bgCtx.beginPath();
+        bgCtx.arc(0, 30, 10, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        bgCtx.fillStyle = '#2d2d2d';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-9, 35, 18, 35, 7);
+        bgCtx.fill();
+
+        drawShoe(0, 70, -0.1);
+
+        bgCtx.restore();
+
+        // 右腿
+        bgCtx.save();
+        bgCtx.translate(18, 75);
+        bgCtx.rotate(0.1 - Math.sin(idleTime * 2) * 0.05);
+
+        bgCtx.fillStyle = '#2d2d2d';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-10, 0, 20, 30, 8);
+        bgCtx.fill();
+
+        bgCtx.fillStyle = '#3d3d3d';
+        bgCtx.beginPath();
+        bgCtx.arc(0, 30, 10, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        bgCtx.fillStyle = '#2d2d2d';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-9, 35, 18, 35, 7);
+        bgCtx.fill();
+
+        drawShoe(0, 70, 0.1);
+
+        bgCtx.restore();
+      }
+
+      function drawShoe(x, y, rot) {
+        bgCtx.save();
+        bgCtx.translate(x, y);
+        bgCtx.rotate(rot);
+
+        // 鞋底
+        bgCtx.fillStyle = '#e91e63';
+        bgCtx.beginPath();
+        bgCtx.ellipse(0, 8, 20, 6, 0, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 鞋身主体
+        bgCtx.fillStyle = '#ffffff';
+        bgCtx.beginPath();
+        bgCtx.moveTo(-18, 5);
+        bgCtx.quadraticCurveTo(-20, -5, -15, -15);
+        bgCtx.lineTo(-5, -20);
+        bgCtx.lineTo(10, -18);
+        bgCtx.quadraticCurveTo(18, -10, 20, 5);
+        bgCtx.closePath();
+        bgCtx.fill();
+
+        // 鞋面粉色装饰
+        bgCtx.fillStyle = '#f8bbd0';
+        bgCtx.beginPath();
+        bgCtx.ellipse(-5, -8, 12, 8, -0.2, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 鞋带区域
+        bgCtx.fillStyle = '#f48fb1';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-8, -18, 14, 10, 3);
+        bgCtx.fill();
+
+        // 鞋帮
+        bgCtx.fillStyle = '#fafafa';
+        bgCtx.beginPath();
+        bgCtx.roundRect(-10, -22, 16, 8, 4);
+        bgCtx.fill();
+
+        // 侧面标志
+        bgCtx.fillStyle = '#e91e63';
+        bgCtx.beginPath();
+        bgCtx.arc(5, -5, 4, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 鞋头高光
+        var toeGlow = bgCtx.createRadialGradient(-15, -8, 0, -15, -8, 12);
+        toeGlow.addColorStop(0, 'rgba(255,255,255,0.4)');
+        toeGlow.addColorStop(1, 'rgba(255,255,255,0)');
+        bgCtx.fillStyle = toeGlow;
+        bgCtx.fillRect(-25, -20, 20, 15);
+
+        bgCtx.restore();
+      }
+
+      function drawHead() {
+        bgCtx.save();
+
+        // 头部羽毛装饰
+        [-1, 1].forEach(function(side) {
+          bgCtx.save();
+          bgCtx.scale(side, 1);
+          bgCtx.translate(35, -80);
+
+          var feathers = [
+            { a: -0.8, l: 45, s: 12 },
+            { a: -0.4, l: 50, s: 14 },
+            { a: 0, l: 55, s: 15 },
+            { a: 0.4, l: 45, s: 13 },
+            { a: 0.7, l: 35, s: 10 },
+          ];
+
+          feathers.forEach(function(f) {
+            bgCtx.save();
+            bgCtx.rotate(f.a);
+            var grad = bgCtx.createLinearGradient(0, 0, f.l, 0);
+            grad.addColorStop(0, '#f8bbd0');
+            grad.addColorStop(0.6, '#f48fb1');
+            grad.addColorStop(1, '#fce4ec');
+            bgCtx.fillStyle = grad;
+            bgCtx.beginPath();
+            bgCtx.ellipse(f.l * 0.4, 0, f.l * 0.5, f.s, 0, 0, Math.PI * 2);
+            bgCtx.fill();
+            bgCtx.restore();
+          });
+
+          bgCtx.restore();
+        });
+
+        // 头盔主体
+        var helmetGrad = bgCtx.createRadialGradient(-10, -100, 10, 0, -80, 60);
+        helmetGrad.addColorStop(0, '#555555');
+        helmetGrad.addColorStop(0.5, '#3a3a3a');
+        helmetGrad.addColorStop(1, '#2a2a2a');
+
+        bgCtx.fillStyle = helmetGrad;
+        bgCtx.beginPath();
+        bgCtx.arc(0, -70, 50, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 头盔顶部接缝
+        bgCtx.strokeStyle = '#222';
+        bgCtx.lineWidth = 2;
+        bgCtx.beginPath();
+        bgCtx.moveTo(0, -120);
+        bgCtx.lineTo(0, -70);
+        bgCtx.stroke();
+
+        // 护目镜带子
+        bgCtx.fillStyle = '#c51162';
+        bgCtx.beginPath();
+        bgCtx.ellipse(0, -65, 52, 18, 0, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        // 护目镜镜片
+        var lensGrad = bgCtx.createLinearGradient(-40, -75, 40, -55);
+        lensGrad.addColorStop(0, '#880e4f');
+        lensGrad.addColorStop(0.3, '#6a1b4a');
+        lensGrad.addColorStop(0.7, '#4a1035');
+        lensGrad.addColorStop(1, '#6a1b4a');
+
+        bgCtx.fillStyle = lensGrad;
+        bgCtx.beginPath();
+        bgCtx.roundRect(-42, -78, 84, 26, 13);
+        bgCtx.fill();
+
+        // 镜片反光
+        var lensShine = bgCtx.createLinearGradient(-30, -78, -10, -65);
+        lensShine.addColorStop(0, 'rgba(255,255,255,0.3)');
+        lensShine.addColorStop(1, 'rgba(255,255,255,0)');
+        bgCtx.fillStyle = lensShine;
+        bgCtx.fillRect(-40, -76, 40, 15);
+
+        // 呼吸面罩
+        bgCtx.fillStyle = '#e0e0e0';
+        bgCtx.beginPath();
+        bgCtx.moveTo(-20, -55);
+        bgCtx.quadraticCurveTo(-25, -30, -15, -25);
+        bgCtx.lineTo(15, -25);
+        bgCtx.quadraticCurveTo(25, -30, 20, -55);
+        bgCtx.quadraticCurveTo(0, -45, -20, -55);
+        bgCtx.fill();
+
+        // 面罩细节
+        bgCtx.fillStyle = '#9e9e9e';
+        bgCtx.fillRect(-8, -40, 16, 12);
+        bgCtx.fillStyle = '#616161';
+        bgCtx.fillRect(-5, -37, 10, 6);
+
+        // 耳机/圆形装置
+        [-1, 1].forEach(function(side) {
+          bgCtx.fillStyle = '#424242';
+          bgCtx.beginPath();
+          bgCtx.arc(side * 48, -60, 12, 0, Math.PI * 2);
+          bgCtx.fill();
+          bgCtx.fillStyle = '#616161';
+          bgCtx.beginPath();
+          bgCtx.arc(side * 48, -60, 8, 0, Math.PI * 2);
+          bgCtx.fill();
+          bgCtx.fillStyle = '#9e9e9e';
+          bgCtx.beginPath();
+          bgCtx.arc(side * 48, -60, 4, 0, Math.PI * 2);
+          bgCtx.fill();
+        });
+
+        // 红色浆果装饰
+        var cherries = [
+          { x: -25, y: -105 },
+          { x: 20, y: -100 },
+          { x: -30, y: -80 },
+          { x: 32, y: -75 },
+        ];
+        cherries.forEach(function(c) {
+          var cherryGrad = bgCtx.createRadialGradient(c.x - 2, c.y - 2, 0, c.x, c.y, 12);
+          cherryGrad.addColorStop(0, '#ff5252');
+          cherryGrad.addColorStop(0.5, '#d32f2f');
+          cherryGrad.addColorStop(1, '#b71c1c');
+          bgCtx.fillStyle = cherryGrad;
+          bgCtx.beginPath();
+          bgCtx.arc(c.x, c.y, 10, 0, Math.PI * 2);
+          bgCtx.fill();
+
+          bgCtx.fillStyle = 'rgba(255,255,255,0.4)';
+          bgCtx.beginPath();
+          bgCtx.arc(c.x - 3, c.y - 3, 3, 0, Math.PI * 2);
+          bgCtx.fill();
+        });
+
+        // 粉色爱心装饰
+        drawHeart(-5, -110, 8, '#ff4081');
+        drawHeart(-15, -90, 5, '#ff80ab');
+        drawHeart(15, -85, 4, '#ff80ab');
+
+        bgCtx.restore();
+      }
+
+      function drawHeart(x, y, size, color) {
+        bgCtx.save();
+        bgCtx.translate(x, y);
+        bgCtx.fillStyle = color;
+        bgCtx.beginPath();
+        bgCtx.moveTo(0, size * 0.3);
+        bgCtx.bezierCurveTo(-size, -size * 0.5, -size, -size, 0, -size * 0.3);
+        bgCtx.bezierCurveTo(size, -size, size, -size * 0.5, 0, size * 0.3);
+        bgCtx.fill();
+
+        bgCtx.fillStyle = 'rgba(255,255,255,0.4)';
+        bgCtx.beginPath();
+        bgCtx.ellipse(-size * 0.3, -size * 0.5, size * 0.2, size * 0.15, -0.5, 0, Math.PI * 2);
+        bgCtx.fill();
+        bgCtx.restore();
+      }
+
+      // ==========================================
+      // 涂料层
+      // ==========================================
+      function drawPaint() {
+        paintCtx.clearRect(0, 0, W, H);
+
+        // 多层涂料叠加
+        drawPaintLayer('#1a1a2e', '#2d1f3d', 0.95);
+        drawPaintLayer('#0d0d1a', '#1a0a1e', 0.6);
+
+        // 粉色涂料泼溅
+        drawPinkSplatters();
+
+        // 添加噪点纹理
+        addPaintTexture();
+      }
+
+      function drawPaintLayer(color1, color2, alpha) {
+        var gradient = paintCtx.createLinearGradient(0, 0, W, H);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(0.5, color2);
+        gradient.addColorStop(1, color1);
+        paintCtx.globalAlpha = alpha;
+        paintCtx.fillStyle = gradient;
+        paintCtx.fillRect(0, 0, W, H);
+        paintCtx.globalAlpha = 1;
+      }
+
+      function drawPinkSplatters() {
+        var pinks = ['#e91e63', '#ff4081', '#f50057', '#c51162', '#ff80ab', '#f8bbd0'];
+        var numSplats = Math.floor((W * H) / 40000);
+
+        for (var i = 0; i < numSplats; i++) {
+          var x = Math.random() * W;
+          var y = Math.random() * H;
+          var r = 20 + Math.random() * 120;
+          var pink = pinks[Math.floor(Math.random() * pinks.length)];
+          var a = 0.1 + Math.random() * 0.4;
+
+          var grad = paintCtx.createRadialGradient(x, y, 0, x, y, r);
+          grad.addColorStop(0, hexToRgba(pink, a));
+          grad.addColorStop(0.7, hexToRgba(pink, a * 0.5));
+          grad.addColorStop(1, hexToRgba(pink, 0));
+
+          paintCtx.fillStyle = grad;
+          paintCtx.beginPath();
+          var points = 8 + Math.floor(Math.random() * 6);
+          for (var j = 0; j <= points; j++) {
+            var angle = (j / points) * Math.PI * 2;
+            var rad = r * (0.6 + Math.random() * 0.4);
+            var px = x + Math.cos(angle) * rad;
+            var py = y + Math.sin(angle) * rad;
+            if (j === 0) paintCtx.moveTo(px, py);
+            else paintCtx.lineTo(px, py);
+          }
+          paintCtx.closePath();
+          paintCtx.fill();
+
+          // 飞溅小点
+          for (var k = 0; k < 3; k++) {
+            var sAngle = Math.random() * Math.PI * 2;
+            var sDist = r * (1 + Math.random());
+            var sx = x + Math.cos(sAngle) * sDist;
+            var sy = y + Math.sin(sAngle) * sDist;
+            var sr = 3 + Math.random() * 15;
+
+            var dotGrad = paintCtx.createRadialGradient(sx, sy, 0, sx, sy, sr);
+            dotGrad.addColorStop(0, hexToRgba(pink, a * 0.7));
+            dotGrad.addColorStop(1, hexToRgba(pink, 0));
+            paintCtx.fillStyle = dotGrad;
+            paintCtx.beginPath();
+            paintCtx.arc(sx, sy, sr, 0, Math.PI * 2);
+            paintCtx.fill();
+          }
+        }
+      }
+
+      function addPaintTexture() {
+        try {
+          var imageData = paintCtx.getImageData(0, 0, W, H);
+          var data = imageData.data;
+          for (var i = 0; i < data.length; i += 4) {
+            var noise = (Math.random() - 0.5) * 25;
+            data[i] = Math.min(255, Math.max(0, data[i] + noise));
+            data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+            data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+          }
+          paintCtx.putImageData(imageData, 0, 0);
+        } catch(e) {}
+      }
+
+      function hexToRgba(hex, alpha) {
+        var r = parseInt(hex.slice(1, 3), 16);
+        var g = parseInt(hex.slice(3, 5), 16);
+        var b = parseInt(hex.slice(5, 7), 16);
+        return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+      }
+
+      // ==========================================
+      // 光标
+      // ==========================================
+      function drawCursor() {
+        cursorCtx.clearRect(0, 0, W, H);
+        cursorCtx.save();
+        cursorCtx.translate(smoothMX, smoothMY);
+
+        // 外圈（粉色光晕）
+        var glow = cursorCtx.createRadialGradient(0, 0, eraseRadius * 0.5, 0, 0, eraseRadius * 2);
+        glow.addColorStop(0, 'rgba(233, 30, 99, 0.1)');
+        glow.addColorStop(1, 'rgba(233, 30, 99, 0)');
+        cursorCtx.fillStyle = glow;
+        cursorCtx.beginPath();
+        cursorCtx.arc(0, 0, eraseRadius * 2, 0, Math.PI * 2);
+        cursorCtx.fill();
+
+        // 圆圈
+        cursorCtx.strokeStyle = 'rgba(233, 30, 99, 0.8)';
+        cursorCtx.lineWidth = 2;
+        cursorCtx.beginPath();
+        cursorCtx.arc(0, 0, eraseRadius, 0, Math.PI * 2);
+        cursorCtx.stroke();
+
+        // 内圈
+        cursorCtx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        cursorCtx.lineWidth = 1;
+        cursorCtx.beginPath();
+        cursorCtx.arc(0, 0, eraseRadius * 0.3, 0, Math.PI * 2);
+        cursorCtx.stroke();
+
+        // 中心点
+        cursorCtx.fillStyle = '#e91e63';
+        cursorCtx.beginPath();
+        cursorCtx.arc(0, 0, 3, 0, Math.PI * 2);
+        cursorCtx.fill();
+
+        // 十字准星
+        cursorCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        cursorCtx.lineWidth = 1;
+        cursorCtx.beginPath();
+        cursorCtx.moveTo(-eraseRadius - 8, 0);
+        cursorCtx.lineTo(-eraseRadius - 3, 0);
+        cursorCtx.moveTo(eraseRadius + 3, 0);
+        cursorCtx.lineTo(eraseRadius + 8, 0);
+        cursorCtx.moveTo(0, -eraseRadius - 8);
+        cursorCtx.lineTo(0, -eraseRadius - 3);
+        cursorCtx.moveTo(0, eraseRadius + 3);
+        cursorCtx.lineTo(0, eraseRadius + 8);
+        cursorCtx.stroke();
+
+        cursorCtx.restore();
+      }
+
+      // ==========================================
+      // 擦除涂料
+      // ==========================================
+      function erasePaint(x, y) {
+        paintCtx.globalCompositeOperation = 'destination-out';
+
+        // 核心
+        var inner = paintCtx.createRadialGradient(x, y, 0, x, y, eraseRadius * 0.3);
+        inner.addColorStop(0, 'rgba(0,0,0,' + eraseStrength + ')');
+        inner.addColorStop(1, 'rgba(0,0,0,' + (eraseStrength * 0.7) + ')');
+        paintCtx.fillStyle = inner;
+        paintCtx.beginPath();
+        paintCtx.arc(x, y, eraseRadius * 0.3, 0, Math.PI * 2);
+        paintCtx.fill();
+
+        // 过渡
+        var mid = paintCtx.createRadialGradient(x, y, eraseRadius * 0.2, x, y, eraseRadius * 0.65);
+        mid.addColorStop(0, 'rgba(0,0,0,' + (eraseStrength * 0.6) + ')');
+        mid.addColorStop(1, 'rgba(0,0,0,' + (eraseStrength * 0.15) + ')');
+        paintCtx.fillStyle = mid;
+        paintCtx.beginPath();
+        paintCtx.arc(x, y, eraseRadius * 0.65, 0, Math.PI * 2);
+        paintCtx.fill();
+
+        // 边缘羽化
+        var outer = paintCtx.createRadialGradient(x, y, eraseRadius * 0.4, x, y, eraseRadius);
+        outer.addColorStop(0, 'rgba(0,0,0,' + (eraseStrength * 0.2) + ')');
+        outer.addColorStop(0.5, 'rgba(0,0,0,' + (eraseStrength * 0.08) + ')');
+        outer.addColorStop(1, 'rgba(0,0,0,0)');
+        paintCtx.fillStyle = outer;
+        paintCtx.beginPath();
+        paintCtx.arc(x, y, eraseRadius, 0, Math.PI * 2);
+        paintCtx.fill();
+
+        // 散落擦除点
+        for (var i = 0; i < 6; i++) {
+          var angle = Math.random() * Math.PI * 2;
+          var dist = eraseRadius * (0.4 + Math.random() * 0.7);
+          var px = x + Math.cos(angle) * dist;
+          var py = y + Math.sin(angle) * dist;
+          var pSize = 2 + Math.random() * 8;
+          var pAlpha = 0.1 + Math.random() * 0.25;
+
+          var dotGrad = paintCtx.createRadialGradient(px, py, 0, px, py, pSize);
+          dotGrad.addColorStop(0, 'rgba(0,0,0,' + pAlpha + ')');
+          dotGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          paintCtx.fillStyle = dotGrad;
+          paintCtx.beginPath();
+          paintCtx.arc(px, py, pSize, 0, Math.PI * 2);
+          paintCtx.fill();
+        }
+
+        paintCtx.globalCompositeOperation = 'source-over';
+      }
+
+      function addErasePoint(x, y) {
+        if (completed) return;
+
+        if (!hasLastPoint) {
+          lastMX = x;
+          lastMY = y;
+          hasLastPoint = true;
+          pendingPoints.push({ x: x, y: y });
+        } else {
+          var dx = x - lastMX;
+          var dy = y - lastMY;
+          var dist = Math.hypot(dx, dy);
+          var steps = Math.max(1, Math.floor(dist / stepSize));
+
+          for (var i = 0; i <= steps; i++) {
+            var t = i / steps;
+            pendingPoints.push({
+              x: lastMX + dx * t,
+              y: lastMY + dy * t
+            });
+          }
+          lastMX = x;
+          lastMY = y;
+        }
+
+        // 隐藏提示
+        if (hintEl && hintEl.style.opacity !== '0') {
+          hintEl.style.opacity = '0';
+        }
+
+        if (!isErasing) {
+          isErasing = true;
+          requestAnimationFrame(processErase);
+        }
+      }
+
+      function processErase() {
+        while (pendingPoints.length > 0) {
+          var p = pendingPoints.shift();
+          erasePaint(p.x, p.y);
+        }
+        isErasing = false;
+      }
+
+      // ==========================================
+      // 进度计算
+      // ==========================================
+      function calcProgress() {
+        if (completed) return;
+
+        var now = Date.now();
+        if (now - lastProgressCheck < 200) return;
+        lastProgressCheck = now;
+
+        try {
+          var sampleW = 100;
+          var sampleH = Math.floor(100 * H / W);
+          var tempCanvas = document.createElement('canvas');
+          tempCanvas.width = sampleW;
+          tempCanvas.height = sampleH;
+          var tempCtx = tempCanvas.getContext('2d');
+          tempCtx.drawImage(paintCanvas, 0, 0, sampleW, sampleH);
+
+          var imageData = tempCtx.getImageData(0, 0, sampleW, sampleH);
+          var data = imageData.data;
+          var erased = 0;
+          var total = data.length / 4;
+
+          for (var i = 3; i < data.length; i += 4) {
+            if (data[i] < 50) {
+              erased++;
+            }
+          }
+
+          progress = Math.min(100, Math.floor((erased / total) * 100));
+
+          // 显示进度：达到85%时显示100%
+          var displayProgress = progress;
+          if (progress >= 85) {
+            displayProgress = 100;
+          }
+
+          if (progressFill) {
+            progressFill.style.width = displayProgress + '%';
+          }
+          if (progressNum) {
+            progressNum.textContent = displayProgress;
+          }
+
+          // 实际逻辑：85%即完成
+          if (progress >= 85) {
+            completeIntro();
+          }
+        } catch(e) {}
+      }
+
+      function completeIntro() {
+        if (completed) return;
+        completed = true;
+
+        // 确保进度显示为100%
+        if (progressFill) {
+          progressFill.style.width = '100%';
+        }
+        if (progressNum) {
+          progressNum.textContent = '100';
+        }
+
+        // 花屏转场
+        if (glitchEl) {
+          glitchEl.classList.add('active');
+        }
+
+        // 0.5秒后淡出涂抹层
+        setTimeout(function() {
+          if (introEl) {
+            introEl.classList.add('hidden');
+          }
+          document.body.style.overflow = '';
+          window.scrollTo(0, 0);
+        }, 500);
+      }
+
+      // ==========================================
+      // 事件
+      // ==========================================
+      function onMouseMove(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        addErasePoint(mouseX, mouseY);
+      }
+
+      function onTouchMove(e) {
+        e.preventDefault();
+        var t = e.touches[0];
+        mouseX = t.clientX;
+        mouseY = t.clientY;
+        addErasePoint(mouseX, mouseY);
+      }
+
+      // ==========================================
+      // 主动画循环
+      // ==========================================
+      function animate(time) {
+        idleTime = time / 1000;
+
+        // 平滑鼠标
+        smoothMX += (mouseX - smoothMX) * 0.2;
+        smoothMY += (mouseY - smoothMY) * 0.2;
+
+        drawCharacter();
+        drawCursor();
+        calcProgress();
+
+        if (!completed) {
+          requestAnimationFrame(animate);
+        }
+      }
+
+      // ==========================================
+      // 初始化
+      // ==========================================
+      // 先隐藏body滚动
+      document.body.style.overflow = 'hidden';
+
+      window.addEventListener('resize', resize);
+      introEl.addEventListener('mousemove', onMouseMove);
+      introEl.addEventListener('touchmove', onTouchMove, { passive: false });
+
+      resize();
+
+      // 初始鼠标位置在角色右前方
+      mouseX = charX + 200 * charScale;
+      mouseY = charY - 50 * charScale;
+      smoothMX = mouseX;
+      smoothMY = mouseY;
+      lastMX = mouseX;
+      lastMY = mouseY;
+
+      requestAnimationFrame(animate);
+    })();
 
     /* ===== 配置 ===== */
     var TRANSITION_MS = 700;
