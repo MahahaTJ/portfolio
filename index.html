@@ -265,7 +265,7 @@
       margin-bottom: 1.2rem; letter-spacing: 0.02em;
     }
     .hero .subtitle {
-      font-size: clamp(0.85rem, 1.8vw, 0.95rem); color: var(--muted);
+      font-size: clamp(0.85rem, 1.8vw, 0.95rem); color: #ffffff;
       line-height: 1.8; margin-bottom: 2.5rem; max-width: 520px;
       margin-left: auto; margin-right: auto;
     }
@@ -276,7 +276,7 @@
       color: var(--accent); line-height: 1;
     }
     .hero-stats .stat-label {
-      font-size: 0.68rem; color: var(--muted2); margin-top: 0.4rem;
+      font-size: 0.68rem; color: #ffffff; margin-top: 0.4rem;
       letter-spacing: 0.06em;
     }
     .hero-stats .stat::after {
@@ -859,7 +859,7 @@
       var targetArmAngle = 0;
 
       // 擦除参数
-      var eraseRadius = 45;
+      var eraseRadius = 90;
       var eraseStrength = 0.9;
       var stepSize = 6;
 
@@ -1761,14 +1761,14 @@
 
         // 圆圈
         cursorCtx.strokeStyle = 'rgba(233, 30, 99, 0.8)';
-        cursorCtx.lineWidth = 2;
+        cursorCtx.lineWidth = 4;
         cursorCtx.beginPath();
         cursorCtx.arc(0, 0, eraseRadius, 0, Math.PI * 2);
         cursorCtx.stroke();
 
         // 内圈
         cursorCtx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        cursorCtx.lineWidth = 1;
+        cursorCtx.lineWidth = 2;
         cursorCtx.beginPath();
         cursorCtx.arc(0, 0, eraseRadius * 0.3, 0, Math.PI * 2);
         cursorCtx.stroke();
@@ -1776,21 +1776,21 @@
         // 中心点
         cursorCtx.fillStyle = '#e91e63';
         cursorCtx.beginPath();
-        cursorCtx.arc(0, 0, 3, 0, Math.PI * 2);
+        cursorCtx.arc(0, 0, 6, 0, Math.PI * 2);
         cursorCtx.fill();
 
         // 十字准星
         cursorCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-        cursorCtx.lineWidth = 1;
+        cursorCtx.lineWidth = 2;
         cursorCtx.beginPath();
-        cursorCtx.moveTo(-eraseRadius - 8, 0);
-        cursorCtx.lineTo(-eraseRadius - 3, 0);
-        cursorCtx.moveTo(eraseRadius + 3, 0);
-        cursorCtx.lineTo(eraseRadius + 8, 0);
-        cursorCtx.moveTo(0, -eraseRadius - 8);
-        cursorCtx.lineTo(0, -eraseRadius - 3);
-        cursorCtx.moveTo(0, eraseRadius + 3);
-        cursorCtx.lineTo(0, eraseRadius + 8);
+        cursorCtx.moveTo(-eraseRadius - 16, 0);
+        cursorCtx.lineTo(-eraseRadius - 6, 0);
+        cursorCtx.moveTo(eraseRadius + 6, 0);
+        cursorCtx.lineTo(eraseRadius + 16, 0);
+        cursorCtx.moveTo(0, -eraseRadius - 16);
+        cursorCtx.lineTo(0, -eraseRadius - 6);
+        cursorCtx.moveTo(0, eraseRadius + 6);
+        cursorCtx.lineTo(0, eraseRadius + 16);
         cursorCtx.stroke();
 
         cursorCtx.restore();
@@ -1836,7 +1836,7 @@
           var dist = eraseRadius * (0.4 + Math.random() * 0.7);
           var px = x + Math.cos(angle) * dist;
           var py = y + Math.sin(angle) * dist;
-          var pSize = 2 + Math.random() * 8;
+          var pSize = 4 + Math.random() * 16;
           var pAlpha = 0.1 + Math.random() * 0.25;
 
           var dotGrad = paintCtx.createRadialGradient(px, py, 0, px, py, pSize);
@@ -1927,9 +1927,9 @@
 
           progress = Math.min(100, Math.floor((erased / total) * 100));
 
-          // 显示进度：达到85%时显示100%
+          // 显示进度：达到50%时显示100%
           var displayProgress = progress;
-          if (progress >= 85) {
+          if (progress >= 50) {
             displayProgress = 100;
           }
 
@@ -1940,8 +1940,8 @@
             progressNum.textContent = displayProgress;
           }
 
-          // 实际逻辑：85%即完成
-          if (progress >= 85) {
+          // 实际逻辑：50%即完成
+          if (progress >= 50) {
             completeIntro();
           }
         } catch(e) {}
