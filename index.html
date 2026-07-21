@@ -403,6 +403,123 @@
     }
     .project-card:hover .card-arrow { gap: 0.8rem; }
 
+    /* 维护中状态 */
+    .project-card.maintenance {
+      position: relative;
+      cursor: not-allowed;
+    }
+    .project-card.maintenance .card-thumb {
+      filter: grayscale(0.5) brightness(0.6);
+    }
+    .project-card.maintenance .card-body {
+      filter: grayscale(0.3) brightness(0.7);
+    }
+    .project-card.maintenance:hover {
+      transform: none;
+      border-color: var(--rule);
+    }
+    .project-card.maintenance:hover::before {
+      transform: scaleX(0);
+    }
+    .project-card.maintenance:hover .card-thumb img {
+      transform: scale(1);
+      filter: saturate(0.5);
+    }
+    .project-card.maintenance:hover .card-arrow {
+      gap: 0.4rem;
+    }
+    .maintenance-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.3rem 0.8rem;
+      background: rgba(13, 13, 18, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #ff9a3c;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 154, 60, 0.4);
+      letter-spacing: 0.1em;
+      z-index: 2;
+    }
+    .maintenance-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(13, 13, 18, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      z-index: 3;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .project-card.maintenance:hover .maintenance-overlay {
+      opacity: 1;
+    }
+    .maintenance-text {
+      padding: 0.8rem 1.5rem;
+      background: rgba(13, 13, 18, 0.95);
+      border: 1px solid rgba(255, 154, 60, 0.3);
+      border-radius: 8px;
+      color: var(--ink2);
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-align: center;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .maintenance-text strong {
+      color: #ff9a3c;
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+    }
+
+    /* Toast提示 */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      padding: 1rem 2rem;
+      background: rgba(13, 13, 18, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 154, 60, 0.4);
+      border-radius: 12px;
+      color: var(--ink);
+      font-size: 0.85rem;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      text-align: center;
+      min-width: 200px;
+    }
+    .toast.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .toast-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .toast-title {
+      font-weight: 700;
+      color: #ff9a3c;
+      margin-bottom: 0.3rem;
+      font-size: 0.9rem;
+    }
+    .toast-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
     .coming-soon {
       background: var(--bg2); border: 1px dashed var(--rule);
       border-radius: 2px; padding: 2rem; text-align: center;
@@ -635,11 +752,11 @@
               <div class="timeline-item">
                 <div class="t-date">2023</div>
                 <div class="t-role">天龙八部端游 · MMORPG · 搜狐畅游</div>
-                <div class="t-company">游戏资源策划 — UI界面设计、前端基础代码实现、Genesis-3D引擎GUI资源输出</div>
+                <div class="t-company">游戏资源策划 — 全品类资产管理（3C/时装/特效/场景/武器/技能/坐骑/宠物/UI）、UI设计与前端落地、Genesis-3D引擎资源调试</div>
               </div>
               <div class="timeline-item">
                 <div class="t-date">2022 - 2023</div>
-                <div class="t-role">忘川风华录 · 策略RPG · 网易雷火</div>
+                <div class="t-role">忘川风华录 · 国风回合制RPG · 网易雷火</div>
                 <div class="t-company">游戏交互策划（实习）— 活动玩法交互设计，主导更金换物、喵居捏猫、雅社赛季、履职书、剧情Loading等8+功能模块</div>
               </div>
               <div class="timeline-item">
@@ -704,7 +821,8 @@
           </a>
 
           <!-- FreeCity -->
-          <a href="projects/freecity/index.html" class="project-card" data-project="freecity">
+          <a href="javascript:void(0)" class="project-card maintenance" data-project="freecity" data-maintenance="true">
+            <div class="maintenance-badge">🔧 维护中</div>
             <div class="card-thumb">
               <img src="assets/thumb-freecity.jpg" alt="FreeCity" loading="lazy"
                    onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#0d1a1a,#101010)'">
@@ -719,7 +837,13 @@
                 <span class="card-tag">赛季活动</span>
                 <span class="card-tag">组件化体系</span>
               </div>
-              <div class="card-arrow">查看详情 →</div>
+              <div class="card-arrow">内容整理中 →</div>
+            </div>
+            <div class="maintenance-overlay">
+              <div class="maintenance-text">
+                <strong>🚧 项目维护中</strong>
+                内容正在整理，敬请期待
+              </div>
             </div>
           </a>
 
@@ -732,7 +856,7 @@
             <div class="card-body">
               <div class="card-meta">网易雷火 · 2022</div>
               <div class="card-title">忘川风华录</div>
-              <div class="card-desc">策略RPG手游交互策划实习，主导更金换物、喵居捏猫、雅社赛季、履职书、剧情Loading等8+功能模块的玩法交互设计。</div>
+              <div class="card-desc">国风回合制RPG手游交互策划实习，主导更金换物、喵居捏猫、雅社赛季、履职书、剧情Loading等8+功能模块的玩法交互设计。</div>
               <div class="card-tags">
                 <span class="card-tag">活动玩法</span>
                 <span class="card-tag">交互设计</span>
@@ -2284,7 +2408,35 @@
       goTo(2);
       history.replaceState(null, '', location.pathname + location.search);
     }
+
+    /* ===== 维护中项目卡片点击提示 ===== */
+    var maintenanceCards = document.querySelectorAll('.project-card[data-maintenance="true"]');
+    var maintenanceToast = document.getElementById('maintenanceToast');
+    var toastTimer = null;
+
+    function showMaintenanceToast() {
+      if (!maintenanceToast) return;
+      maintenanceToast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function() {
+        maintenanceToast.classList.remove('show');
+      }, 2000);
+    }
+
+    maintenanceCards.forEach(function(card) {
+      card.addEventListener('click', function(e) {
+        e.preventDefault();
+        showMaintenanceToast();
+      });
+    });
   })();
   </script>
+
+  <!-- Toast提示 -->
+  <div class="toast" id="maintenanceToast">
+    <div class="toast-icon">🚧</div>
+    <div class="toast-title">项目维护中</div>
+    <div class="toast-desc">当前项目内容正在整理，敬请期待~</div>
+  </div>
 </body>
 </html>
