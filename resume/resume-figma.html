@@ -415,6 +415,147 @@
     color: var(--text-tertiary);
   }
 
+  /* ========== 游戏履历 ========== */
+  .gaming-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .gaming-col {
+    background: var(--bg-gray);
+    border-radius: 6px;
+    padding: 10px 12px;
+    border-top: 3px solid var(--primary);
+    position: relative;
+  }
+
+  .gaming-col.mobile {
+    border-top-color: #FF9F43;
+  }
+
+  .gaming-col.console {
+    border-top-color: #9B59B6;
+  }
+
+  .gaming-col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .gaming-col-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .gaming-col-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+
+  .gaming-col-sub {
+    font-size: 9px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+
+  .game-item {
+    background: var(--white);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+
+  .game-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .game-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+    gap: 8px;
+  }
+
+  .game-item-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dark);
+    line-height: 1.4;
+  }
+
+  .game-item-hours {
+    font-size: 9px;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .game-item-type {
+    display: inline-block;
+    font-size: 9px;
+    color: var(--text-secondary);
+    background: var(--bg-gray);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-bottom: 6px;
+  }
+
+  .game-item-list {
+    font-size: 10px;
+    color: var(--text-body);
+    line-height: 1.7;
+  }
+
+  .game-item-list ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .game-item-list li {
+    position: relative;
+    padding-left: 12px;
+    margin-bottom: 1px;
+  }
+
+  .game-item-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-size: 9px;
+    top: 1px;
+  }
+
+  .gaming-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-light);
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+
+  .gaming-summary strong {
+    color: var(--primary);
+    font-size: 13px;
+    margin-left: 4px;
+  }
+
 </style>
 </head>
 <body>
@@ -427,11 +568,12 @@
       <div class="name">王怡</div>
       <div class="title">游戏交互策划 / UI策划</div>
       <div class="tags">
+        <span class="tag">交互策划</span>
+        <span class="tag">游戏交互设计</span>
+        <span class="tag">资源策划</span>
+        <span class="tag">界面设计</span>
         <span class="tag">985硕士</span>
-        <span class="tag">工业设计</span>
-        <span class="tag">3年+经验</span>
-        <span class="tag">生存策略</span>
-        <span class="tag">开放世界</span>
+        <span class="tag">工业设计专业</span>
       </div>
     </div>
     <div class="header-right">
@@ -689,6 +831,167 @@
         <li>全国大学生工业设计大赛 三等奖</li>
         <li>校级优秀毕业生 / 优秀研究生 / 优秀学生干部</li>
       </ul>
+    </div>
+  </div>
+
+  <!-- 游戏履历 -->
+  <div class="section">
+    <div class="section-title">游戏履历 <span class="en">Gaming · 近1年</span></div>
+
+    <div class="gaming-grid">
+      <!-- 端游 -->
+      <div class="gaming-col pc">
+        <div class="gaming-col-header">
+          <span class="gaming-col-icon">🖥️</span>
+          <div>
+            <div class="gaming-col-title">端游</div>
+            <div class="gaming-col-sub">PC Games</div>
+          </div>
+        </div>
+
+        <div class="game-item">
+          <div class="game-item-top">
+            <span class="game-item-name">识质存在</span>
+            <span class="game-item-hours">20h</span>
+          </div>
+          <span class="game-item-type">动作射击 + 探索解密</span>
+          <div class="game-item-list">
+            <ul>
+              <li>全剧情通关</li>
+              <li>全收集解锁</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="game-item">
+          <div class="game-item-top">
+            <span class="game-item-name">怪物猎人荒野</span>
+            <span class="game-item-hours">300h</span>
+          </div>
+          <span class="game-item-type">ARPG</span>
+          <div class="game-item-list">
+            <ul>
+              <li>全主线 + 支线通关</li>
+              <li>历战王煌雷龙、波衣龙</li>
+              <li>狱焰蛸、锁刃龙力通关</li>
+              <li>9星游星欧米茄通关</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="game-item">
+          <div class="game-item-top">
+            <span class="game-item-name">幻兽帕鲁</span>
+            <span class="game-item-hours">300h</span>
+          </div>
+          <span class="game-item-type">捉宠 + SOC</span>
+          <div class="game-item-list">
+            <ul>
+              <li>含 1.0 版本全流程</li>
+              <li>全高塔、洞窟、营地通关</li>
+              <li>全油田等据点攻克</li>
+              <li>全科技解锁 · 全帕鲁收集</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="game-item">
+          <div class="game-item-top">
+            <span class="game-item-name">霍格沃兹之遗</span>
+            <span class="game-item-hours">100h</span>
+          </div>
+          <span class="game-item-type">ARPG</span>
+          <div class="game-item-list">
+            <ul>
+              <li>全主线 + 支线通关</li>
+              <li>挑战、收藏全收集</li>
+              <li>生物、咒语全收集</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 掌机 -->
+      <div class="gaming-col console">
+        <div class="gaming-col-header">
+          <span class="gaming-col-icon">🎮</span>
+          <div>
+            <div class="gaming-col-title">掌机</div>
+            <div class="gaming-col-sub">Console</div>
+          </div>
+        </div>
+
+        <div class="game-item">
+          <div class="game-item-top">
+            <span class="game-item-name">宝可梦 ZA</span>
+            <span class="game-item-hours">30h</span>
+          </div>
+          <span class="game-item-type">ARPG</span>
+          <div class="game-item-list">
+            <ul>
+              <li>主线流程体验</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="game-item">
+          <div class="game-item-top">
+            <span class="game-item-name">朋友收集梦想生活</span>
+            <span class="game-item-hours">100h</span>
+          </div>
+          <span class="game-item-type">模拟经营</span>
+          <div class="game-item-list">
+            <ul>
+              <li>食品系统全解锁</li>
+              <li>许愿喷泉、服装全解锁</li>
+              <li>装修、基建工坊全解锁</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 手游 -->
+      <div class="gaming-col mobile">
+        <div class="gaming-col-header">
+          <span class="gaming-col-icon">📱</span>
+          <div>
+            <div class="gaming-col-title">手游</div>
+            <div class="gaming-col-sub">Mobile</div>
+          </div>
+        </div>
+
+        <div class="game-item">
+          <div class="game-item-top">
+            <span class="game-item-name">明日方舟：终末地</span>
+            <span class="game-item-hours">开服至今</span>
+          </div>
+          <span class="game-item-type">动作 RPG</span>
+          <div class="game-item-list">
+            <ul>
+              <li>深度体验 1.0 版本全流程</li>
+              <li>每周平均体验 20 小时</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="game-item">
+          <div class="game-item-top">
+            <span class="game-item-name">洛克王国：世界</span>
+            <span class="game-item-hours">2个月</span>
+          </div>
+          <span class="game-item-type">回合制</span>
+          <div class="game-item-list">
+            <ul>
+              <li>深度体验第一赛季全流程</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gaming-summary">
+      <div>累计游戏时长<strong>850h+</strong></div>
+      <div>覆盖端游 / 掌机 / 手游 · 多品类深度体验</div>
     </div>
   </div>
 
