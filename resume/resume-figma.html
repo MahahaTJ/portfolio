@@ -206,6 +206,27 @@
     margin-bottom: 8px;
     font-family: var(--font-mono);
     letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .job-market {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 4px;
+  }
+
+  .job-market.jp-kr {
+    background: #F3E5F5;
+    color: #9B59B6;
+  }
+
+  .job-market.latam {
+    background: #FFF3E0;
+    color: #FF9F43;
   }
 
   .job-desc {
@@ -629,7 +650,7 @@
         <div class="job-date">2025.01 - 至今</div>
       </div>
       <div class="job-project">项目：幻兽帕鲁手游（大世界捉宠 · SOC · 主力项目）</div>
-      <div class="job-engine">引擎：UE4</div>
+      <div class="job-engine">引擎：UE4 <span class="job-market jp-kr">日韩市场</span></div>
       <div class="job-desc">
         <ul>
           <li><span class="highlight">大地图系统全版本交互设计</span>：主导v1.0-v1.3全版本大地图UI与交互系统设计，覆盖竞品调研→架构设计→方案选型→规格定标→落地跟进→迭代优化全链路，支撑采集、帕鲁、追踪、任务、赛季玩法等10+系统的地图标识接入</li>
@@ -647,11 +668,11 @@
         <div class="job-date">2023.07 - 2024.12</div>
       </div>
       <div class="job-project">项目：FreeCity（大世界动作射击 · 都市类GTA）</div>
-      <div class="job-engine">引擎：UE4</div>
+      <div class="job-engine">引擎：UE4 <span class="job-market latam">拉美市场</span></div>
       <div class="job-desc">
         <ul>
           <li><span class="highlight">通用UI组件库搭建</span>：负责组件库的设计定标与维护，定标范围覆盖组件功能、视觉样式、交互操作范围、接口调用规则等完整维度，建立标准化组件使用规范</li>
-          <li><span class="highlight">玩法外围系统重构</span>：副本/玩法外围交互系统设计迭代，整合重构玩法大厅、副本玩法、组队大厅、组队匹配等多系统耦合流程，主导UI框架整合重构与持续维护</li>
+          <li><span class="highlight">PVE玩法外围系统重构</span>：PVE副本/玩法外围交互系统设计迭代，整合重构玩法大厅、副本玩法、组队大厅、组队匹配等多系统耦合流程，主导UI框架整合重构与持续维护</li>
           <li><span class="highlight">活动中心体系搭建</span>：重构整合活动中心UI交互规范，推动UI框架落地，为活动内容快速新增提供基础前端接口支持</li>
           <li><span class="highlight">活动体系设计落地</span>：赛季活动/日常活动/周长活动外围体验流程与交互系统设计，主导UI框架落地与版本迭代维护</li>
           <li><span class="highlight">帮派系统重构</span>：帮派社交系统外围框架交互重构设计，统筹UI结构重构与体验升级</li>
@@ -836,7 +857,7 @@
 
   <!-- 游戏履历 -->
   <div class="section">
-    <div class="section-title">游戏履历 <span class="en">Gaming · 近1年</span></div>
+    <div class="section-title">游戏履历 <span class="en">2025~2026 游戏体验经历</span></div>
 
     <div class="gaming-grid">
       <!-- 主机 -->
