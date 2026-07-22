@@ -198,7 +198,14 @@
     font-size: 12px;
     color: var(--primary);
     font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .job-engine {
+    font-size: 11px;
+    color: var(--text-tertiary);
     margin-bottom: 8px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
   }
 
   .job-desc {
@@ -443,6 +450,33 @@
     </div>
   </div>
 
+  <!-- 专业技能 -->
+  <div class="section">
+    <div class="section-title">专业技能 <span class="en">Skills</span></div>
+    <div class="skills-grid">
+      <div class="skill-item">
+        <span class="skill-label">AI工具链</span>
+        <span class="skill-content">Codex+VS / Cursor / Claude+VS / ComfyUI</span>
+      </div>
+      <div class="skill-item">
+        <span class="skill-label">设计工具</span>
+        <span class="skill-content">Figma / Axure / XD / PS / AI / PR</span>
+      </div>
+      <div class="skill-item">
+        <span class="skill-label">游戏引擎</span>
+        <span class="skill-content">UE4 / Unity / Genesis-3D</span>
+      </div>
+      <div class="skill-item">
+        <span class="skill-label">设计能力</span>
+        <span class="skill-content">系统架构 / 组件化设计 / 多系统统筹 / 全链路设计</span>
+      </div>
+      <div class="skill-item">
+        <span class="skill-label">其他</span>
+        <span class="skill-content">UI前端基础 / 原型设计 / 设计规范 / 数据分析</span>
+      </div>
+    </div>
+  </div>
+
   <!-- 工作经历 -->
   <div class="section">
     <div class="section-title">工作经历 <span class="en">Experience</span></div>
@@ -452,15 +486,15 @@
         <div class="job-company">Garena  <span class="position">游戏UI策划</span></div>
         <div class="job-date">2025.01 - 至今</div>
       </div>
-      <div class="job-project">项目：幻兽帕鲁手游（生存策略 · 主力项目）</div>
+      <div class="job-project">项目：幻兽帕鲁手游（大世界捉宠 · SOC · 主力项目）</div>
+      <div class="job-engine">引擎：UE4</div>
       <div class="job-desc">
         <ul>
-          <li>负责<span class="highlight">大地图系统全版本交互设计</span>（v1.0-v1.3），从竞品调研、架构设计到落地迭代全程主导</li>
-          <li>搭建<span class="highlight">Z轴6层渲染层级架构</span>，解决多系统标识叠加冲突问题，支撑10+系统的地图标识接入</li>
-          <li>设计<span class="highlight">侧窗7区模块化组件框架</span>，实现信息的组件化复用，提升设计与开发效率40%</li>
-          <li>建立<span class="highlight">P0-P5六级标识优先级体系</span>，规范全局地图标识的显示与隐藏逻辑</li>
-          <li>统筹采集、帕鲁、追踪、任务、赛季玩法等<span class="highlight">多耦合系统</span>的地图交互统一</li>
-          <li>自研<span class="highlight">Log变更监控工具</span>与AI设计验证工作流，提升版本迭代效率与质量把控</li>
+          <li><span class="highlight">大地图系统全版本交互设计</span>：主导v1.0-v1.3全版本大地图UI与交互系统设计，覆盖竞品调研→架构设计→方案选型→规格定标→落地跟进→迭代优化全链路，支撑采集、帕鲁、追踪、任务、赛季玩法等10+系统的地图标识接入</li>
+          <li><span class="highlight">PVE副本/玩法外围框架设计</span>：统筹副本/玩法v1.0-v1.3外围交互系统与体验流程设计，完成不同类型玩法的UI与信息结构定标，实现多入口→副本/玩法物理交互点→局内HUD→结算的全流程体验闭环</li>
+          <li><span class="highlight">商业化向交互设计</span>：负责活动中心、时装外观等商业化模块交互设计，主导新IP定标包装与原系统框架迁移，基于FreeCity项目框架修订适配幻兽帕鲁的设计规范并持续维护</li>
+          <li><span class="highlight">通用组件库定标与重构</span>：基于FreeCity组件体系升级维护项目通用组件库，通过AI工具辅助组件管理（新老组件替换后多功能接口同步），建立组件新增→信息同步→全组对齐→程序接入的标准化提需流程</li>
+          <li><span class="highlight">AI辅助研发提效</span>：AI辅助研发地图前端管理LOG工具（自用），结合AI设计验证工作流，提升版本迭代效率与质量把控能力</li>
         </ul>
       </div>
     </div>
@@ -471,6 +505,7 @@
         <div class="job-date">2023.07 - 2024.12</div>
       </div>
       <div class="job-project">项目：FreeCity（大世界动作射击 · 都市类GTA）</div>
+      <div class="job-engine">引擎：UE4</div>
       <div class="job-desc">
         <ul>
           <li><span class="highlight">通用UI组件库搭建</span>：负责组件库的设计定标与维护，定标范围覆盖组件功能、视觉样式、交互操作范围、接口调用规则等完整维度，建立标准化组件使用规范</li>
@@ -478,6 +513,7 @@
           <li><span class="highlight">活动中心体系搭建</span>：重构整合活动中心UI交互规范，推动UI框架落地，为活动内容快速新增提供基础前端接口支持</li>
           <li><span class="highlight">活动体系设计落地</span>：赛季活动/日常活动/周长活动外围体验流程与交互系统设计，主导UI框架落地与版本迭代维护</li>
           <li><span class="highlight">帮派系统重构</span>：帮派社交系统外围框架交互重构设计，统筹UI结构重构与体验升级</li>
+          <li><span class="highlight">外观系统UI交互重构</span>：时装、饰品、动作等外观系统交互操作重构与界面设计重构，强化商业化体验设计；协助系统策划提需、审核并维护图标类资产</li>
           <li><span class="highlight">养成系统组件化</span>：养成系统UI组件整合重构，提炼各养成线通用UI结构，抽象封装为标准化组件，支撑多功能模块快速接入</li>
         </ul>
       </div>
@@ -489,6 +525,7 @@
         <div class="job-date">2023.03 - 2023.06</div>
       </div>
       <div class="job-project">项目：天龙八部端游（MMORPG）</div>
+      <div class="job-engine">引擎：自研 Genesis-3D</div>
       <div class="job-desc">
         <ul>
           <li><span class="highlight">全品类资产管线管理</span>：负责3C、时装、特效、场景、武器、技能、坐骑、宠物、UI等多品类游戏资产的需求对接、落地跟进与版本维护，建立资源验收标准与质量管控流程</li>
@@ -505,6 +542,7 @@
         <div class="job-date">2022.04 - 2023.02</div>
       </div>
       <div class="job-project">项目：忘川风华录（国风回合制RPG）</div>
+      <div class="job-engine">引擎：Unity</div>
       <div class="job-desc">
         <ul>
           <li>负责<span class="highlight">活动玩法系统交互设计</span>：更金换物活动、雅社赛季-山石雅集迭代等</li>
@@ -521,6 +559,7 @@
         <div class="job-date">2022.01 - 2022.03</div>
       </div>
       <div class="job-project">项目：Maxbet工作组（农场休闲）</div>
+      <div class="job-engine">引擎：Unity</div>
       <div class="job-desc">
         <ul>
           <li>学习游戏UI设计基本流程：UI规范、GUI风格、界面设计文档书写</li>
@@ -616,53 +655,26 @@
     </div>
   </div>
 
-  <!-- 两列：技能 + 教育 -->
-  <div class="two-col">
-    <div class="section">
-      <div class="section-title">专业技能 <span class="en">Skills</span></div>
-      <div class="skills-grid" style="grid-template-columns: 1fr;">
-        <div class="skill-item">
-          <span class="skill-label">设计工具</span>
-          <span class="skill-content">Figma / Axure / XD / PS / AI / PR</span>
-        </div>
-        <div class="skill-item">
-          <span class="skill-label">游戏引擎</span>
-          <span class="skill-content">Unity / UE4 / Genesis-3D</span>
-        </div>
-        <div class="skill-item">
-          <span class="skill-label">AI工具链</span>
-          <span class="skill-content">Claude+VS / Cursor / Codex+VS / ComfyUI</span>
-        </div>
-        <div class="skill-item">
-          <span class="skill-label">设计能力</span>
-          <span class="skill-content">系统架构 / 组件化设计 / 多系统统筹 / 全链路设计</span>
-        </div>
-        <div class="skill-item">
-          <span class="skill-label">其他</span>
-          <span class="skill-content">UI前端基础 / 原型设计 / 设计规范 / 数据分析</span>
+  <!-- 教育经历 -->
+  <div class="section">
+    <div class="section-title">教育经历 <span class="en">Education</span></div>
+    <div class="education" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div class="edu-item">
+        <div class="edu-school">大连理工大学</div>
+        <div class="edu-degree">设计学硕士 · 工业设计（免试录取）</div>
+        <div class="edu-meta">
+          <span>2020.09 - 2023.06</span>
+          <span class="edu-rank">专业前10%</span>
         </div>
       </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">教育经历 <span class="en">Education</span></div>
-      <div class="education" style="grid-template-columns: 1fr; gap: 12px;">
-        <div class="edu-item">
-          <div class="edu-school">大连理工大学</div>
-          <div class="edu-degree">设计学硕士 · 工业设计（免试录取）</div>
-          <div class="edu-meta">
-            <span>2020.09 - 2023.06</span>
-            <span class="edu-rank">专业前10%</span>
-          </div>
+      <div class="edu-item">
+        <div class="edu-school">华北电力大学</div>
+        <div class="edu-degree">艺术设计学士 · 产品设计</div>
+        <div class="edu-meta">
+          <span>2016.09 - 2020.06</span>
+          <span class="edu-rank">专业前3%</span>
         </div>
-        <div class="edu-item">
-          <div class="edu-school">华北电力大学</div>
-          <div class="edu-degree">艺术设计学士 · 产品设计</div>
-          <div class="edu-meta">
-            <span>2016.09 - 2020.06</span>
-            <span class="edu-rank">专业前3%</span>
-          </div>
-        </div>
+      </div>
       </div>
     </div>
   </div>
