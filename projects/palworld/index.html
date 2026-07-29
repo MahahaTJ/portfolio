@@ -622,6 +622,7 @@
     }
     .im-lang-card {
       flex: 1;
+      min-width: 0;
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--rule);
       border-radius: 6px;
@@ -646,9 +647,11 @@
       color: var(--text);
     }
     .im-lang-list {
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      justify-content: flex-start;
     }
     .im-lang-item {
       display: flex;
@@ -4273,14 +4276,6 @@
                       <div class="im-lang-item-name">单击选中</div>
                       <div class="im-lang-item-desc">自由点击点位，右侧窗展示详情，取消准心束缚</div>
                     </div>
-                    <div class="im-lang-item">
-                      <div class="im-lang-item-name">双击放大</div>
-                      <div class="im-lang-item-desc">快速定位至点击区域，逐级放大</div>
-                    </div>
-                    <div class="im-lang-item">
-                      <div class="im-lang-item-name">双指旋转</div>
-                      <div class="im-lang-item-desc">可选开启，满足视角偏好，默认锁定北向上</div>
-                    </div>
                   </div>
                 </div>
 
@@ -4302,10 +4297,6 @@
                     <div class="im-lang-item">
                       <div class="im-lang-item-name">状态反馈</div>
                       <div class="im-lang-item-desc">加载态 / 空状态 / 锁定态 均有明确视觉提示</div>
-                    </div>
-                    <div class="im-lang-item">
-                      <div class="im-lang-item-name">触控反馈</div>
-                      <div class="im-lang-item-desc">点击点位轻微震动 + 触感反馈，确认操作有效</div>
                     </div>
                     <div class="im-lang-item">
                       <div class="im-lang-item-name">转场反馈</div>
@@ -4650,7 +4641,7 @@
               <div class="coupling-practice-item">
                 <div class="coupling-practice-label">接入前的耦合风险</div>
                 <div class="coupling-practice-content">
-                  区域探索涉及声望、商栈、Boss、公会4个子系统，如果各子系统直接往地图塞UI，
+                  区域探索涉及帕鲁捕捉、头目挑战、副本玩法、石像收集、风景打卡等3个大类（探索、玩法、收集）、9个系统，如果各子系统直接往地图塞UI，
                   会导致地图代码里混入大量探索业务逻辑，后续改动任何子系统都要改地图
                 </div>
               </div>
