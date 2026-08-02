@@ -292,6 +292,39 @@
       margin-bottom: 10px;
     }
 
+    /* 弹窗右下角：下载作品集PDF 按钮
+       与右上角 .map-modal-close 对称：中心点固定在「弹窗右下角向外 14px」处，
+       完全在弹窗外，不和弹窗内容重叠；打开任一弹窗时显示，关闭时隐藏 */
+    .map-pdf-download {
+      position: fixed; z-index: 420;
+      display: none;
+      align-items: center; gap: 6px;
+      padding: 7px 14px 7px 13px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff3a0, #ffd94b);
+      border: 2px solid #111;
+      color: #111;
+      font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+      font-size: 0.82rem; font-weight: 800; letter-spacing: 0.06em;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,.5), inset 0 -2px 0 rgba(0,0,0,.12);
+      transition: background .2s ease, transform .2s ease, box-shadow .2s ease, color .2s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .map-pdf-download.show { display: inline-flex; }
+    .map-pdf-download:hover {
+      background: linear-gradient(180deg, #ffe670, #ffcc22);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0,0,0,.55), inset 0 -2px 0 rgba(0,0,0,.12);
+    }
+    .map-pdf-download:active { transform: translateY(0) scale(0.98); }
+    .map-pdf-download .pdf-ico {
+      width: 16px; height: 16px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; line-height: 1;
+    }
+
     /* PDF 预留占位 */
     .pdf-placeholder {
       margin: 24px 0;
@@ -6364,6 +6397,15 @@
         closeBtn.innerHTML = '×';
         closeBtn.setAttribute('aria-label','关闭');
 
+        /* 弹窗右下角：下载作品集PDF 按钮 */
+        var dlBtn = document.createElement('a');
+        dlBtn.className = 'map-pdf-download';
+        dlBtn.id = 'mapPdfDownload';
+        dlBtn.href = 'Palworld_MapPortfolio.pdf';       /* 相对路径：当前 index.html 同级 */
+        dlBtn.download = 'Palworld_MapPortfolio.pdf';   /* 下载时文件名 */
+        dlBtn.innerHTML = '<span class="pdf-ico">⬇</span><span>下载作品集PDF</span>';
+        dlBtn.title = '下载大地图系统作品集 PDF (30MB)';
+
         /* 主弹窗 */
         var mainModal = document.createElement('div');
         mainModal.className = 'map-modal';
@@ -6393,6 +6435,7 @@
         document.body.appendChild(fab);
         document.body.appendChild(overlay);
         document.body.appendChild(closeBtn);
+        document.body.appendChild(dlBtn);
         document.body.appendChild(mainModal);
         document.body.appendChild(subModal);
       }
@@ -6459,12 +6502,31 @@
         c.style.display = 'flex';
         c.classList.add('show');
       }
+      /* 下载按钮：与关闭按钮对称，中心点锁定在「弹窗右下角向外 14px」处，
+         完全在弹窗外，不和弹窗内容重叠 */
+      function calcDownloadBtnPos() {
+        var d = document.getElementById('mapPdfDownload');
+        if (!d) return;
+        var r = getPopupFinalRect();
+        /* 与关闭按钮 calcCloseBtnPos 对称写法：
+           关闭按钮：left = r.right  - w/2 + 14   ,  top = r.top    - h/2 + 14   (右上角外 14px)
+           下载按钮：left = r.right  - w/2 + 14   ,  top = r.bottom - h/2 + 14   (右下角外 14px)
+           横向位置完全一致（按钮右边对齐弹窗右边再向右 14px），纵向往底部外扩 14px */
+        var w = d.offsetWidth  || 160;   /* 兜底防首次测量为 0 */
+        var h = d.offsetHeight || 36;
+        d.style.left = Math.round(r.right  - w / 2 + 14) + 'px';
+        d.style.top  = Math.round(r.bottom - h / 2 + 14) + 'px';
+        d.style.display = 'inline-flex';
+        d.classList.add('show');
+      }
 
       function openMainModal() {
         /* 先算关闭按钮位置 + 先 show 关闭按钮（位置先落到最终值，再出弹窗）
            保证用户看到的第一帧：关闭按钮已经在正确的右上角，不出现任何偏移/飞行动画 */
         calcCloseBtnPos();
+        calcDownloadBtnPos();
         document.getElementById('mapModalClose').classList.add('show');
+        document.getElementById('mapPdfDownload').classList.add('show');
         document.getElementById('mapModalOverlay').classList.add('show');
         document.getElementById('mapMainModal').classList.add('show');
         document.getElementById('mapSubModal').classList.remove('show');
@@ -6501,7 +6563,9 @@
 
         /* 显示：关闭按钮位置先锁定，再切主/子弹窗，不出现任何位置偏移动画 */
         calcCloseBtnPos();
+        calcDownloadBtnPos();
         document.getElementById('mapModalClose').classList.add('show');
+        document.getElementById('mapPdfDownload').classList.add('show');
         document.getElementById('mapMainModal').classList.remove('show');
         document.getElementById('mapModalOverlay').classList.add('show');
         document.getElementById('mapSubModal').classList.add('show');
@@ -6515,7 +6579,9 @@
       function backToMain() {
         /* 先算位置再切，避免任何位置跳动 */
         calcCloseBtnPos();
+        calcDownloadBtnPos();
         document.getElementById('mapModalClose').classList.add('show');
+        document.getElementById('mapPdfDownload').classList.add('show');
         document.getElementById('mapSubModal').classList.remove('show');
         document.getElementById('mapMainModal').classList.add('show');
       }
@@ -6526,6 +6592,9 @@
         /* 关闭：清空内联 display + remove show，确保下次打开流程正常 */
         var c = document.getElementById('mapModalClose');
         if (c) { c.style.display = ''; c.classList.remove('show'); }
+        /* 下载按钮：关闭弹窗时隐藏 */
+        var d = document.getElementById('mapPdfDownload');
+        if (d) { d.style.display = ''; d.classList.remove('show'); }
       }
 
       /* --- 5. 事件绑定 --- */
@@ -6558,6 +6627,7 @@
           if (document.getElementById('mapMainModal').classList.contains('show') ||
               document.getElementById('mapSubModal').classList.contains('show')) {
             calcCloseBtnPos();
+            calcDownloadBtnPos();
           }
         });
 
