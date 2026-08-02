@@ -75,15 +75,18 @@
       z-index: 2;
     }
 
-    /* === 弹窗遮罩 & 通用 === */
+    /* === 弹窗遮罩 & 通用（参考忘川视频弹窗同款 flex 居中模式） === */
     .map-modal-overlay {
-      position: fixed; inset: 0; z-index: 400;
-      background: rgba(0,0,0,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      display: none; animation: overlayIn .25s ease both;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 400;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
-    .map-modal-overlay.show { display: block; }
+    .map-modal-overlay.show { display: block; opacity: 1; }
 
-    /* 弹窗外关闭按钮（弹窗左上角外） */
+    /* 弹窗外关闭按钮（弹窗右上角外） */
     .map-modal-close {
       position: fixed; z-index: 420;
       width: 46px; height: 46px; border-radius: 50%;
@@ -97,21 +100,31 @@
     .map-modal-close.show { display: flex; }
     .map-modal-close:hover { background: var(--accent); color: #101010; transform: rotate(90deg); }
 
-    /* 主界面弹窗容器（严格按 bg.png 比例居中，纯资源还原不加任何 UI） */
+    /* 主界面弹窗容器：参考忘川视频弹窗的 50%/50%/translate 居中方式
+       等比按 bg.png 原始尺寸缩放，纯还原界面，不加任何自定义 UI */
     .map-modal {
       position: fixed; z-index: 410;
-      left: 50%; top: 50%; transform: translate(-50%, -50%);
-      width: min(1200px, 93vw);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.92);
+      transform-origin: center center;
+      /* 等比缩放：宽度按视口自适应，高度按 bg.png 比例锁定 */
+      width: min(1280px, 92vw);
       aspect-ratio: 2560 / 1730;
-      max-height: 88vh;
+      max-height: 86vh;
       border-radius: 14px;
       display: none; overflow: hidden;
       box-shadow: 0 50px 110px rgba(0,0,0,.78), 0 0 0 1px rgba(255,250,0,0.2);
-      animation: modalIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+      opacity: 0;
     }
-    .map-modal.show { display: block; }
+    .map-modal.show {
+      display: block;
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
 
-    /* 弹窗 = 纯 bg.png 图片背景 + 4 个透明点击热区，不加任何额外文本/UI */
+    /* 弹窗 = 纯 bg.png 图片还原，不附加任何自定义文本/UI/装饰
+       仅还原 5 张资源：bg + 1/2/3/4 */
     .map-modal-bg {
       position: absolute; inset: 0;
       background-image: url('map-portfolio/assets/workflow-ui/bg.png');
@@ -121,45 +134,47 @@
     }
     .map-modal-hotspots {
       position: absolute; inset: 0; z-index: 2;
-      /* 2x2 卡片位置按参考图精确百分比：
-         行1 垂直 11.5%~46.5%  行2 垂直 54%~89%
-         列1 水平 10.5%~47.5% 列2 水平 52.5%~89.5% */
     }
     .map-hotspot {
       position: absolute;
-      cursor: pointer;
+      cursor: default;
       border-radius: 10px;
-      transition: all .25s ease;
+      /* 只用资源还原，不做功能点击：默认不画任何 UI */
     }
-    .map-hotspot::after {
-      content: ''; position: absolute; inset: 0;
-      border-radius: 10px;
-      border: 2px solid transparent;
-      box-shadow: 0 0 0 0 transparent;
-      transition: all .25s ease;
+    .map-hotspot img {
+      width: 100%; height: 100%; object-fit: contain; display: block;
       pointer-events: none;
     }
-    .map-hotspot:hover::after {
-      border-color: rgba(255, 215, 0, 0.85);
-      box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15), 0 16px 32px rgba(255, 190, 0, .2);
-    }
-    .map-hotspot[data-pos="1"] { left: 10.5%;  top: 11.5%; width: 37%;  height: 35%; }
-    .map-hotspot[data-pos="2"] { left: 52.5%;  top: 11.5%; width: 37%;  height: 35%; }
-    .map-hotspot[data-pos="3"] { left: 10.5%;  top: 54%;   width: 37%;  height: 35%; }
-    .map-hotspot[data-pos="4"] { left: 52.5%;  top: 54%;   width: 37%;  height: 35%; }
+    /* 按 bg.png 2560x1730 绝对像素换算成的 4 张卡片百分比位置（用户上传的新资源）
+       1.png 835x699  @ x=326 y=245  →  12.7% / 14.2%  32.6% / 40.4%
+       2.png 835x699  @ x=1402 y=245 →  54.8% / 14.2%  32.6% / 40.4%
+       3.png 835x699  @ x=326 y=968  →  12.7% / 56.0%  32.6% / 40.4%
+       4.png 835x699  @ x=1402 y=968 →  54.8% / 56.0%  32.6% / 40.4% */
+    .map-hotspot[data-pos="1"] { left: 12.7%; top: 14.2%; width: 32.6%; height: 40.4%; }
+    .map-hotspot[data-pos="2"] { left: 54.8%; top: 14.2%; width: 32.6%; height: 40.4%; }
+    .map-hotspot[data-pos="3"] { left: 12.7%; top: 56.0%; width: 32.6%; height: 40.4%; }
+    .map-hotspot[data-pos="4"] { left: 54.8%; top: 56.0%; width: 32.6%; height: 40.4%; }
 
-    /* 三级跳转弹窗（子页面） - 上下滑动结构 */
+    /* 三级跳转弹窗（子页面） - 上下滑动结构
+       居中方式同主弹窗：忘川视频弹窗同款 50%/50% + translate 精准居中 */
     .map-sub-modal {
       position: fixed; z-index: 415;
-      left: 50%; top: 50%; transform: translate(-50%, -50%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.94);
+      transform-origin: center center;
       width: min(1000px, 94vw); height: min(720px, 88vh);
       border-radius: 14px;
       display: none; overflow: hidden;
       box-shadow: 0 40px 90px rgba(0,0,0,.75), 0 0 0 1px rgba(255,250,0,0.18);
-      animation: modalIn .35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+      opacity: 0;
       background: #f5efe4;
     }
-    .map-sub-modal.show { display: block; }
+    .map-sub-modal.show {
+      display: block;
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
 
     .map-sub-header {
       position: relative; z-index: 5;
@@ -6307,10 +6322,10 @@
         mainModal.innerHTML = [
           '<div class="map-modal-bg"></div>',
           '<div class="map-modal-hotspots" id="mapHotspots">',
-          '  <div class="map-hotspot" data-pos="1" data-key="' + CARDS[0].key + '"></div>',
-          '  <div class="map-hotspot" data-pos="2" data-key="' + CARDS[1].key + '"></div>',
-          '  <div class="map-hotspot" data-pos="3" data-key="' + CARDS[2].key + '"></div>',
-          '  <div class="map-hotspot" data-pos="4" data-key="' + CARDS[3].key + '"></div>',
+          '  <div class="map-hotspot" data-pos="1"><img src="map-portfolio/assets/workflow-ui/1.png" alt="1"></div>',
+          '  <div class="map-hotspot" data-pos="2"><img src="map-portfolio/assets/workflow-ui/2.png" alt="2"></div>',
+          '  <div class="map-hotspot" data-pos="3"><img src="map-portfolio/assets/workflow-ui/3.png" alt="3"></div>',
+          '  <div class="map-hotspot" data-pos="4"><img src="map-portfolio/assets/workflow-ui/4.png" alt="4"></div>',
           '</div>'
         ].join('');
 
@@ -6336,14 +6351,7 @@
 
       /* --- 2. 渲染 1-4 卡片 --- */
       function renderCards() {
-        var box = document.getElementById('mapHotspots');
-        if (!box) return;
-        box.querySelectorAll('.map-hotspot').forEach(function(el) {
-          el.addEventListener('click', function() {
-            var key = this.getAttribute('data-key');
-            openSubModal(key);
-          });
-        });
+        /* 纯资源还原：不做任何功能点击 */
       }
 
       /* --- 3. 控制悬浮桌宠显示（仅大地图系统） --- */
