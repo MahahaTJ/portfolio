@@ -101,118 +101,126 @@
     .map-modal-close:hover { background: var(--accent); color: #101010; transform: rotate(90deg); }
 
     /* 主界面弹窗容器：参考忘川视频弹窗的 50%/50%/translate 居中方式
-       等比按 bg.png 原始尺寸缩放，纯还原界面，不加任何自定义 UI */
+       弹窗整体 = bg.png 按 contain 等比缩放（不拉伸变形），四个入口按钮以弹窗内容区为中心 */
     .map-modal {
       position: fixed; z-index: 410;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.92);
       transform-origin: center center;
-      /* 等比缩放：宽度按视口自适应，高度按 bg.png 比例锁定 */
-      width: min(1280px, 92vw);
+      /* 弹窗容器尺寸：按 bg.png 原始比例锁定，不做拉伸 */
+      width: min(1400px, 94vw);
       aspect-ratio: 2560 / 1730;
-      max-height: 86vh;
+      max-height: 90vh;
       border-radius: 14px;
-      display: none; overflow: hidden;
+      display: none;
+      /* 内容区 = 等比缩放后实际显示的 bg 图像区域（左右或上下留白不影响） */
+      align-items: center;
+      justify-content: center;
       box-shadow: 0 50px 110px rgba(0,0,0,.78), 0 0 0 1px rgba(255,250,0,0.2);
       transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
       opacity: 0;
     }
     .map-modal.show {
-      display: block;
+      display: flex;
       transform: translate(-50%, -50%) scale(1);
       opacity: 1;
     }
 
-    /* 弹窗 = 纯 bg.png 图片还原，不附加任何自定义文本/UI/装饰
-       仅还原 5 张资源：bg + 1/2/3/4 */
-    .map-modal-bg {
-      position: absolute; inset: 0;
+    /* 弹窗内容层：严格按 bg.png 的 aspect-ratio 等比缩放（contain 模式）
+       保证 bg.png 永远不变形，左右/上下按 contain 规则留白 */
+    .map-modal-bg-wrap {
+      position: relative;
+      width: 100%; height: 100%;
+      max-width: 100%; max-height: 100%;
+      aspect-ratio: 2560 / 1730;
       background-image: url('map-portfolio/assets/workflow-ui/bg.png');
-      background-size: 100% 100%;
+      background-size: contain;
       background-repeat: no-repeat;
-      background-position: center;
+      background-position: center center;
     }
     .map-modal-hotspots {
       position: absolute; inset: 0; z-index: 2;
     }
     .map-hotspot {
       position: absolute;
-      cursor: default;
+      cursor: pointer;
       border-radius: 10px;
-      /* 只用资源还原，不做功能点击：默认不画任何 UI */
+      transition: all .25s ease;
+    }
+    .map-hotspot:hover {
+      transform: translateY(-2px) scale(1.015);
+      filter: drop-shadow(0 12px 24px rgba(255, 190, 0, 0.35));
     }
     .map-hotspot img {
       width: 100%; height: 100%; object-fit: contain; display: block;
       pointer-events: none;
     }
-    /* 按 bg.png 2560x1730 绝对像素换算成的 4 张卡片百分比位置（用户上传的新资源）
-       1.png 835x699  @ x=326 y=245  →  12.7% / 14.2%  32.6% / 40.4%
-       2.png 835x699  @ x=1402 y=245 →  54.8% / 14.2%  32.6% / 40.4%
-       3.png 835x699  @ x=326 y=968  →  12.7% / 56.0%  32.6% / 40.4%
-       4.png 835x699  @ x=1402 y=968 →  54.8% / 56.0%  32.6% / 40.4% */
-    .map-hotspot[data-pos="1"] { left: 12.7%; top: 14.2%; width: 32.6%; height: 40.4%; }
-    .map-hotspot[data-pos="2"] { left: 54.8%; top: 14.2%; width: 32.6%; height: 40.4%; }
-    .map-hotspot[data-pos="3"] { left: 12.7%; top: 56.0%; width: 32.6%; height: 40.4%; }
-    .map-hotspot[data-pos="4"] { left: 54.8%; top: 56.0%; width: 32.6%; height: 40.4%; }
+    /* 4 个入口按钮始终居中适配（以 bg.png 内容层为基准，按比例分配）
+       1 / 2 在上半行  3 / 4 在下半行
+       上下两排对称、左右两列对称、中心点对齐弹窗几何中心 */
+    .map-hotspot[data-pos="1"] { left: 12.5%; top: 14.0%; width: 33.0%; height: 40.5%; }
+    .map-hotspot[data-pos="2"] { left: 54.5%; top: 14.0%; width: 33.0%; height: 40.5%; }
+    .map-hotspot[data-pos="3"] { left: 12.5%; top: 55.5%; width: 33.0%; height: 40.5%; }
+    .map-hotspot[data-pos="4"] { left: 54.5%; top: 55.5%; width: 33.0%; height: 40.5%; }
 
     /* 三级跳转弹窗（子页面） - 上下滑动结构
-       居中方式同主弹窗：忘川视频弹窗同款 50%/50% + translate 精准居中 */
+       居中和主弹窗同款；内容区 = 图片按 contain 等比缩放 + 滚动查看，绝不拉伸变形 */
     .map-sub-modal {
       position: fixed; z-index: 415;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.94);
       transform-origin: center center;
-      width: min(1000px, 94vw); height: min(720px, 88vh);
+      width: min(1080px, 94vw);
+      aspect-ratio: 2560 / 9632;   /* 按 total1.png 原始比例锁定 */
+      max-height: 88vh;
       border-radius: 14px;
       display: none; overflow: hidden;
       box-shadow: 0 40px 90px rgba(0,0,0,.75), 0 0 0 1px rgba(255,250,0,0.18);
       transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
       opacity: 0;
-      background: #f5efe4;
+      background: #fff;
     }
     .map-sub-modal.show {
       display: block;
       transform: translate(-50%, -50%) scale(1);
       opacity: 1;
     }
-
-    .map-sub-header {
-      position: relative; z-index: 5;
-      padding: 16px 24px;
-      background: linear-gradient(180deg, rgba(245, 239, 228, 0.98), rgba(245, 239, 228, 0.92));
-      border-bottom: 2px solid rgba(140, 107, 74, 0.4);
+    /* 子弹窗顶部工具栏：返回 + 标题，不破坏原图的上下滑动查看 */
+    .map-sub-toolbar {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 5;
       display: flex; align-items: center; justify-content: space-between;
-      backdrop-filter: blur(6px);
+      padding: 10px 22px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0));
+      color: #fff;
+      pointer-events: none;
     }
+    .map-sub-toolbar * { pointer-events: auto; }
     .map-sub-back {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 18px; border-radius: 6px;
-      background: rgba(58, 42, 26, 0.06); border: 1px solid rgba(140, 107, 74, 0.4);
-      font-size: 0.84rem; font-weight: 600; color: #5a4630; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 6px;
+      background: rgba(0,0,0,0.45); border: 1px solid rgba(255,250,0,0.55);
+      font-size: 0.84rem; font-weight: 600; color: #fff; cursor: pointer;
       transition: all .2s ease; letter-spacing: 0.05em;
     }
-    .map-sub-back:hover { background: rgba(255,250,0,0.35); border-color: rgba(196, 140, 80, 0.7); color: #3a2a1a; }
+    .map-sub-back:hover { background: rgba(255,250,0,0.35); color: #111; }
     .map-sub-title {
-      font-family: "Noto Serif SC", serif; font-size: 1.2rem; font-weight: 700;
-      color: #3a2a1a; letter-spacing: 0.12em;
-      padding: 0 20px;
+      font-size: 0.92rem; font-weight: 600; letter-spacing: 0.1em;
+      padding: 6px 14px; border-radius: 6px;
+      background: rgba(0,0,0,0.4);
     }
-    .map-sub-index {
-      font-family: var(--font-mono); font-size: 0.72rem; color: #8c6b4a; letter-spacing: 0.08em;
-      padding: 6px 12px; border: 1px dashed rgba(140, 107, 74, 0.5); border-radius: 4px;
+    /* 上下滑动查看：图片 100% contain 等比缩放，绝不拉伸变形；超过高度时自动滚动 */
+    .map-sub-scroll {
+      width: 100%; height: 100%;
+      overflow-y: auto; overflow-x: hidden;
+      background: #fafafa;
+    }
+    .map-sub-scroll img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+      image-rendering: -webkit-optimize-contrast;
     }
 
-    .map-sub-scroll {
-      height: calc(100% - 68px);
-      overflow-y: auto; overflow-x: hidden;
-      padding: 28px 56px 80px;
-      position: relative;
-    }
-    .map-sub-scroll::before {
-      content: ''; position: absolute; inset: 0; pointer-events: none;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><path d='M10 50 Q50 10 90 50 T10 50' fill='none' stroke='%23d9c9b0' stroke-width='0.6' opacity='0.4'/></svg>");
-      background-size: 140px 140px; opacity: 0.5;
-    }
     .map-sub-page {
       position: relative; z-index: 1;
       animation: slideDownIn .5s ease both;
@@ -6320,12 +6328,13 @@
         mainModal.className = 'map-modal';
         mainModal.id = 'mapMainModal';
         mainModal.innerHTML = [
-          '<div class="map-modal-bg"></div>',
-          '<div class="map-modal-hotspots" id="mapHotspots">',
-          '  <div class="map-hotspot" data-pos="1"><img src="map-portfolio/assets/workflow-ui/1.png" alt="1"></div>',
-          '  <div class="map-hotspot" data-pos="2"><img src="map-portfolio/assets/workflow-ui/2.png" alt="2"></div>',
-          '  <div class="map-hotspot" data-pos="3"><img src="map-portfolio/assets/workflow-ui/3.png" alt="3"></div>',
-          '  <div class="map-hotspot" data-pos="4"><img src="map-portfolio/assets/workflow-ui/4.png" alt="4"></div>',
+          '<div class="map-modal-bg-wrap">',
+          '  <div class="map-modal-hotspots" id="mapHotspots">',
+          '    <div class="map-hotspot" data-pos="1"><img src="map-portfolio/assets/workflow-ui/1.png" alt="1"></div>',
+          '    <div class="map-hotspot" data-pos="2"><img src="map-portfolio/assets/workflow-ui/2.png" alt="2"></div>',
+          '    <div class="map-hotspot" data-pos="3"><img src="map-portfolio/assets/workflow-ui/3.png" alt="3"></div>',
+          '    <div class="map-hotspot" data-pos="4"><img src="map-portfolio/assets/workflow-ui/4.png" alt="4"></div>',
+          '  </div>',
           '</div>'
         ].join('');
 
@@ -6334,10 +6343,9 @@
         subModal.className = 'map-sub-modal';
         subModal.id = 'mapSubModal';
         subModal.innerHTML = [
-          '<div class="map-sub-header">',
+          '<div class="map-sub-toolbar">',
           '  <div class="map-sub-back" id="mapSubBack">← 返回总界面</div>',
           '  <div class="map-sub-title" id="mapSubTitle">—</div>',
-          '  <div class="map-sub-index" id="mapSubIndex">—</div>',
           '</div>',
           '<div class="map-sub-scroll" id="mapSubScroll"></div>'
         ].join('');
@@ -6349,9 +6357,16 @@
         document.body.appendChild(subModal);
       }
 
-      /* --- 2. 渲染 1-4 卡片 --- */
+      /* --- 2. 渲染 1-4 卡片（含点击跳转三级弹窗） --- */
       function renderCards() {
-        /* 纯资源还原：不做任何功能点击 */
+        var box = document.getElementById('mapHotspots');
+        if (!box) return;
+        box.querySelectorAll('.map-hotspot').forEach(function(el, idx) {
+          el.addEventListener('click', function() {
+            var pos = this.getAttribute('data-pos');
+            openSubModalByPos(pos);
+          });
+        });
       }
 
       /* --- 3. 控制悬浮桌宠显示（仅大地图系统） --- */
@@ -6390,36 +6405,55 @@
         document.getElementById('mapSubModal').classList.remove('show');
         setTimeout(calcCloseBtnPos, 20);
       }
-      function openSubModal(key) {
-        var card = CARDS.find(function(c){ return c.key === key; });
-        if (!card) return;
-        /* header */
-        document.getElementById('mapSubTitle').textContent = card.title;
-        document.getElementById('mapSubIndex').textContent = 'CARD ' + card.idx + ' / ' + CARDS.length;
-        /* content: 上下滑动结构（每个 page 一个 block，pdf 预留） */
+      /* 按入口位置打开三级弹窗（只做了入口1=地图设计=total1.png，其他 2/3/4 后续余留） */
+      function openSubModalByPos(pos) {
+        var titles = { '1':'地图设计','2':'交互语言','3':'信息结构','4':'标识与层级' };
+        var images = {
+          '1': 'map-portfolio/assets/workflow-ui/total1.png'
+          /* 2 / 3 / 4 入口后续有对应资源时再补：
+             '2': 'map-portfolio/assets/workflow-ui/total2.png',
+             '3': 'map-portfolio/assets/workflow-ui/total3.png',
+             '4': 'map-portfolio/assets/workflow-ui/total4.png' */
+        };
+        var title = titles[pos] || ('入口 ' + pos);
+
+        document.getElementById('mapSubTitle').textContent = title;
         var scroll = document.getElementById('mapSubScroll');
         scroll.scrollTop = 0;
-        scroll.innerHTML = card.pages.map(function(p, i) {
-          var parts = [];
-          parts.push('<div class="map-sub-page" style="animation-delay:' + (i * 0.08) + 's">');
-          parts.push('  <div class="map-sub-page-title">第 ' + (i + 1) + ' 节 · ' + p.title + '</div>');
-          if (p.img) parts.push('  <img class="map-sub-img" src="' + p.img + '" alt="' + p.title + '">');
-          parts.push('  <div class="map-sub-desc">' + p.desc + '</div>');
-          if (p.pdf) {
-            parts.push('  <div class="pdf-placeholder">');
-            parts.push('    <div class="pdf-placeholder-icon">📄</div>');
-            parts.push('    <div class="pdf-placeholder-title">PDF 文档 · 预留位置</div>');
-            parts.push('    <div class="pdf-placeholder-desc">后续可在此处插入「' + card.title + ' - ' + p.title + '」的完整 PDF 文档<br>（支持 iframe/pdf.js 嵌入或下载链接两种方式）</div>');
-            parts.push('  </div>');
-          }
-          parts.push('</div>');
-          return parts.join('');
-        }).join('');
 
-        /* 显示 */
+        if (images[pos]) {
+          /* 有对应长图资源：直接按 contain 等比缩放 + 上下滑动查看，绝不拉伸变形 */
+          scroll.innerHTML =
+            '<img src="' + images[pos] + '" alt="' + title + '">';
+        } else {
+          /* 2/3/4 暂时余留，先放一张"占位图"，后续给资源直接替换 images[pos] 即可 */
+          scroll.innerHTML = [
+            '<div style="min-height:100%;display:flex;align-items:center;justify-content:center;',
+            'padding:80px 40px;flex-direction:column;gap:20px;color:#8c6b4a;font-family:var(--font-body);">',
+            '  <div style="font-size:2.2rem;font-weight:700;color:#3a2a1a;">' + title + '</div>',
+            '  <div style="width:min(720px,100%);aspect-ratio:2560/9632;border:2px dashed rgba(140,107,74,0.45);',
+            '    border-radius:12px;background:repeating-linear-gradient(135deg,rgba(255,255,255,0.3),',
+            '    rgba(255,255,255,0.3) 16px,rgba(201,154,95,0.08) 16px,rgba(201,154,95,0.08) 32px);',
+            '    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;">',
+            '    <div style="font-size:3rem;">📄</div>',
+            '    <div style="font-weight:700;font-size:1rem;color:#3a2a1a;">长图资源余留 · 待插入</div>',
+            '    <div style="font-size:0.86rem;">后续提供对应「总 ' + pos + '.png」后，替换 images["' + pos + '"] 即可上线</div>',
+            '  </div>',
+            '</div>'
+          ].join('');
+        }
+
+        /* 显示：子弹窗居中 + 关闭主弹窗，保持遮罩 */
+        document.getElementById('mapMainModal').classList.remove('show');
         document.getElementById('mapModalOverlay').classList.add('show');
         document.getElementById('mapSubModal').classList.add('show');
         setTimeout(calcCloseBtnPos, 20);
+      }
+
+      function openSubModal(key) {
+        /* 兼容旧接口（未使用） */
+        var idx = ({ 'map-design':'1','lang':'2','info':'3','icons':'4' })[key] || '1';
+        openSubModalByPos(idx);
       }
       function backToMain() {
         document.getElementById('mapSubModal').classList.remove('show');
