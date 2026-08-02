@@ -129,47 +129,58 @@
       opacity: 1;
     }
 
-    /* 弹窗内容层：严格按 bg.png 的 aspect-ratio 等比缩放（contain 模式）
-       保证 bg.png 永远不变形，左右/上下按 contain 规则留白 */
+    /* 弹窗内容层：bg.png 按 contain 等比缩放，
+       加四角圆角 + overflow hidden 只裁剪背景图本身（不裁入口卡片） */
     .map-modal-bg-wrap {
-      position: relative;
-      width: 100%; height: 100%;
-      max-width: 100%; max-height: 100%;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
       aspect-ratio: 2560 / 1730;
+      width: 100%; height: 100%;
       background-image: url('map-portfolio/assets/workflow-ui/bg.png');
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center center;
-      /* 中心居中适配：不按容器四角拉伸，而是整体保持在几何正中央 */
       margin: auto;
+      border-radius: 14px;       /* 四角圆角 */
+      overflow: hidden;             /* 只裁剪 bg 图四角，不影响卡片（卡片是兄弟层） */
     }
+    /* 卡片层：和 bg-wrap 同级，覆盖整个弹窗（不被 bg-wrap 的 overflow 裁）
+       grid 2×2 布局 + gap 20px，顶部给"阅读指南"留出充足空间不遮挡 */
     .map-modal-hotspots {
-      position: absolute; inset: 0; z-index: 2;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      /* padding-top 留出阅读指南（约 14.5%，bg 上标题+装饰的高度）不遮挡
+         左右 + 底部 padding 对称（约 5.5%），整体居中 */
+      padding: 14.5% 5.5% 5.5% 5.5%;
+      gap: 20px;
+      box-sizing: border-box;
     }
     .map-hotspot {
-      position: absolute;
+      position: static;
+      left: auto !important;
+      top: auto !important;
+      width: auto !important;
+      height: auto !important;
       cursor: pointer;
       border-radius: 10px;
       transition: all .25s ease;
-      /* 四个入口按"左上角绝对定位"，保证上下左右 gap 像素完全一致
-         基准容器 2560×1730，gap=140px 水平&垂直相同，卡比例 835:699≈1.194 */
+      overflow: visible;        /* 不裁切卡片本身（hover 放大不被切） */
+      box-shadow: 0 6px 16px rgba(0,0,0,0.16);
     }
     .map-hotspot:hover {
       transform: translateY(-3px) scale(1.02);
       filter: drop-shadow(0 14px 28px rgba(255, 190, 0, 0.4));
     }
     .map-hotspot img {
-      width: 100%; height: 100%; object-fit: contain; display: block;
+      width: 100%; height: 100%;
+      object-fit: contain;          /* 1/2/3/4 卡片图 contain 不切边 */
+      display: block;
       pointer-events: none;
     }
-    /* 4 个入口：上下左右间距像素完全一致（gap=140px 对应 2560×1730）
-       左留白=300px(11.72%)  上留白=33px(1.91%)
-       水平gap=140px(5.47%宽)  垂直gap=140px(8.09%高)
-       卡尺寸：910×762 → 35.55%宽 × 44.05%高 */
-    .map-hotspot[data-pos="1"] { left: 11.72%; top:  1.91%; width: 35.55%; height: 44.05%; }
-    .map-hotspot[data-pos="2"] { left: 52.74%; top:  1.91%; width: 35.55%; height: 44.05%; }
-    .map-hotspot[data-pos="3"] { left: 11.72%; top: 54.05%; width: 35.55%; height: 44.05%; }
-    .map-hotspot[data-pos="4"] { left: 52.74%; top: 54.05%; width: 35.55%; height: 44.05%; }
 
     /* 三级跳转弹窗（子页面） - 上下滑动结构
        弹窗尺寸与主界面弹窗保持完全一致（同宽同高同比）；
@@ -6341,13 +6352,12 @@
         mainModal.className = 'map-modal';
         mainModal.id = 'mapMainModal';
         mainModal.innerHTML = [
-          '<div class="map-modal-bg-wrap">',
-          '  <div class="map-modal-hotspots" id="mapHotspots">',
-          '    <div class="map-hotspot" data-pos="1"><img src="map-portfolio/assets/workflow-ui/1.png" alt="1"></div>',
-          '    <div class="map-hotspot" data-pos="2"><img src="map-portfolio/assets/workflow-ui/2.png" alt="2"></div>',
-          '    <div class="map-hotspot" data-pos="3"><img src="map-portfolio/assets/workflow-ui/3.png" alt="3"></div>',
-          '    <div class="map-hotspot" data-pos="4"><img src="map-portfolio/assets/workflow-ui/4.png" alt="4"></div>',
-          '  </div>',
+          '<div class="map-modal-bg-wrap"></div>',
+          '<div class="map-modal-hotspots" id="mapHotspots">',
+          '  <div class="map-hotspot" data-pos="1"><img src="map-portfolio/assets/workflow-ui/1.png" alt="1"></div>',
+          '  <div class="map-hotspot" data-pos="2"><img src="map-portfolio/assets/workflow-ui/2.png" alt="2"></div>',
+          '  <div class="map-hotspot" data-pos="3"><img src="map-portfolio/assets/workflow-ui/3.png" alt="3"></div>',
+          '  <div class="map-hotspot" data-pos="4"><img src="map-portfolio/assets/workflow-ui/4.png" alt="4"></div>',
           '</div>'
         ].join('');
 
