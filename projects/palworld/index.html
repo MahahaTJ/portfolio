@@ -104,18 +104,16 @@
     .map-modal-close:hover { background: var(--accent); color: #101010; transform: rotate(90deg); }
 
     /* 主界面弹窗容器：参考忘川视频弹窗的 50%/50%/translate 居中方式
-       弹窗容器按固定比例 + 固定宽度，内容整体居中（不做屏幕宽度的 stretch 自适应）
-       bg.png 永远 contain 等比缩放，不拉伸变形；
-       四个入口按钮始终以弹窗内容区为中心按比例对齐 */
+       bg.png 已更新为 2560×1546（无文字版），按新比例锁定，整体中心居中
+       四个入口卡片 2×2 几何中心 = 弹窗几何中心，等比缩放不变形 */
     .map-modal {
       position: fixed; z-index: 410;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.92);
       transform-origin: center center;
-      /* 固定尺寸等比缩放：不再用 94vw 做无限拉伸，而是限定在 1100px / 85vh 之间
-         保证"始终居中、不贴屏幕两边"，两边留白充足 */
-      width: min(1100px, 85vh * (2560 / 1730));
-      aspect-ratio: 2560 / 1730;
+      /* 新 bg 比例 2560:1546 ≈ 1.656 : 1 */
+      width: min(1100px, 85vh * (2560 / 1546));
+      aspect-ratio: 2560 / 1546;
       max-height: 85vh;
       border-radius: 14px;
       display: none;
@@ -132,14 +130,12 @@
       opacity: 1;
     }
 
-    /* 弹窗内容层：bg.png 按 contain 等比缩放，
-       加四角圆角 + overflow hidden 只裁剪背景图本身（不裁入口卡片）
-       max-width/max-height 让 bg-wrap 不超过外层弹窗 */
+    /* 弹窗内容层：bg.png（新无文字版 2560×1546）按比例锁死 + 四角圆角 + overflow只裁背景 */
     .map-modal-bg-wrap {
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      aspect-ratio: 2560 / 1730;
+      aspect-ratio: 2560 / 1546;
       width: 100%;
       height: 100%;
       max-width: 100%;
@@ -148,11 +144,12 @@
       background-size: 100% 100%;
       background-repeat: no-repeat;
       background-position: center center;
-      border-radius: 14px;       /* 四角圆角 */
-      overflow: hidden;             /* 只裁剪 bg 图四角，不影响卡片（卡片是兄弟层） */
+      border-radius: 14px;
+      overflow: hidden;
     }
-    /* 卡片层：单独一个居中容器（绝对定位在弹窗几何中心下方，因为顶部要留阅读指南空间）
-       2×2 grid + gap 20px，卡片可以等比缩小，整体一定落在弹窗中心区域 */
+    /* 卡片层：和 bg-wrap 兄弟元素，不被 bg-wrap 的 overflow 裁
+       容器几何中心 = 弹窗几何中心（top/left/right/bottom 全部 50% + translate -50%）
+       卡片在容器内 grid 2×2 排布，gap=20px，整体严格中心居中 */
     .map-modal-hotspots {
       position: absolute;
       z-index: 2;
@@ -161,15 +158,13 @@
       grid-template-rows: 1fr 1fr;
       gap: 20px;
       box-sizing: border-box;
-      /* 整体中心居中：宽高按比例锁定在弹窗内，顶部空出 17% 给阅读指南
-         容器高度 = 弹窗高 × 80%，宽度按卡比例(835:699)+gap反推 */
-      top: 17%;
+      /* 外层几何中心锁定：中心点对齐弹窗中心，四周等距留白 */
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
-      width: calc(85% - 20px);
-      height: 78%;
-      max-width: 86%;
-      max-height: 79%;
+      transform: translate(-50%, -50%);
+      padding: 4%;
+      width: 92%;
+      height: 92%;
     }
     .map-hotspot {
       position: static;
@@ -180,9 +175,9 @@
       cursor: pointer;
       border-radius: 10px;
       transition: all .25s ease;
-      overflow: visible;        /* 不裁切卡片本身（hover 放大不被切） */
+      overflow: visible;
       box-shadow: 0 6px 16px rgba(0,0,0,0.16);
-      /* 卡片等比缩放 + 绝对居中 */
+      /* 卡片按原始 1.png 比例 835:699 锁死，保证不变形 */
       aspect-ratio: 835 / 699;
       justify-self: center;
       align-self: center;
@@ -201,16 +196,16 @@
     }
 
     /* 三级跳转弹窗（子页面） - 上下滑动结构
-       弹窗尺寸与主界面弹窗保持完全一致（同宽同高同比）；
+       弹窗尺寸与主界面弹窗保持完全一致（同宽同高同比，和 bg.png 新 2560×1546 比例一致）；
        内部长图按 contain 等比缩放，超过高度时上下滑动查看，绝不拉伸变形 */
     .map-sub-modal {
       position: fixed; z-index: 415;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.94);
       transform-origin: center center;
-      /* 与主弹窗完全相同的尺寸（等比锁定 + 双上限） */
-      width: min(1100px, 85vh * (2560 / 1730));
-      aspect-ratio: 2560 / 1730;
+      /* 与主弹窗完全相同的尺寸（新 bg 比例 2560:1546） */
+      width: min(1100px, 85vh * (2560 / 1546));
+      aspect-ratio: 2560 / 1546;
       max-height: 85vh;
       border-radius: 14px;
       display: none; overflow: hidden;
@@ -6426,15 +6421,14 @@
 
       /* --- 4. 弹窗控制 --- */
       /* 关闭按钮：按弹窗最终尺寸数学式计算右上角位置
-         不依赖 getBoundingClientRect（动画中 scale 会导致 BCR 是中间尺寸，造成偏移）
-         主弹窗和子弹窗尺寸完全相同：width=min(1100, 85vh*2560/1730), height=width*1730/2560 max 85vh
-         中心点=屏幕中心(50vw,50vh)，右上角 = (cx + w/2, cy - h/2) */
+         不依赖 getBoundingClientRect（动画中 scale 会导致 BCR 是中间尺寸）
+         打开顺序：先算位置 + 先 show 关闭按钮 → 再 show 弹窗
+         注意：calcCloseBtnPos 不再判断 m/s 是否已含 show 类（否则首次打开会因为还没 show 导致移除关闭按钮）
+         只要调用这个函数，就说明确定要显示弹窗，直接定位并显示即可 */
       function getPopupFinalRect() {
-        var s = document.getElementById('mapSubModal');
-        var isSub = s && s.classList.contains('show');
         var vw = window.innerWidth;
         var vh = window.innerHeight;
-        var RATIO = 2560 / 1730;
+        var RATIO = 2560 / 1546;   // bg.png 新比例（无文字版 2560×1546）
         var MAX_W = 1100;
         var MAX_H_RATIO = 0.85;
         var w = Math.min(MAX_W, vh * MAX_H_RATIO * RATIO);
@@ -6453,15 +6447,12 @@
       function calcCloseBtnPos() {
         var c = document.getElementById('mapModalClose');
         if (!c) return;
-        var m = document.getElementById('mapMainModal');
-        var s = document.getElementById('mapSubModal');
-        var hasAny = (m && m.classList.contains('show')) || (s && s.classList.contains('show'));
-        if (!hasAny) { c.classList.remove('show'); return; }
-        /* 用数学计算的最终尺寸取右上角，不受 scale 动画影响 */
         var r = getPopupFinalRect();
         /* 统一放在弹窗右上角外（按钮中心挂在弹窗右上角外 14px） */
         c.style.left = Math.round(r.right  - c.offsetWidth  / 2 + 14) + 'px';
         c.style.top  = Math.round(r.top    - c.offsetHeight / 2 + 14) + 'px';
+        /* 只要调用了本函数，就强制显示（解决首次打开不显示的bug） */
+        c.style.display = 'flex';
         c.classList.add('show');
       }
 
@@ -6528,7 +6519,9 @@
         document.getElementById('mapModalOverlay').classList.remove('show');
         document.getElementById('mapMainModal').classList.remove('show');
         document.getElementById('mapSubModal').classList.remove('show');
-        document.getElementById('mapModalClose').classList.remove('show');
+        /* 关闭：清空内联 display + remove show，确保下次打开流程正常 */
+        var c = document.getElementById('mapModalClose');
+        if (c) { c.style.display = ''; c.classList.remove('show'); }
       }
 
       /* --- 5. 事件绑定 --- */
