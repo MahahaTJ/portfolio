@@ -86,11 +86,13 @@
     }
     .map-modal-overlay.show { display: block; opacity: 1; }
 
-    /* 弹窗外关闭按钮（弹窗右上角外） */
+    /* 弹窗外关闭按钮：统一固定在右上角（弹窗右上角外），
+       主弹窗/子弹窗切换时位置无偏移，按实际显示的矩形右上角定位 */
     .map-modal-close {
       position: fixed; z-index: 420;
       width: 46px; height: 46px; border-radius: 50%;
-      background: rgba(20,20,20,0.85); border: 1.5px solid var(--accent);
+      background: rgba(20,20,20,0.9);
+      border: 1.5px solid var(--accent);
       color: var(--accent); cursor: pointer;
       display: none; align-items: center; justify-content: center;
       font-size: 1.3rem; font-weight: 700;
@@ -130,22 +132,27 @@
     }
 
     /* 弹窗内容层：bg.png 按 contain 等比缩放，
-       加四角圆角 + overflow hidden 只裁剪背景图本身（不裁入口卡片） */
+       加四角圆角 + overflow hidden 只裁剪背景图本身（不裁入口卡片）
+       max-width/max-height 让 bg-wrap 不超过外层弹窗 */
     .map-modal-bg-wrap {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
       aspect-ratio: 2560 / 1730;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
       background-image: url('map-portfolio/assets/workflow-ui/bg.png');
-      background-size: contain;
+      background-size: 100% 100%;
       background-repeat: no-repeat;
       background-position: center center;
-      margin: auto;
       border-radius: 14px;       /* 四角圆角 */
       overflow: hidden;             /* 只裁剪 bg 图四角，不影响卡片（卡片是兄弟层） */
     }
     /* 卡片层：和 bg-wrap 同级，覆盖整个弹窗（不被 bg-wrap 的 overflow 裁）
-       grid 2×2 布局 + gap 20px，顶部给"阅读指南"留出充足空间不遮挡 */
+       grid 2×2 布局 + gap 20px，顶部给"阅读指南"留出充足空间不遮挡
+       四个卡片整体放在弹窗内，可以等比缩小，保证居中 */
     .map-modal-hotspots {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -153,9 +160,9 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      /* padding-top 留出阅读指南（约 14.5%，bg 上标题+装饰的高度）不遮挡
-         左右 + 底部 padding 对称（约 5.5%），整体居中 */
-      padding: 14.5% 5.5% 5.5% 5.5%;
+      /* padding: 上(阅读指南+装饰) 右 下 左
+         17.5% 上 ≈ 阅读指南完全露出不被卡片压到 */
+      padding: 17.5% 6.2% 6.2% 6.2%;
       gap: 20px;
       box-sizing: border-box;
     }
@@ -170,6 +177,13 @@
       transition: all .25s ease;
       overflow: visible;        /* 不裁切卡片本身（hover 放大不被切） */
       box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+      /* 卡片等比缩放（按 835:699 ≈ 1.194，保证不变形） */
+      aspect-ratio: 835 / 699;
+      width: 100%;
+      justify-self: center;
+      align-self: center;
+      max-width: 100%;
+      max-height: 100%;
     }
     .map-hotspot:hover {
       transform: translateY(-3px) scale(1.02);
@@ -6407,17 +6421,24 @@
       }
 
       /* --- 4. 弹窗控制 --- */
-      function calcCloseBtnPos() {
-        var m = document.getElementById('mapMainModal');
+      /* 定位参考矩形：获取 bg-wrap（主）或子弹窗的真实显示矩形，
+         用实际显示区域的右上角对齐关闭按钮，避免尺寸变化时偏移 */
+      function getTargetRect() {
         var s = document.getElementById('mapSubModal');
+        if (s && s.classList.contains('show')) return s.getBoundingClientRect();
+        var bg = document.querySelector('.map-modal-bg-wrap');
+        if (bg) return bg.getBoundingClientRect();
+        var m = document.getElementById('mapMainModal');
+        return m ? m.getBoundingClientRect() : null;
+      }
+      function calcCloseBtnPos() {
         var c = document.getElementById('mapModalClose');
-        if (!m || !s || !c) return;
-        var target = s.classList.contains('show') ? s : (m.classList.contains('show') ? m : null);
-        if (!target) { c.classList.remove('show'); return; }
-        var r = target.getBoundingClientRect();
-        /* 关闭按钮：统一固定在弹窗右上角外（按钮中心挂在弹窗右上角外 14px 处） */
-        c.style.left = (r.right  - c.offsetWidth / 2  + 14) + 'px';
-        c.style.top  = (r.top    - c.offsetHeight / 2 + 14) + 'px';
+        if (!c) return;
+        var r = getTargetRect();
+        if (!r) { c.classList.remove('show'); return; }
+        /* 关闭按钮：统一放在弹窗右上角外（按钮中心贴在右上角外 14px） */
+        c.style.left = Math.round(r.right  - c.offsetWidth  / 2 + 14) + 'px';
+        c.style.top  = Math.round(r.top    - c.offsetHeight / 2 + 14) + 'px';
         c.classList.add('show');
       }
 
