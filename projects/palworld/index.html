@@ -101,24 +101,27 @@
     .map-modal-close:hover { background: var(--accent); color: #101010; transform: rotate(90deg); }
 
     /* 主界面弹窗容器：参考忘川视频弹窗的 50%/50%/translate 居中方式
-       弹窗整体 = bg.png 按 contain 等比缩放（不拉伸变形），四个入口按钮以弹窗内容区为中心 */
+       弹窗容器按固定比例 + 固定宽度，内容整体居中（不做屏幕宽度的 stretch 自适应）
+       bg.png 永远 contain 等比缩放，不拉伸变形；
+       四个入口按钮始终以弹窗内容区为中心按比例对齐 */
     .map-modal {
       position: fixed; z-index: 410;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.92);
       transform-origin: center center;
-      /* 弹窗容器尺寸：按 bg.png 原始比例锁定，不做拉伸 */
-      width: min(1400px, 94vw);
+      /* 固定尺寸等比缩放：不再用 94vw 做无限拉伸，而是限定在 1100px / 85vh 之间
+         保证"始终居中、不贴屏幕两边"，两边留白充足 */
+      width: min(1100px, 85vh * (2560 / 1730));
       aspect-ratio: 2560 / 1730;
-      max-height: 90vh;
+      max-height: 85vh;
       border-radius: 14px;
       display: none;
-      /* 内容区 = 等比缩放后实际显示的 bg 图像区域（左右或上下留白不影响） */
       align-items: center;
       justify-content: center;
       box-shadow: 0 50px 110px rgba(0,0,0,.78), 0 0 0 1px rgba(255,250,0,0.2);
       transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
       opacity: 0;
+      background: #eef0ea;
     }
     .map-modal.show {
       display: flex;
@@ -137,6 +140,8 @@
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center center;
+      /* 中心居中适配：不按容器四角拉伸，而是整体保持在几何正中央 */
+      margin: auto;
     }
     .map-modal-hotspots {
       position: absolute; inset: 0; z-index: 2;
@@ -146,39 +151,46 @@
       cursor: pointer;
       border-radius: 10px;
       transition: all .25s ease;
+      /* 四个入口等比缩放 + 中心点对称对齐：
+         用 translate(-50%,-50%) 配合 left/top 的百分比把"中心点"对齐到网格交点
+         这样容器变化时，入口永远按"中心→中心"对称，不会出现某边留白更多 */
+      transform: translate(-50%, -50%);
     }
     .map-hotspot:hover {
-      transform: translateY(-2px) scale(1.015);
-      filter: drop-shadow(0 12px 24px rgba(255, 190, 0, 0.35));
+      transform: translate(-50%, -50%) translateY(-3px) scale(1.02);
+      filter: drop-shadow(0 14px 28px rgba(255, 190, 0, 0.4));
     }
     .map-hotspot img {
       width: 100%; height: 100%; object-fit: contain; display: block;
       pointer-events: none;
     }
-    /* 4 个入口按钮始终居中适配（以 bg.png 内容层为基准，按比例分配）
-       1 / 2 在上半行  3 / 4 在下半行
-       上下两排对称、左右两列对称、中心点对齐弹窗几何中心 */
-    .map-hotspot[data-pos="1"] { left: 12.5%; top: 14.0%; width: 33.0%; height: 40.5%; }
-    .map-hotspot[data-pos="2"] { left: 54.5%; top: 14.0%; width: 33.0%; height: 40.5%; }
-    .map-hotspot[data-pos="3"] { left: 12.5%; top: 55.5%; width: 33.0%; height: 40.5%; }
-    .map-hotspot[data-pos="4"] { left: 54.5%; top: 55.5%; width: 33.0%; height: 40.5%; }
+    /* 4 个入口中心点坐标（按 bg.png 中心对称网格）
+       水平：左列中心 = 12.5% + 33%/2 = 29%   右列中心 = 54.5% + 33%/2 = 71%
+       垂直：上行中心 = 14.0% + 40.5%/2 = 34.25%   下行中心 = 55.5% + 40.5%/2 = 75.75%
+       尺寸：宽 33% 高 40.5%（对应 bg.png 中卡片视觉大小） */
+    .map-hotspot[data-pos="1"] { left: 29.00%; top: 34.25%; width: 33.0%; height: 40.5%; }
+    .map-hotspot[data-pos="2"] { left: 71.00%; top: 34.25%; width: 33.0%; height: 40.5%; }
+    .map-hotspot[data-pos="3"] { left: 29.00%; top: 75.75%; width: 33.0%; height: 40.5%; }
+    .map-hotspot[data-pos="4"] { left: 71.00%; top: 75.75%; width: 33.0%; height: 40.5%; }
 
     /* 三级跳转弹窗（子页面） - 上下滑动结构
-       居中和主弹窗同款；内容区 = 图片按 contain 等比缩放 + 滚动查看，绝不拉伸变形 */
+       居中 + 固定尺寸不无限拉伸；内容按 contain 等比缩放 + 滚动查看，绝不变形 */
     .map-sub-modal {
       position: fixed; z-index: 415;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.94);
       transform-origin: center center;
-      width: min(1080px, 94vw);
-      aspect-ratio: 2560 / 9632;   /* 按 total1.png 原始比例锁定 */
-      max-height: 88vh;
+      /* 固定尺寸：不再按屏幕宽度拉伸，保证内容始终居中显示
+         按总 1.png 的 2560:9632 比例锁定 最大宽度 1000px，最大高度 86vh */
+      width: min(1000px, 86vh * (2560 / 9632));
+      aspect-ratio: 2560 / 9632;
+      max-height: 86vh;
       border-radius: 14px;
       display: none; overflow: hidden;
       box-shadow: 0 40px 90px rgba(0,0,0,.75), 0 0 0 1px rgba(255,250,0,0.18);
       transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
       opacity: 0;
-      background: #fff;
+      background: #fafafa;
     }
     .map-sub-modal.show {
       display: block;
@@ -6392,9 +6404,9 @@
         var target = s.classList.contains('show') ? s : (m.classList.contains('show') ? m : null);
         if (!target) { c.classList.remove('show'); return; }
         var r = target.getBoundingClientRect();
-        /* 关闭按钮：弹窗外右上角，按钮中心挂在弹窗右上角外 8px 处 */
-        c.style.left = (r.right  - c.offsetWidth / 2  + 10) + 'px';
-        c.style.top  = (r.top    - c.offsetHeight / 2 + 10) + 'px';
+        /* 关闭按钮：统一固定在弹窗右上角外（按钮中心挂在弹窗右上角外 14px 处） */
+        c.style.left = (r.right  - c.offsetWidth / 2  + 14) + 'px';
+        c.style.top  = (r.top    - c.offsetHeight / 2 + 14) + 'px';
         c.classList.add('show');
       }
 
@@ -6405,40 +6417,32 @@
         document.getElementById('mapSubModal').classList.remove('show');
         setTimeout(calcCloseBtnPos, 20);
       }
-      /* 按入口位置打开三级弹窗（只做了入口1=地图设计=total1.png，其他 2/3/4 后续余留） */
+      /* 按入口位置打开三级弹窗：4 个入口分别对应总 1/2/3/4 四张长图资源 */
       function openSubModalByPos(pos) {
         var titles = { '1':'地图设计','2':'交互语言','3':'信息结构','4':'标识与层级' };
+        /* 4 张长图资源，全部按 contain 等比缩放 + 上下滑动查看，绝不拉伸变形 */
         var images = {
-          '1': 'map-portfolio/assets/workflow-ui/total1.png'
-          /* 2 / 3 / 4 入口后续有对应资源时再补：
-             '2': 'map-portfolio/assets/workflow-ui/total2.png',
-             '3': 'map-portfolio/assets/workflow-ui/total3.png',
-             '4': 'map-portfolio/assets/workflow-ui/total4.png' */
+          '1': 'map-portfolio/assets/workflow-ui/total1.png',   /* 2560 x 9632 */
+          '2': 'map-portfolio/assets/workflow-ui/total2.png',   /* 1280 x 3566 */
+          '3': 'map-portfolio/assets/workflow-ui/total3.png',   /* 1280 x 7577 */
+          '4': 'map-portfolio/assets/workflow-ui/total4.png'    /* 1280 x 4142 */
         };
         var title = titles[pos] || ('入口 ' + pos);
+        var imgSrc = images[pos];
 
         document.getElementById('mapSubTitle').textContent = title;
         var scroll = document.getElementById('mapSubScroll');
         scroll.scrollTop = 0;
 
-        if (images[pos]) {
+        if (imgSrc) {
           /* 有对应长图资源：直接按 contain 等比缩放 + 上下滑动查看，绝不拉伸变形 */
-          scroll.innerHTML =
-            '<img src="' + images[pos] + '" alt="' + title + '">';
+          scroll.innerHTML = '<img src="' + imgSrc + '" alt="' + title + '">';
         } else {
-          /* 2/3/4 暂时余留，先放一张"占位图"，后续给资源直接替换 images[pos] 即可 */
           scroll.innerHTML = [
             '<div style="min-height:100%;display:flex;align-items:center;justify-content:center;',
-            'padding:80px 40px;flex-direction:column;gap:20px;color:#8c6b4a;font-family:var(--font-body);">',
-            '  <div style="font-size:2.2rem;font-weight:700;color:#3a2a1a;">' + title + '</div>',
-            '  <div style="width:min(720px,100%);aspect-ratio:2560/9632;border:2px dashed rgba(140,107,74,0.45);',
-            '    border-radius:12px;background:repeating-linear-gradient(135deg,rgba(255,255,255,0.3),',
-            '    rgba(255,255,255,0.3) 16px,rgba(201,154,95,0.08) 16px,rgba(201,154,95,0.08) 32px);',
-            '    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;">',
-            '    <div style="font-size:3rem;">📄</div>',
-            '    <div style="font-weight:700;font-size:1rem;color:#3a2a1a;">长图资源余留 · 待插入</div>',
-            '    <div style="font-size:0.86rem;">后续提供对应「总 ' + pos + '.png」后，替换 images["' + pos + '"] 即可上线</div>',
-            '  </div>',
+            'padding:80px 40px;flex-direction:column;gap:20px;color:#8c6b4a;">',
+            '  <div style="font-size:2rem;font-weight:700;color:#3a2a1a;">' + title + '</div>',
+            '  <div>暂无对应长图资源，请先复制「总 ' + pos + '.png」到 workflow-ui 目录</div>',
             '</div>'
           ].join('');
         }
