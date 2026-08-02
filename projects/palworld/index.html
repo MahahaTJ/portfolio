@@ -151,40 +151,38 @@
       cursor: pointer;
       border-radius: 10px;
       transition: all .25s ease;
-      /* 四个入口等比缩放 + 中心点对称对齐：
-         用 translate(-50%,-50%) 配合 left/top 的百分比把"中心点"对齐到网格交点
-         这样容器变化时，入口永远按"中心→中心"对称，不会出现某边留白更多 */
-      transform: translate(-50%, -50%);
+      /* 四个入口按"左上角绝对定位"，保证上下左右 gap 像素完全一致
+         基准容器 2560×1730，gap=140px 水平&垂直相同，卡比例 835:699≈1.194 */
     }
     .map-hotspot:hover {
-      transform: translate(-50%, -50%) translateY(-3px) scale(1.02);
+      transform: translateY(-3px) scale(1.02);
       filter: drop-shadow(0 14px 28px rgba(255, 190, 0, 0.4));
     }
     .map-hotspot img {
       width: 100%; height: 100%; object-fit: contain; display: block;
       pointer-events: none;
     }
-    /* 4 个入口中心点坐标（按 bg.png 中心对称网格）
-       水平：左列中心 = 12.5% + 33%/2 = 29%   右列中心 = 54.5% + 33%/2 = 71%
-       垂直：上行中心 = 14.0% + 40.5%/2 = 34.25%   下行中心 = 55.5% + 40.5%/2 = 75.75%
-       尺寸：宽 33% 高 40.5%（对应 bg.png 中卡片视觉大小） */
-    .map-hotspot[data-pos="1"] { left: 29.00%; top: 34.25%; width: 33.0%; height: 40.5%; }
-    .map-hotspot[data-pos="2"] { left: 71.00%; top: 34.25%; width: 33.0%; height: 40.5%; }
-    .map-hotspot[data-pos="3"] { left: 29.00%; top: 75.75%; width: 33.0%; height: 40.5%; }
-    .map-hotspot[data-pos="4"] { left: 71.00%; top: 75.75%; width: 33.0%; height: 40.5%; }
+    /* 4 个入口：上下左右间距像素完全一致（gap=140px 对应 2560×1730）
+       左留白=300px(11.72%)  上留白=33px(1.91%)
+       水平gap=140px(5.47%宽)  垂直gap=140px(8.09%高)
+       卡尺寸：910×762 → 35.55%宽 × 44.05%高 */
+    .map-hotspot[data-pos="1"] { left: 11.72%; top:  1.91%; width: 35.55%; height: 44.05%; }
+    .map-hotspot[data-pos="2"] { left: 52.74%; top:  1.91%; width: 35.55%; height: 44.05%; }
+    .map-hotspot[data-pos="3"] { left: 11.72%; top: 54.05%; width: 35.55%; height: 44.05%; }
+    .map-hotspot[data-pos="4"] { left: 52.74%; top: 54.05%; width: 35.55%; height: 44.05%; }
 
     /* 三级跳转弹窗（子页面） - 上下滑动结构
-       居中 + 固定尺寸不无限拉伸；内容按 contain 等比缩放 + 滚动查看，绝不变形 */
+       弹窗尺寸与主界面弹窗保持完全一致（同宽同高同比）；
+       内部长图按 contain 等比缩放，超过高度时上下滑动查看，绝不拉伸变形 */
     .map-sub-modal {
       position: fixed; z-index: 415;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.94);
       transform-origin: center center;
-      /* 固定尺寸：不再按屏幕宽度拉伸，保证内容始终居中显示
-         按总 1.png 的 2560:9632 比例锁定 最大宽度 1000px，最大高度 86vh */
-      width: min(1000px, 86vh * (2560 / 9632));
-      aspect-ratio: 2560 / 9632;
-      max-height: 86vh;
+      /* 与主弹窗完全相同的尺寸（等比锁定 + 双上限） */
+      width: min(1100px, 85vh * (2560 / 1730));
+      aspect-ratio: 2560 / 1730;
+      max-height: 85vh;
       border-radius: 14px;
       display: none; overflow: hidden;
       box-shadow: 0 40px 90px rgba(0,0,0,.75), 0 0 0 1px rgba(255,250,0,0.18);
@@ -220,14 +218,17 @@
       padding: 6px 14px; border-radius: 6px;
       background: rgba(0,0,0,0.4);
     }
-    /* 上下滑动查看：图片 100% contain 等比缩放，绝不拉伸变形；超过高度时自动滚动 */
+    /* 上下滑动查看：长图宽度撑满弹窗内宽（100%），高度按原始图片比例自适应；
+       超过弹窗 max-height 时自动出现垂直滚动条上下滑动查看，绝不拉伸变形 */
     .map-sub-scroll {
       width: 100%; height: 100%;
       overflow-y: auto; overflow-x: hidden;
       background: #fafafa;
     }
+    /* contain 等比缩放：宽度优先撑满，超过时滚动；高度不足时居中 */
     .map-sub-scroll img {
       width: 100%;
+      min-height: 100%;
       display: block;
       object-fit: contain;
       image-rendering: -webkit-optimize-contrast;
