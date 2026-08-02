@@ -86,8 +86,8 @@
     }
     .map-modal-overlay.show { display: block; opacity: 1; }
 
-    /* 弹窗外关闭按钮：统一固定在右上角（弹窗右上角外），
-       主弹窗/子弹窗切换时位置无偏移，按实际显示的矩形右上角定位 */
+    /* 弹窗外关闭按钮：统一固定在右上角（弹窗右上角外）
+       位置无过渡动画（打开弹窗瞬间就落在最终位置，不出现偏移飞行动画） */
     .map-modal-close {
       position: fixed; z-index: 420;
       width: 46px; height: 46px; border-radius: 50%;
@@ -96,7 +96,8 @@
       color: var(--accent); cursor: pointer;
       display: none; align-items: center; justify-content: center;
       font-size: 1.3rem; font-weight: 700;
-      transition: all .2s ease;
+      /* 只保留 hover 的颜色/旋转过渡，位置 left/top 不过渡 */
+      transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
       box-shadow: 0 6px 18px rgba(0,0,0,.5);
     }
     .map-modal-close.show { display: flex; }
@@ -6465,12 +6466,13 @@
       }
 
       function openMainModal() {
+        /* 先算关闭按钮位置 + 先 show 关闭按钮（位置先落到最终值，再出弹窗）
+           保证用户看到的第一帧：关闭按钮已经在正确的右上角，不出现任何偏移/飞行动画 */
+        calcCloseBtnPos();
+        document.getElementById('mapModalClose').classList.add('show');
         document.getElementById('mapModalOverlay').classList.add('show');
         document.getElementById('mapMainModal').classList.add('show');
         document.getElementById('mapSubModal').classList.remove('show');
-        /* 立即计算 + 动画结束再兜底，彻底消除偏移 */
-        calcCloseBtnPos();
-        setTimeout(calcCloseBtnPos, 380);
       }
       /* 按入口位置打开三级弹窗：4 个入口分别对应总 1/2/3/4 四张长图资源 */
       function openSubModalByPos(pos) {
@@ -6502,13 +6504,12 @@
           ].join('');
         }
 
-        /* 显示：子弹窗居中 + 关闭主弹窗，保持遮罩 */
+        /* 显示：关闭按钮位置先锁定，再切主/子弹窗，不出现任何位置偏移动画 */
+        calcCloseBtnPos();
+        document.getElementById('mapModalClose').classList.add('show');
         document.getElementById('mapMainModal').classList.remove('show');
         document.getElementById('mapModalOverlay').classList.add('show');
         document.getElementById('mapSubModal').classList.add('show');
-        /* 立即计算 + 动画结束再兜底，消除偏移 */
-        calcCloseBtnPos();
-        setTimeout(calcCloseBtnPos, 380);
       }
 
       function openSubModal(key) {
@@ -6517,10 +6518,11 @@
         openSubModalByPos(idx);
       }
       function backToMain() {
+        /* 先算位置再切，避免任何位置跳动 */
+        calcCloseBtnPos();
+        document.getElementById('mapModalClose').classList.add('show');
         document.getElementById('mapSubModal').classList.remove('show');
         document.getElementById('mapMainModal').classList.add('show');
-        calcCloseBtnPos();
-        setTimeout(calcCloseBtnPos, 380);
       }
       function closeAllModals() {
         document.getElementById('mapModalOverlay').classList.remove('show');
