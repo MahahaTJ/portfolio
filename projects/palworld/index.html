@@ -148,8 +148,9 @@
       overflow: hidden;
     }
     /* 卡片层：和 bg-wrap 兄弟元素，不被 bg-wrap 的 overflow 裁
-       容器几何中心 = 弹窗几何中心（top/left/right/bottom 全部 50% + translate -50%）
-       卡片在容器内 grid 2×2 排布，gap=20px，整体严格中心居中 */
+       容器几何中心 = 弹窗/bg 几何中心（top/left 50% + translate -50% -50%）
+       容器宽高比严格等于「2×2 卡片 + gap」整体比例（1690:1418），
+       宽度设为 bg 的 70%，高度按比例自动算，等比缩小，整体落在 bg 正中心 */
     .map-modal-hotspots {
       position: absolute;
       z-index: 2;
@@ -158,13 +159,16 @@
       grid-template-rows: 1fr 1fr;
       gap: 20px;
       box-sizing: border-box;
-      /* 外层几何中心锁定：中心点对齐弹窗中心，四周等距留白 */
+      /* 几何中心锁定：中心点 = bg 中心点 */
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      padding: 4%;
-      width: 92%;
-      height: 92%;
+      /* 等比缩小：宽度取 bg 的 70%，高度按「2×2卡片+gap」的整体比例自动算
+         整体比例 = (835*2+20) : (699*2+20) = 1690:1418 ≈ 1.1918 */
+      width: 70%;
+      aspect-ratio: 1690 / 1418;
+      max-width: 72%;
+      max-height: 82%;
     }
     .map-hotspot {
       position: static;
