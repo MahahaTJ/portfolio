@@ -129,8 +129,8 @@
       opacity: 1;
     }
 
-    /* 弹窗内容层：严格按 bg.png 的 aspect-ratio 等比缩放（contain 模式）
-       保证 bg.png 永远不变形，左右/上下按 contain 规则留白 */
+    /* 弹窗内容层：bg.png 按 contain 等比缩放，
+       加四角圆角裁剪（和外层弹窗 14px 圆角一致，视觉上"弹窗本身带圆角"） */
     .map-modal-bg-wrap {
       position: relative;
       width: 100%; height: 100%;
@@ -140,36 +140,49 @@
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center center;
-      /* 中心居中适配：不按容器四角拉伸，而是整体保持在几何正中央 */
       margin: auto;
+      border-radius: 14px;             /* 四角圆角，和外层一致 */
+      overflow: hidden;                     /* 裁剪内容超出圆角的部分 */
+    }
+    /* 再给 bg 本身加一层圆角描边 + 内阴影，强化"带圆角卡片容器"的视觉 */
+    .map-modal-bg-wrap::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px rgba(140,107,74,0.55), inset 0 0 40px rgba(255,245,220,0.35);
     }
     .map-modal-hotspots {
       position: absolute; inset: 0; z-index: 2;
+      /* 卡片之间统一按 20px 间距（上下左右约 20px）
+         设置 padding 方案：在 用 CSS grid 2×2 grid，gap:20px，padding:20px */
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 20px;
     }
     .map-hotspot {
-      position: absolute;
+      position: static;           /* 不再用 grid 内流式排列，取消 absolute 定位 */
+      left: auto !important;
+      top: auto !important;
+      width: auto !important;
+      height: auto !important;
       cursor: pointer;
       border-radius: 10px;
       transition: all .25s ease;
-      /* 四个入口按"左上角绝对定位"，保证上下左右 gap 像素完全一致
-         基准容器 2560×1730，gap=140px 水平&垂直相同，卡比例 835:699≈1.194 */
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
     }
     .map-hotspot:hover {
-      transform: translateY(-3px) scale(1.02);
+      transform: translateY(-3px) scale(1.015);
       filter: drop-shadow(0 14px 28px rgba(255, 190, 0, 0.4));
+      box-shadow: 0 18px 40px rgba(255, 190, 0, 0.22);
     }
     .map-hotspot img {
-      width: 100%; height: 100%; object-fit: contain; display: block;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
       pointer-events: none;
     }
-    /* 4 个入口：上下左右间距像素完全一致（gap=140px 对应 2560×1730）
-       左留白=300px(11.72%)  上留白=33px(1.91%)
-       水平gap=140px(5.47%宽)  垂直gap=140px(8.09%高)
-       卡尺寸：910×762 → 35.55%宽 × 44.05%高 */
-    .map-hotspot[data-pos="1"] { left: 11.72%; top:  1.91%; width: 35.55%; height: 44.05%; }
-    .map-hotspot[data-pos="2"] { left: 52.74%; top:  1.91%; width: 35.55%; height: 44.05%; }
-    .map-hotspot[data-pos="3"] { left: 11.72%; top: 54.05%; width: 35.55%; height: 44.05%; }
-    .map-hotspot[data-pos="4"] { left: 52.74%; top: 54.05%; width: 35.55%; height: 44.05%; }
 
     /* 三级跳转弹窗（子页面） - 上下滑动结构
        弹窗尺寸与主界面弹窗保持完全一致（同宽同高同比）；
