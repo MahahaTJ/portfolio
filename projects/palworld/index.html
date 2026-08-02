@@ -150,36 +150,39 @@
       border-radius: 14px;       /* 四角圆角 */
       overflow: hidden;             /* 只裁剪 bg 图四角，不影响卡片（卡片是兄弟层） */
     }
-    /* 卡片层：和 bg-wrap 同级，覆盖整个弹窗（不被 bg-wrap 的 overflow 裁）
-       grid 2×2 布局 + gap 20px，顶部给"阅读指南"留出充足空间不遮挡
-       四个卡片整体放在弹窗内，可以等比缩小，保证居中 */
+    /* 卡片层：单独一个居中容器（绝对定位在弹窗几何中心下方，因为顶部要留阅读指南空间）
+       2×2 grid + gap 20px，卡片可以等比缩小，整体一定落在弹窗中心区域 */
     .map-modal-hotspots {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
       z-index: 2;
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      /* padding: 上(阅读指南+装饰) 右 下 左
-         17.5% 上 ≈ 阅读指南完全露出不被卡片压到 */
-      padding: 17.5% 6.2% 6.2% 6.2%;
       gap: 20px;
       box-sizing: border-box;
+      /* 整体中心居中：宽高按比例锁定在弹窗内，顶部空出 17% 给阅读指南
+         容器高度 = 弹窗高 × 80%，宽度按卡比例(835:699)+gap反推 */
+      top: 17%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(85% - 20px);
+      height: 78%;
+      max-width: 86%;
+      max-height: 79%;
     }
     .map-hotspot {
       position: static;
       left: auto !important;
       top: auto !important;
-      width: auto !important;
-      height: auto !important;
+      width: 100% !important;
+      height: 100% !important;
       cursor: pointer;
       border-radius: 10px;
       transition: all .25s ease;
       overflow: visible;        /* 不裁切卡片本身（hover 放大不被切） */
       box-shadow: 0 6px 16px rgba(0,0,0,0.16);
-      /* 卡片等比缩放（按 835:699 ≈ 1.194，保证不变形） */
+      /* 卡片等比缩放 + 绝对居中 */
       aspect-ratio: 835 / 699;
-      width: 100%;
       justify-self: center;
       align-self: center;
       max-width: 100%;
@@ -6421,22 +6424,41 @@
       }
 
       /* --- 4. 弹窗控制 --- */
-      /* 定位参考矩形：获取 bg-wrap（主）或子弹窗的真实显示矩形，
-         用实际显示区域的右上角对齐关闭按钮，避免尺寸变化时偏移 */
-      function getTargetRect() {
+      /* 关闭按钮：按弹窗最终尺寸数学式计算右上角位置
+         不依赖 getBoundingClientRect（动画中 scale 会导致 BCR 是中间尺寸，造成偏移）
+         主弹窗和子弹窗尺寸完全相同：width=min(1100, 85vh*2560/1730), height=width*1730/2560 max 85vh
+         中心点=屏幕中心(50vw,50vh)，右上角 = (cx + w/2, cy - h/2) */
+      function getPopupFinalRect() {
         var s = document.getElementById('mapSubModal');
-        if (s && s.classList.contains('show')) return s.getBoundingClientRect();
-        var bg = document.querySelector('.map-modal-bg-wrap');
-        if (bg) return bg.getBoundingClientRect();
-        var m = document.getElementById('mapMainModal');
-        return m ? m.getBoundingClientRect() : null;
+        var isSub = s && s.classList.contains('show');
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
+        var RATIO = 2560 / 1730;
+        var MAX_W = 1100;
+        var MAX_H_RATIO = 0.85;
+        var w = Math.min(MAX_W, vh * MAX_H_RATIO * RATIO);
+        var h = Math.min(w / RATIO, vh * MAX_H_RATIO);
+        var cx = vw / 2;
+        var cy = vh / 2;
+        return {
+          left:   cx - w / 2,
+          top:    cy - h / 2,
+          right:  cx + w / 2,
+          bottom: cy + h / 2,
+          width:  w,
+          height: h
+        };
       }
       function calcCloseBtnPos() {
         var c = document.getElementById('mapModalClose');
         if (!c) return;
-        var r = getTargetRect();
-        if (!r) { c.classList.remove('show'); return; }
-        /* 关闭按钮：统一放在弹窗右上角外（按钮中心贴在右上角外 14px） */
+        var m = document.getElementById('mapMainModal');
+        var s = document.getElementById('mapSubModal');
+        var hasAny = (m && m.classList.contains('show')) || (s && s.classList.contains('show'));
+        if (!hasAny) { c.classList.remove('show'); return; }
+        /* 用数学计算的最终尺寸取右上角，不受 scale 动画影响 */
+        var r = getPopupFinalRect();
+        /* 统一放在弹窗右上角外（按钮中心挂在弹窗右上角外 14px） */
         c.style.left = Math.round(r.right  - c.offsetWidth  / 2 + 14) + 'px';
         c.style.top  = Math.round(r.top    - c.offsetHeight / 2 + 14) + 'px';
         c.classList.add('show');
@@ -6445,9 +6467,10 @@
       function openMainModal() {
         document.getElementById('mapModalOverlay').classList.add('show');
         document.getElementById('mapMainModal').classList.add('show');
-        /* 关闭子弹窗（防止叠加） */
         document.getElementById('mapSubModal').classList.remove('show');
-        setTimeout(calcCloseBtnPos, 20);
+        /* 立即计算 + 动画结束再兜底，彻底消除偏移 */
+        calcCloseBtnPos();
+        setTimeout(calcCloseBtnPos, 380);
       }
       /* 按入口位置打开三级弹窗：4 个入口分别对应总 1/2/3/4 四张长图资源 */
       function openSubModalByPos(pos) {
@@ -6483,7 +6506,9 @@
         document.getElementById('mapMainModal').classList.remove('show');
         document.getElementById('mapModalOverlay').classList.add('show');
         document.getElementById('mapSubModal').classList.add('show');
-        setTimeout(calcCloseBtnPos, 20);
+        /* 立即计算 + 动画结束再兜底，消除偏移 */
+        calcCloseBtnPos();
+        setTimeout(calcCloseBtnPos, 380);
       }
 
       function openSubModal(key) {
@@ -6494,7 +6519,8 @@
       function backToMain() {
         document.getElementById('mapSubModal').classList.remove('show');
         document.getElementById('mapMainModal').classList.add('show');
-        setTimeout(calcCloseBtnPos, 20);
+        calcCloseBtnPos();
+        setTimeout(calcCloseBtnPos, 380);
       }
       function closeAllModals() {
         document.getElementById('mapModalOverlay').classList.remove('show');
