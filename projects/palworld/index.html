@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>幻兽帕鲁 | Garena · 项目作品集</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6568,15 +6571,9 @@
       }
 
       function openMainModal() {
-        /* 先算关闭按钮位置 + 先 show 关闭按钮（位置先落到最终值，再出弹窗）
-           保证用户看到的第一帧：关闭按钮已经在正确的右上角，不出现任何偏移/飞行动画 */
-        calcCloseBtnPos();
-        calcDownloadBtnPos();
-        document.getElementById('mapModalClose').classList.add('show');
-        document.getElementById('mapPdfDownload').classList.add('show');
-        document.getElementById('mapModalOverlay').classList.add('show');
-        document.getElementById('mapMainModal').classList.add('show');
-        document.getElementById('mapSubModal').classList.remove('show');
+        /* 功能详情已关闭：保留旧接口作为防御层，任何调用都只显示联系提示 */
+        var pet = document.getElementById('mapPetFab');
+        if (pet) pet.classList.add('contact-visible');
       }
       /* 按入口位置打开三级弹窗：4 个入口分别对应总 1/2/3/4 四张长图资源 */
       function openSubModalByPos(pos) {
@@ -6649,10 +6646,15 @@
         /* 功能详情暂不开放：悬浮、聚焦或点击时展示联系提示 */
         var pet = document.getElementById('mapPetFab');
         if (pet) {
-          var showContactTip = function() {
-            pet.classList.toggle('contact-visible');
+          var showContactTip = function(e) {
+            if (e) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+            pet.classList.add('contact-visible');
           };
-          pet.addEventListener('click', showContactTip);
+          /* 捕获阶段拦截，确保其他旧点击事件无法继续打开详情弹窗 */
+          pet.addEventListener('click', showContactTip, true);
           pet.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
