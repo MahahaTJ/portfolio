@@ -74,6 +74,50 @@
       white-space: nowrap;
       z-index: 2;
     }
+    .map-pet-contact-tip {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 14px);
+      width: max-content;
+      max-width: min(280px, calc(100vw - 32px));
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 217, 75, 0.72);
+      border-radius: 10px;
+      background: rgba(16, 16, 16, 0.96);
+      box-shadow: 0 10px 28px rgba(0,0,0,.5);
+      color: #fff;
+      font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.6;
+      text-align: center;
+      white-space: normal;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+    }
+    .map-pet-contact-tip::after {
+      content: '';
+      position: absolute;
+      right: 32px;
+      top: 100%;
+      border: 7px solid transparent;
+      border-top-color: rgba(255, 217, 75, 0.72);
+    }
+    .map-pet-fab:hover .map-pet-contact-tip,
+    .map-pet-fab:focus-visible .map-pet-contact-tip,
+    .map-pet-fab.contact-visible .map-pet-contact-tip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .map-pet-fab:focus-visible {
+      outline: 2px solid #ffd94b;
+      outline-offset: 6px;
+      border-radius: 12px;
+    }
 
     /* === 弹窗遮罩 & 通用（参考忘川视频弹窗同款 flex 居中模式） === */
     .map-modal-overlay {
@@ -361,6 +405,7 @@
       .map-sub-scroll { padding: 16px 16px 60px;}
       .map-pet-fab { width: 140px; right: 16px; bottom: 18px;}
       .map-pet-fab::after { font-size: 0.88rem; padding: 4px 12px 5px; bottom: -22px;}
+      .map-pet-contact-tip { right: 0; max-width: calc(100vw - 32px); font-size: 0.82rem; }
     }
 
     /* === 顶部导航 === */
@@ -6384,8 +6429,10 @@
         var fab = document.createElement('div');
         fab.className = 'map-pet-fab';
         fab.id = 'mapPetFab';
-        fab.title = '点击打开大地图作品集';
-        fab.innerHTML = '<img src="' + PET_GIF + '" alt="悬浮桌宠">';
+        fab.setAttribute('role', 'button');
+        fab.setAttribute('tabindex', '0');
+        fab.setAttribute('aria-label', '功能详情暂未开放，请与作者本人联系后获取');
+        fab.innerHTML = '<img src="' + PET_GIF + '" alt="悬浮桌宠"><div class="map-pet-contact-tip" role="status">请与作者本人联系后获取</div>';
 
         var overlay = document.createElement('div');
         overlay.className = 'map-modal-overlay';
@@ -6599,9 +6646,23 @@
 
       /* --- 5. 事件绑定 --- */
       function bindEvents() {
-        /* 悬浮桌宠点击 -> 打开主弹窗 */
+        /* 功能详情暂不开放：悬浮、聚焦或点击时展示联系提示 */
         var pet = document.getElementById('mapPetFab');
-        if (pet) pet.addEventListener('click', openMainModal);
+        if (pet) {
+          var showContactTip = function() {
+            pet.classList.toggle('contact-visible');
+          };
+          pet.addEventListener('click', showContactTip);
+          pet.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              showContactTip();
+            }
+          });
+          document.addEventListener('click', function(e) {
+            if (!pet.contains(e.target)) pet.classList.remove('contact-visible');
+          });
+        }
 
         /* 关闭按钮 */
         var cl = document.getElementById('mapModalClose');
